@@ -39,47 +39,47 @@
 #include <neu/NMap.h>
 
 namespace neu{
-
-class NFuncMap{
-public:
-  NFuncMap(){
-
-  }
-
-  ~NFuncMap(){
-
-  }
-
-  void add(const nstr& func, NFunc fp){
-    functorMap_.insert(std::make_pair(std::make_pair(func, -1), fp));
-  }
-
-  void add(const nstr& func, size_t arity, NFunc fp){
-    functorMap_.insert(std::make_pair(std::make_pair(func, arity), fp));
-  }
-
-  // assumes that it has already been determined that f is a function
-  NFunc map(const nvar& f) const{
-    assert(f.fullType() == nvar::Function);
-
-    auto itr = functorMap_.find(std::make_pair(f.str(), f.size()));
-    if(itr == functorMap_.end()){
-      itr = functorMap_.find(std::make_pair(f.str(), -1));
-      if(itr == functorMap_.end()){
-        return 0;
-      }
-    }
-
-    f.setFunc(itr->second);
-    return itr->second;
-  }
-
-private:
-  typedef NMap<std::pair<nstr, int16_t>, NFunc> FunctorMap_;
   
-  FunctorMap_ functorMap_;
-};
-
+  class NFuncMap{
+  public:
+    NFuncMap(){
+      
+    }
+    
+    ~NFuncMap(){
+      
+    }
+    
+    void add(const nstr& func, NFunc fp){
+      functorMap_.insert(std::make_pair(std::make_pair(func, -1), fp));
+    }
+    
+    void add(const nstr& func, size_t arity, NFunc fp){
+      functorMap_.insert(std::make_pair(std::make_pair(func, arity), fp));
+    }
+    
+    // assumes that it has already been determined that f is a function
+    NFunc map(const nvar& f) const{
+      assert(f.fullType() == nvar::Function);
+      
+      auto itr = functorMap_.find(std::make_pair(f.str(), f.size()));
+      if(itr == functorMap_.end()){
+        itr = functorMap_.find(std::make_pair(f.str(), -1));
+        if(itr == functorMap_.end()){
+          return 0;
+        }
+      }
+      
+      f.setFunc(itr->second);
+      return itr->second;
+    }
+    
+  private:
+    typedef NMap<std::pair<nstr, int16_t>, NFunc> FunctorMap_;
+    
+    FunctorMap_ functorMap_;
+  };
+  
 } // end namespace neu
 
 #endif // NEU_N_FUNC_MAP_H

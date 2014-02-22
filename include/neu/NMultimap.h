@@ -39,7 +39,7 @@
 #define NEU_N_MULTI_MAP_H
 
 namespace neu{
-
+  
   template<class Key, class T, class Compare = std::less<Key>,
   class Allocator = std::allocator<std::pair<const Key,T> > >
   class NMultimap{
@@ -57,7 +57,7 @@ namespace neu{
     typedef typename Map_::value_compare value_compare;
     
     explicit NMultimap(const Compare& comp=Compare(),
-                       const Allocator& allocator=Allocator()) 
+                       const Allocator& allocator=Allocator())
     : map_(comp, allocator){
     }
     
@@ -72,27 +72,27 @@ namespace neu{
     : map_(x.map_){
       
     }
-
+    
     NMultimap(NMultimap&& x)
     : map_(std::move(x.map_)){
       
     }
-
+    
     NMultimap(NMultimap&& x, const allocator_type& a)
-      : map_(std::move(x.map_), a){
+    : map_(std::move(x.map_), a){
       
     }
-
+    
     NMultimap(std::initializer_list<value_type> il,
               const key_compare& comp = key_compare())
-      : map_(il, comp){
-
+    : map_(il, comp){
+      
     }
-
+    
     NMultimap(std::initializer_list<value_type> il,
               const key_compare& comp,
               const allocator_type& a)
-      : map_(il, comp, a){
+    : map_(il, comp, a){
       
     }
     
@@ -174,7 +174,7 @@ namespace neu{
     void insert(InputIterator first, InputIterator last){
       map_.insert(first, last);
     }
-
+    
     template<class... Args>
     iterator emplace(Args&&... args){
       return map_.emplace(std::forward<Args>(args)...);
@@ -215,19 +215,19 @@ namespace neu{
       map_ = x.map_;
       return *this;
     }
-
-    NMultimap<Key,T,Compare,Allocator>& 
+    
+    NMultimap<Key,T,Compare,Allocator>&
     operator=(NMultimap<Key,T,Compare,Allocator>&& x){
       map_ = std::move(x.map_);
       return *this;
     }
-
-    NMultimap<Key,T,Compare,Allocator>& 
+    
+    NMultimap<Key,T,Compare,Allocator>&
     operator=(std::initializer_list<value_type> il){
       map_ = il;
       return *this;
     }
-
+    
     reverse_iterator rbegin(){
       return map_.rbegin();
     }

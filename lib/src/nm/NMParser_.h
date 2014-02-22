@@ -50,24 +50,24 @@ namespace neu{
   
   class NMParser_{
   public:
-      
+    
     NMParser_(NMParser* o)
     : o_(o),
-      estr_(&cerr){
-
-    }
+    estr_(&cerr){
       
-    ~NMParser_(){
-
     }
-
+    
+    ~NMParser_(){
+      
+    }
+    
     void advance(const char* text, const nstr& tag=""){
       advance(strlen(text), tag);
     }
-
+    
     void advance(size_t count, const nstr& tag=""){
       char_ += count;
-
+      
       if(!tag.empty()){
         if(tags_){
           tags_->pushBack(nvar());
@@ -79,18 +79,18 @@ namespace neu{
         }
         ++token_;
       }
-
+      
       lastChar_ = char_;
     }
-
+    
     nvar token(const char* text, const nstr& tag=""){
       char_ += strlen(text);
-    
+      
       nvar token = text;
       token("start") = lastChar_;
       token("end") = char_;
       token("line") = line_;
-
+      
       if(!tag.empty()){
         if(tags_){
           tags_->pushBack(nvar());
@@ -101,16 +101,16 @@ namespace neu{
           t("line") = line_;
         }
       }
-
+      
       ++token_;
       lastChar_ = char_;
-
+      
       return token;
     }
-
+    
     nvar parse(const nstr& code, nvar* tags){
       out_ = nfunc("Block");
-
+      
       tags_ = tags;
       line_ = 1;
       char_ = 0;
@@ -124,30 +124,30 @@ namespace neu{
       FILE* file = fopen(tempPath.c_str(), "w+");
       fwrite(code.c_str(), 1, code.length(), file);
       fclose(file);
-
+      
       file = fopen(tempPath.c_str(), "r");
       nm_set_in(file, scanner_);
       nm_parse(this, scanner_);
       fclose(file);
-
+      
       if(remove(tempPath.c_str()) != 0){
-        cerr << "NMParser: failed to delete to delete temp file: " << 
-          tempPath << endl;
+        cerr << "NMParser: failed to delete to delete temp file: " <<
+        tempPath << endl;
         NProgram::exit(1);
       }
-
+      
       nm_lex_destroy(scanner_);
-
+      
       if(status_ != 0){
         return none;
       }
-
+      
       return out_.size() == 1 ? out_[0] : out_;
     }
     
     nvar parseFile(const nstr& path, nvar* tags){
       out_ = nfunc("Block");
-
+      
       tags_ = tags;
       line_ = 1;
       char_ = 0;
@@ -158,67 +158,67 @@ namespace neu{
       nm_set_extra(this, scanner_);
       
       FILE* file = fopen(path.c_str(), "r");
-
+      
       if(!file){
         NERROR("failed to open: " + path);
       }
-
+      
       nm_set_in(file, scanner_);
       nm_parse(this, scanner_);
       fclose(file);
-
+      
       nm_lex_destroy(scanner_);
-
+      
       if(status_ != 0){
         return none;
       }
-
+      
       return out_.size() == 1 ? out_[0] : out_;
     }
     
     void emit(const nvar& n){
       out_ << n;
     }
-      
+    
     nvar error(const nvar& n, const nstr& message, bool warn=false){
       status_ = 1;
-
+      
       cout << "error: " << message << endl;
       return nsym("Error");
     }
-
+    
     void error(const nstr& type){
       error(none, "NM parser error");
     }
-      
+    
     nvar func(const nstr& f){
       nvar v = nfunc(f);
       v("_line") = line_;
       v("_token") = token_;
-
+      
       if(!file_.empty()){
         v("_file") = file_;
       }
-
+      
       return v;
     }
-
+    
     nvar func(const char* f){
       nvar v = nfunc(f);
       v("_line") = line_;
       v("_token") = token_;
-
+      
       if(!file_.empty()){
         v("_file") = file_;
       }
-
+      
       return v;
     }
-
+    
     nvar func(const nvar& v){
       return func(v.str());
     }
-      
+    
     nvar sym(const nstr& s){
       nvar v = nsym(s);
       v("_line") = line_;
@@ -227,43 +227,43 @@ namespace neu{
       if(!file_.empty()){
         v("_file") = file_;
       }
-
+      
       return v;
     }
-
+    
     nvar sym(const nvar& v){
       return sym(v.str());
     }
-      
+    
     nvar sym(const char* s){
       nvar v = nsym(s);
       v("_line") = line_;
       v("_token") = token_;
-
+      
       if(!file_.empty()){
         v("_file") = file_;
       }
-
+      
       return v;
     }
-      
+    
     nvar& var(nvar& v){
       v("_token") = token_;
       return v;
     }
-
+    
     nvar var(const nvar& v){
       nvar r = v;
       r("_token") = token_;
       return r;
     }
-      
+    
     void newLine(){
       ++line_;
     }
-
+    
     void translate(nvar& v);
-
+    
   private:
     NMParser* o_;
     ostream* estr_;
@@ -277,7 +277,7 @@ namespace neu{
     void* scanner_;
     nvar out_;
   };
-    
+  
 } // end namespace neu
 
 #endif // NEU_NM_PARSER__H

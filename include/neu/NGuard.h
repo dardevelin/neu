@@ -35,46 +35,50 @@
 #ifndef NEU_N_GUARD_H
 #define NEU_N_GUARD_H
 
-template <class T>
-class NTGuard{
-public:
-  NTGuard(T& t)
-  : t_(t),
-    locked_(true){
-    t_.lock();
-  }
+namespace neu{
   
-  ~NTGuard(){
-    if(locked_){
-      t_.unlock();
+  template <class T>
+  class NTGuard{
+  public:
+    NTGuard(T& t)
+    : t_(t),
+    locked_(true){
+      t_.lock();
     }
-  }
-
-  void release(){
-    t_.unlock();
-    locked_ = false;
-  }
-
-  void acquire(){
-    t_.lock();
-    locked_ = true;
-  }
-
-  bool tryAcquire(){
-    locked_ = t_.tryLock();
-    return locked_;
-  }
-
-  NTGuard(const NTGuard&) = delete;
-  NTGuard& operator=(const NTGuard&) = delete;  
-
-private:
-  T& t_;
-  bool locked_;
-};
-
-typedef NTGuard<NMutex> NGuard;
-typedef NTGuard<NRecMutex> NRecGuard;
-typedef NTGuard<NBasicMutex> NBasicGuard;
+    
+    ~NTGuard(){
+      if(locked_){
+        t_.unlock();
+      }
+    }
+    
+    void release(){
+      t_.unlock();
+      locked_ = false;
+    }
+    
+    void acquire(){
+      t_.lock();
+      locked_ = true;
+    }
+    
+    bool tryAcquire(){
+      locked_ = t_.tryLock();
+      return locked_;
+    }
+    
+    NTGuard(const NTGuard&) = delete;
+    NTGuard& operator=(const NTGuard&) = delete;
+    
+  private:
+    T& t_;
+    bool locked_;
+  };
+  
+  typedef NTGuard<NMutex> NGuard;
+  typedef NTGuard<NRecMutex> NRecGuard;
+  typedef NTGuard<NBasicMutex> NBasicGuard;
+  
+} // end namespace neu
 
 #endif // NEU_N_GUARD_H

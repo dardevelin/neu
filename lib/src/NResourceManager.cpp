@@ -43,55 +43,55 @@ using namespace std;
 using namespace neu;
 
 namespace neu{
-
+  
   class NResourceManager_{
   public:
     NResourceManager_(NResourceManager* o)
     : o_(o){
-
+      
     }
-
+    
     ~NResourceManager_(){
-
+      
     }
-
+    
     void release(){
       releaseMutex_.lock();
       mutex_.lock();
-
+      
       for(auto& itr : commandList_){
         itr->close();
       }
-  
+      
       commandList_.clear();
-
+      
       mutex_.unlock();
       releaseMutex_.unlock();
     }
-
+    
     void add(NCommand* command){
       mutex_.lock();
       commandList_.push_back(command);
       mutex_.unlock();
     }
-  
+    
     void remove(NCommand* command){
       mutex_.lock();
       commandList_.remove(command);
       mutex_.unlock();
     }
-
+    
   private:
     typedef NList<NCommand*> CommandList_;
-
+    
     NResourceManager* o_;
-
+    
     CommandList_ commandList_;
     
     NRecMutex mutex_;
     NMutex releaseMutex_;
   };
-
+  
 } // end namespace neu
 
 NResourceManager::NResourceManager(){

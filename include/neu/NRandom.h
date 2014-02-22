@@ -42,104 +42,104 @@
 #include <neu/NSys.h>
 
 namespace neu{
-
-class NRandom : public NObject{
-public:
-  NRandom(uint64_t seed=0)
+  
+  class NRandom : public NObject{
+  public:
+    NRandom(uint64_t seed=0)
     : uniform_(0, 1){
-    rng_.seed(seed);
-
-  }
-
-  ~NRandom(){
-
-  }
-
-  uint64_t timeSeed(){
-    double t = NSys::now();
-
-    double sec = std::floor(t);
-    double fsec = t - sec;
-
-    uint64_t seed = sec * 10000000 + fsec*1000;
-
-    rng_.seed(seed);
-
-    return seed;
-  }
-
-  double uniform(){
-    return uniform_(rng_);
-  }
-
-  // b > a
-  double uniform(double a, double b){
-    return a + (b - a) * uniform();
-  }
-
-  // b > a
-  int64_t equilikely(int64_t a, int64_t b){
-    return a + int64_t((b - a + 1) * uniform());
-  }
-
-  // x > 0
-  double exponential(const double x){
-    return -1.0/x * std::log(1.0 - uniform());
-  }
-
-  // s > 0
-  double normal(double m, double s){
-    std::normal_distribution<double> d(m, s);
-
-    return d(rng_);
-  }
-
-  // 0 <= p <= 1
-  bool bernoulli(double p){
-    return uniform() < p ? true : false;
-  }
-
-  // n > 0; 0 <= p <= 1
-  int64_t binomial(int64_t n, double p){
-    int64_t y;
-
-    for(size_t i = 0; i < n; ++i){
-      y += bernoulli(p) ? 1 : 0;
+      rng_.seed(seed);
+      
     }
-
-    return y;
-  }
-
-  // m > 0
-  int64_t poisson(double m){
-    int64_t y = 0;
-    double t = std::exp(m);
     
-    do{
-      ++y;
-      t *= uniform();
-    }while(t >= 1.0);
-
-    return y - 1;
-  }
-
-  // b > 0; s > 0
-  uint64_t expSelect(uint64_t b, double s){
-    uint64_t ret;
-    do{
-      ret = uint64_t(exponential(s * 10 / b));
-    }while(ret > b);
+    ~NRandom(){
+      
+    }
     
-    return ret; 
-  }
-
-  NFunc handle(const nvar& v, uint32_t flags=0);
-
-private:
-  std::mt19937_64 rng_;
-  std::uniform_real_distribution<double> uniform_;
-};
-
+    uint64_t timeSeed(){
+      double t = NSys::now();
+      
+      double sec = std::floor(t);
+      double fsec = t - sec;
+      
+      uint64_t seed = sec * 10000000 + fsec*1000;
+      
+      rng_.seed(seed);
+      
+      return seed;
+    }
+    
+    double uniform(){
+      return uniform_(rng_);
+    }
+    
+    // b > a
+    double uniform(double a, double b){
+      return a + (b - a) * uniform();
+    }
+    
+    // b > a
+    int64_t equilikely(int64_t a, int64_t b){
+      return a + int64_t((b - a + 1) * uniform());
+    }
+    
+    // x > 0
+    double exponential(const double x){
+      return -1.0/x * std::log(1.0 - uniform());
+    }
+    
+    // s > 0
+    double normal(double m, double s){
+      std::normal_distribution<double> d(m, s);
+      
+      return d(rng_);
+    }
+    
+    // 0 <= p <= 1
+    bool bernoulli(double p){
+      return uniform() < p ? true : false;
+    }
+    
+    // n > 0; 0 <= p <= 1
+    int64_t binomial(int64_t n, double p){
+      int64_t y;
+      
+      for(size_t i = 0; i < n; ++i){
+        y += bernoulli(p) ? 1 : 0;
+      }
+      
+      return y;
+    }
+    
+    // m > 0
+    int64_t poisson(double m){
+      int64_t y = 0;
+      double t = std::exp(m);
+      
+      do{
+        ++y;
+        t *= uniform();
+      }while(t >= 1.0);
+      
+      return y - 1;
+    }
+    
+    // b > 0; s > 0
+    uint64_t expSelect(uint64_t b, double s){
+      uint64_t ret;
+      do{
+        ret = uint64_t(exponential(s * 10 / b));
+      }while(ret > b);
+      
+      return ret; 
+    }
+    
+    NFunc handle(const nvar& v, uint32_t flags=0);
+    
+  private:
+    std::mt19937_64 rng_;
+    std::uniform_real_distribution<double> uniform_;
+  };
+  
 } // end namespace neu
 
 #endif // NEU_N_RANDOM_H

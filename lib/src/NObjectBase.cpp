@@ -43,30 +43,30 @@ using namespace std;
 using namespace neu;
 
 namespace{
-
+  
   class Global{
   public:
     Global()
     : nextClassId_(0){
-
+      
     }
-
+    
     uint32_t getClassId(){
       return nextClassId_++;
     }
-
+    
   private:
     uint32_t nextClassId_;
   };
-
+  
   Global* _global = 0;
-
+  
 } // end namespace
 
 uint32_t NObjectBase::getClassId(){
   if(!_global){
     _global = new Global;
   }
-
+  
   return _global->getClassId();
 }

@@ -47,7 +47,7 @@ namespace neu{
   public:
     
     nreal();
-
+    
     explicit nreal(const char* s);
     
     nreal(double x);
@@ -130,7 +130,7 @@ namespace neu{
     bool operator>=(const nreal& x) const;
     
     bool operator==(const nreal& x) const;
-
+    
     bool operator!=(const nreal& x) const;
     
     void setPrecision(size_t bits);
@@ -190,7 +190,7 @@ namespace neu{
     static nreal euler();
     
     static nreal catalan();
-
+    
   private:
     class nreal_* x_;
   };
@@ -198,179 +198,179 @@ namespace neu{
   inline bool operator<(double t, const nreal& x){
     return nreal(t) < x;
   }
-
+  
   inline bool operator<(int t, const nreal& x){
     return nreal(t) < x;
   }
-
+  
   inline bool operator<(int64_t t, const nreal& x){
     return nreal(t) < x;
   }
-
+  
   inline bool operator<(const nrat& t, const nreal& x){
     return nreal(t) < x;
   }
-
+  
   inline bool operator<=(double t, const nreal& x){
     return nreal(t) <= x;
   }
-
+  
   inline bool operator<=(int t, const nreal& x){
     return nreal(t) <= x;
   }
-
+  
   inline bool operator<=(int64_t t, const nreal& x){
     return nreal(t) <= x;
   }
-
+  
   inline bool operator<=(const nrat& t, const nreal& x){
     return nreal(t) <= x;
   }
-
+  
   inline bool operator>(double t, const nreal& x){
     return nreal(t) > x;
   }
-
+  
   inline bool operator>(int t, const nreal& x){
     return nreal(t) > x;
   }
-
+  
   inline bool operator>(int64_t t, const nreal& x){
     return nreal(t) > x;
   }
-
+  
   inline bool operator>(const nrat& t, const nreal& x){
     return nreal(t) > x;
   }
-
+  
   inline bool operator>=(double t, const nreal& x){
     return nreal(t) >= x;
   }
-
+  
   inline bool operator>=(int t, const nreal& x){
     return nreal(t) >= x;
   }
-
+  
   inline bool operator>=(int64_t t, const nreal& x){
     return nreal(t) >= x;
   }
-
+  
   inline bool operator>=(const nrat& t, const nreal& x){
     return nreal(t) >= x;
-  }  
-
+  }
+  
   inline bool operator==(double t, const nreal& x){
     return nreal(t) == x;
   }
-
+  
   inline bool operator==(int t, const nreal& x){
     return nreal(t) == x;
   }
-
+  
   inline bool operator==(int64_t t, const nreal& x){
     return nreal(t) == x;
   }
-
+  
   inline bool operator==(const nrat& t, const nreal& x){
     return nreal(t) == x;
   }
-
+  
   inline bool operator!=(double t, const nreal& x){
     return nreal(t) != x;
   }
-
+  
   inline bool operator!=(int t, const nreal& x){
     return nreal(t) != x;
   }
-
+  
   inline bool operator!=(int64_t t, const nreal& x){
     return nreal(t) != x;
   }
-
+  
   inline bool operator!=(const nrat& t, const nreal& x){
     return nreal(t) != x;
   }
-
+  
   inline nreal operator+(double t, const nreal& x){
     return nreal(t) + x;
   }
-
+  
   inline nreal operator+(int t, const nreal& x){
     return nreal(t) + x;
   }
-
+  
   inline nreal operator+(int64_t t, const nreal& x){
     return nreal(t) + x;
   }
-
+  
   inline nreal operator+(const nrat& t, const nreal& x){
     return nreal(t) + x;
   }
-
+  
   inline nreal operator-(double t, const nreal& x){
     return nreal(t) - x;
   }
-
+  
   inline nreal operator-(int t, const nreal& x){
     return nreal(t) - x;
   }
-
+  
   inline nreal operator-(int64_t t, const nreal& x){
     return nreal(t) - x;
   }
-
+  
   inline nreal operator-(const nrat& t, const nreal& x){
     return nreal(t) - x;
   }
-
+  
   inline nreal operator*(double t, const nreal& x){
     return nreal(t) * x;
   }
-
+  
   inline nreal operator*(int t, const nreal& x){
     return nreal(t) * x;
   }
-
+  
   inline nreal operator*(int64_t t, const nreal& x){
     return nreal(t) * x;
   }
-
+  
   inline nreal operator*(const nrat& t, const nreal& x){
     return nreal(t) * x;
   }
-
+  
   inline nreal operator/(double t, const nreal& x){
     return nreal(t) / x;
   }
-
+  
   inline nreal operator/(int t, const nreal& x){
     return nreal(t) / x;
   }
-
+  
   inline nreal operator/(int64_t t, const nreal& x){
     return nreal(t) / x;
   }
-
+  
   inline nreal operator/(const nrat& t, const nreal& x){
     return nreal(t) / x;
   }
-
+  
   inline nreal operator%(double t, const nreal& x){
     return nreal(t) % x;
   }
-
+  
   inline nreal operator%(int t, const nreal& x){
     return nreal(t) % x;
   }
-
+  
   inline nreal operator%(int64_t t, const nreal& x){
     return nreal(t) % x;
   }
-
+  
   inline nreal operator%(const nrat& t, const nreal& x){
     return nreal(t) % x;
   }
-
+  
   inline std::ostream& operator<<(std::ostream& ostr, const nreal& r){
     return ostr << r.toStr();
   }

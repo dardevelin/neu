@@ -58,7 +58,7 @@ namespace neu{
     : o_(o),
     msg_(msg),
     var_(var){
-
+      
     }
     
     NError_(NError* o, const NError_& error)
@@ -96,7 +96,7 @@ namespace neu{
     nstr msg_;
     mutable nstr what_;
     nvar var_;
-  }; 
+  };
   
 } // end namespace neu
 

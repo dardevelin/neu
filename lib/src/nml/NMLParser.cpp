@@ -40,37 +40,37 @@ using namespace std;
 using namespace neu;
 
 namespace{
-
-class Global{
-public:
-  Global(){
-    nameMap_("for") = true;
-    nameMap_("if") = true;
-    nameMap_("else") = true;
-    nameMap_("while") = true;
-    nameMap_("return") = true;
-    nameMap_("throw") = true;
-    nameMap_("true") = true;
-    nameMap_("false") = true;
-    nameMap_("break") = true;
-    nameMap_("continue") = true;
-    nameMap_("new") = true;
-    nameMap_("create") = true;
-    nameMap_("delete") = true;
-    nameMap_("this") = true;
-    nameMap_("try") = true;
-    nameMap_("catch") = true;
-  }
-
-  bool isReservedName(const nstr& name) const{
-    return nameMap_.hasKey(name);
-  }
-
-  nvar nameMap_;
-};
-
-Global _global;
-
+  
+  class Global{
+  public:
+    Global(){
+      nameMap_("for") = true;
+      nameMap_("if") = true;
+      nameMap_("else") = true;
+      nameMap_("while") = true;
+      nameMap_("return") = true;
+      nameMap_("throw") = true;
+      nameMap_("true") = true;
+      nameMap_("false") = true;
+      nameMap_("break") = true;
+      nameMap_("continue") = true;
+      nameMap_("new") = true;
+      nameMap_("create") = true;
+      nameMap_("delete") = true;
+      nameMap_("this") = true;
+      nameMap_("try") = true;
+      nameMap_("catch") = true;
+    }
+    
+    bool isReservedName(const nstr& name) const{
+      return nameMap_.hasKey(name);
+    }
+    
+    nvar nameMap_;
+  };
+  
+  Global _global;
+  
 } // end namespace
 
 NMLParser::NMLParser(){

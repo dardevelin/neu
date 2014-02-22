@@ -40,147 +40,147 @@
 #include <neu/NRWMutex.h>
 
 namespace neu{
-
-class NScope : public NObjectBase{
-public:
-  static const uint32_t classId;
-
-  NScope(bool limiting=false, bool shared=false)
-    : limiting_(limiting),
-      shared_(shared ? new Shared_ : 0){
+  
+  class NScope : public NObjectBase{
+  public:
+    static const uint32_t classId;
     
-  }
-
-  virtual bool instanceOf(uint32_t classId) const{
-    return classId == NScope::classId;
-  }
-
-  bool isLimiting() const{
-    return limiting_;
-  }
-
-  // warning: does not protect for shared scope
-  void setSymbolFast(const nstr& s, const nvar& v){
-    symbolMap_[s] = v;
-  }
-
-  void setSymbol(const nstr& s, const nvar& v){
-    if(shared_){
-      shared_->symbolMutex_.writeLock();
-      symbolMap_[s] = v;
-      shared_->symbolMutex_.unlock();
+    NScope(bool limiting=false, bool shared=false)
+    : limiting_(limiting),
+    shared_(shared ? new Shared_ : 0){
+      
     }
-    else{
+    
+    virtual bool instanceOf(uint32_t classId) const{
+      return classId == NScope::classId;
+    }
+    
+    bool isLimiting() const{
+      return limiting_;
+    }
+    
+    // warning: does not protect for shared scope
+    void setSymbolFast(const nstr& s, const nvar& v){
       symbolMap_[s] = v;
     }
-  }
-
-  bool setNewSymbol(const nstr& s, const nvar& v){
-    if(shared_){
-      shared_->symbolMutex_.writeLock();
-
+    
+    void setSymbol(const nstr& s, const nvar& v){
+      if(shared_){
+        shared_->symbolMutex_.writeLock();
+        symbolMap_[s] = v;
+        shared_->symbolMutex_.unlock();
+      }
+      else{
+        symbolMap_[s] = v;
+      }
+    }
+    
+    bool setNewSymbol(const nstr& s, const nvar& v){
+      if(shared_){
+        shared_->symbolMutex_.writeLock();
+        
+        auto itr = symbolMap_.find(s);
+        if(itr != symbolMap_.end()){
+          shared_->symbolMutex_.unlock();
+          return false;
+        }
+        
+        symbolMap_[s] = v;
+        
+        shared_->symbolMutex_.unlock();
+        
+        return true;
+      }
+      
       auto itr = symbolMap_.find(s);
       if(itr != symbolMap_.end()){
-        shared_->symbolMutex_.unlock();
         return false;
       }
       
       symbolMap_[s] = v;
       
-      shared_->symbolMutex_.unlock();
-      
       return true;
     }
-
-    auto itr = symbolMap_.find(s);
-    if(itr != symbolMap_.end()){
-      return false;
-    }
     
-    symbolMap_[s] = v;
-    
-    return true;
-  }
-
-  bool getSymbol(const nstr& s, nvar& v){
-    if(shared_){
-      shared_->symbolMutex_.readLock();
-
+    bool getSymbol(const nstr& s, nvar& v){
+      if(shared_){
+        shared_->symbolMutex_.readLock();
+        
+        auto itr = symbolMap_.find(s);
+        if(itr == symbolMap_.end()){
+          shared_->symbolMutex_.unlock();
+          return false;
+        }
+        
+        v = itr->second;
+        shared_->symbolMutex_.unlock();
+        return true;
+      }
+      
       auto itr = symbolMap_.find(s);
       if(itr == symbolMap_.end()){
-        shared_->symbolMutex_.unlock();
         return false;
       }
-
+      
       v = itr->second;
-      shared_->symbolMutex_.unlock();
       return true;
     }
-
-    auto itr = symbolMap_.find(s);
-    if(itr == symbolMap_.end()){
-      return false;
-    }
     
-    v = itr->second;
-    return true;
-  }
-
-  void setFunction(const nvar& s, const nvar& b){
-    if(shared_){
-      shared_->functionMutex_.writeLock();
+    void setFunction(const nvar& s, const nvar& b){
+      if(shared_){
+        shared_->functionMutex_.writeLock();
+        functionMap_.insert(std::make_pair(std::make_pair(s.str(), s.size()),
+                                           std::make_pair(s, b)));
+        shared_->functionMutex_.unlock();
+        return;
+      }
+      
       functionMap_.insert(std::make_pair(std::make_pair(s.str(), s.size()),
                                          std::make_pair(s, b)));
-      shared_->functionMutex_.unlock();
-      return;
     }
-
-    functionMap_.insert(std::make_pair(std::make_pair(s.str(), s.size()),
-                                       std::make_pair(s, b)));
-  }
-
-  bool getFunction(const nstr& f, size_t arity, nvar& s, nvar& b){
-    if(shared_){
-      shared_->functionMutex_.readLock();
+    
+    bool getFunction(const nstr& f, size_t arity, nvar& s, nvar& b){
+      if(shared_){
+        shared_->functionMutex_.readLock();
+        auto itr = functionMap_.find(std::make_pair(f, arity));
+        if(itr == functionMap_.end()){
+          shared_->functionMutex_.unlock();
+          return false;
+        }
+        
+        shared_->functionMutex_.unlock();
+        s = itr->second.first;
+        b = itr->second.second;
+        return true;
+      }
+      
       auto itr = functionMap_.find(std::make_pair(f, arity));
       if(itr == functionMap_.end()){
-        shared_->functionMutex_.unlock();
         return false;
       }
-
-      shared_->functionMutex_.unlock();
+      
       s = itr->second.first;
       b = itr->second.second;
       return true;
     }
-
-    auto itr = functionMap_.find(std::make_pair(f, arity));
-    if(itr == functionMap_.end()){
-      return false;
-    }
-
-    s = itr->second.first;
-    b = itr->second.second;
-    return true;
-  }
-
-private:
-  bool limiting_ : 1;
-
-  typedef NMap<nstr, nvar> SymbolMap_;
-  typedef NMap<std::pair<nstr, size_t>, std::pair<nvar, nvar>> FunctionMap_;
-  
-  SymbolMap_ symbolMap_;
-  FunctionMap_ functionMap_;
-
-  struct Shared_{
-    mutable NRWMutex symbolMutex_;
-    mutable NRWMutex functionMutex_;
+    
+  private:
+    bool limiting_ : 1;
+    
+    typedef NMap<nstr, nvar> SymbolMap_;
+    typedef NMap<std::pair<nstr, size_t>, std::pair<nvar, nvar>> FunctionMap_;
+    
+    SymbolMap_ symbolMap_;
+    FunctionMap_ functionMap_;
+    
+    struct Shared_{
+      mutable NRWMutex symbolMutex_;
+      mutable NRWMutex functionMutex_;
+    };
+    
+    mutable Shared_* shared_;
   };
-
-  mutable Shared_* shared_;
-};
-
+  
 } // end namespace neu
 
 #endif // NEU_N_SCOPE_H

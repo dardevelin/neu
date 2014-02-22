@@ -42,11 +42,11 @@ namespace neu{
   class NSys{
   public:
     static nvar sysInfo();
-
+    
     static nstr hostname();
     
     static nstr basename(const nstr& path);
-
+    
     static nstr parentDirectory(const nstr& path);
     
     static bool makeDir(const nstr& path);
@@ -60,9 +60,9 @@ namespace neu{
     static bool exists(const nstr& path);
     
     static nstr currentDir();
-
+    
     static bool getEnv(const nstr& key, nstr& value);
-
+    
     static bool setEnv(const nstr& key, const nstr& value, bool redef=true);
     
     static void setTimeZone(const nstr& zone);
@@ -76,13 +76,13 @@ namespace neu{
     static nstr normalizePath(const nstr& path);
     
     static nstr stripPath(const nstr& path);
-
+    
     static bool dirFiles(const nstr& dirPath, nvec& files);
-
+    
     static nstr fileToStr(const nstr& path);
-
+    
     static double now();
-
+    
     static void sleep(double dt);
     
   };

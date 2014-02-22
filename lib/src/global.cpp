@@ -42,7 +42,7 @@
 using namespace std;
 
 namespace neu{
-
+  
   bool _improper = false;
   size_t _packBlockSize = 8192;
   nstr _tempPath;
@@ -52,7 +52,7 @@ namespace neu{
   nvar _args;
   nvar _argMap;
   nvar _configArgMap;
-
+  
   NResourceManager* _resourceManager = new NResourceManager;
   
 } // end namespace neu

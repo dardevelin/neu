@@ -38,41 +38,45 @@
 #ifndef NEU_N_REC_MUTEX_H
 #define NEU_N_REC_MUTEX_H
 
-class NRecMutex{
-public:
-  NRecMutex(){
-
-  }
+namespace neu{
   
-  ~NRecMutex(){
-
-  }
-
-  void lock(){
-    mutex_.lock();
-  }
-
-  bool lock(double dt){
-    return mutex_.try_lock_for(std::chrono::nanoseconds(uint64_t(dt*1e9)));
-  }
-
-  bool tryLock(){
-    return mutex_.try_lock();
-  }
-
-  void unlock(){
-    mutex_.unlock();
-  }
-
-  std::recursive_timed_mutex& mutex(){
-    return mutex_;
-  }
-
-  NRecMutex(const NRecMutex&);
-  NRecMutex& operator=(const NRecMutex&);  
-
-private:
-  std::recursive_timed_mutex mutex_;
-};
+  class NRecMutex{
+  public:
+    NRecMutex(){
+      
+    }
+    
+    ~NRecMutex(){
+      
+    }
+    
+    void lock(){
+      mutex_.lock();
+    }
+    
+    bool lock(double dt){
+      return mutex_.try_lock_for(std::chrono::nanoseconds(uint64_t(dt*1e9)));
+    }
+    
+    bool tryLock(){
+      return mutex_.try_lock();
+    }
+    
+    void unlock(){
+      mutex_.unlock();
+    }
+    
+    std::recursive_timed_mutex& mutex(){
+      return mutex_;
+    }
+    
+    NRecMutex(const NRecMutex&);
+    NRecMutex& operator=(const NRecMutex&);
+    
+  private:
+    std::recursive_timed_mutex mutex_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_N_REC_MUTEX_H

@@ -40,43 +40,43 @@
 #include <atomic>
 
 namespace neu{
-
+  
   class nstr;
   class nvar;
   
   class NObjectBase{
   public:
     NObjectBase()
-      : refCount_(1){
-
+    : refCount_(1){
+      
     }
-
+    
     virtual ~NObjectBase(){
-
+      
     }
     
     virtual void ref(){
       std::atomic_fetch_add<uint32_t>(&refCount_, 1);
     }
-
+    
     virtual bool deref(){
       return std::atomic_fetch_sub<uint32_t>(&refCount_, 1) - 1 == 0;
     }
-
+    
     virtual NObjectBase* clone() const{
       return 0;
     }
-
+    
     static uint32_t getClassId();
-
+    
     virtual bool instanceOf(uint32_t classId) const{
       return false;
     }
-
+    
   private:
     std::atomic<uint32_t> refCount_;
   };
-
+  
 } // end namespace neu
 
 #endif // NEU_N_OBJECT_BASE_H

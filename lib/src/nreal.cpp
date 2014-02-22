@@ -94,7 +94,7 @@ namespace neu{
       
       if(precision < 0){
         mpfr_sprintf(buf, "%.RNe", r_);
-
+        
         size_t p = 0;
         size_t pl = 0;
         char c = 0;
@@ -122,14 +122,14 @@ namespace neu{
             break;
           }
         }
-
+        
         if(exp){
           fstr << "%." << p - pl << "RNg";
         }
         else{
           fstr << "%." << p - pl << "RNf";
         }
-
+        
         mpfr_sprintf(buf, fstr.str().c_str(), r_);
       }
       else{
@@ -307,7 +307,7 @@ nreal& nreal::operator-=(const nreal& r){
 nreal nreal::operator-() const{
   nreal ret;
   mpfr_neg(ret.x_->real(), x_->real(), GMP_RNDN);
-  return ret;  
+  return ret;
 }
 
 nreal& nreal::operator*=(const nreal& r){
@@ -534,25 +534,25 @@ namespace neu{
     
     nreal_(nreal* o)
     : o_(o){
-    
+      
     }
     
     nreal_(nreal* o, double x)
     : o_(o),
     r_(x){
-
+      
     }
     
     nreal_(nreal* o, int64_t x)
     : o_(o),
     r_(x){
-
+      
     }
     
     nreal_(nreal* o, int x)
     : o_(o),
     r_(x){
-
+      
     }
     
     bool fromStr(const nstr& str){
@@ -562,20 +562,20 @@ namespace neu{
     
     nstr toStr(bool exp, int precision) const{
       if(precision < 0){
-        precision = 16; 
+        precision = 16;
       }
       
       stringstream ostr;
       ostr.precision(precision);
       if(!exp){
-        ostr.setf(ios::fixed); 
+        ostr.setf(ios::fixed);
       }
       ostr << r_;
       return ostr.str();
     }
     
     void setPrecision(size_t bits){
-
+      
     }
     
     size_t defaultPrecision(){
@@ -771,7 +771,7 @@ void nreal::setPrecision(size_t bits){
 }
 
 void nreal::setDefaultPrecision(size_t bits){
-
+  
 }
 
 size_t nreal::defaultPrecision(){

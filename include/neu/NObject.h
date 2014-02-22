@@ -39,168 +39,168 @@
 #include <neu/nvar.h>
 
 namespace neu{
-
-class NFactory;
-class NScope;
-
-class NObject : public NObjectBase{
-public:
-  static const uint32_t classId;
-
-  NObject();
-
-  NObject(NScope* sharedScope);
-
-  ~NObject();
-
-  static const uint32_t Delegated = 0x00000001;
-
-  nvar process(const nvar& v, uint32_t flags=0);
-
-  virtual NFunc handle(const nvar& v, uint32_t flags=0);
-
-  virtual bool instanceOf(uint32_t classId) const{
-    return classId == NObject::classId;
-  }
   
-  void enableThreading();
-
-  void setStrict(bool flag);
-
-  void setExact(bool flag);
-
-  void foo(nvar& x);
-
-  static void registerFactory_(NFactory* factory);
-
-  static NObjectBase* create(const nvar& f);
-
-  static int precedence(const nvar& f);
-
-  NScope* currentScope();
-
-  NScope* objectScope();
-
-  nvar Throw(const nvar& v1, const nvar& v2);
-
-  nvar Add(const nvar& v1, const nvar& v2);
-
-  nvar Sub(const nvar& v1, const nvar& v2);
-
-  nvar Mul(const nvar& v1, const nvar& v2);
-
-  nvar Div(const nvar& v1, const nvar& v2);
-
-  nvar Mod(const nvar& v1, const nvar& v2);
-
-  nvar Neg(const nvar& v);
-
-  nvar AddBy(const nvar& v1, const nvar& v2);
+  class NFactory;
+  class NScope;
   
-  nvar SubBy(const nvar& v1, const nvar& v2);
-
-  nvar MulBy(const nvar& v1, const nvar& v2);
-
-  nvar DivBy(const nvar& v1, const nvar& v2);
-
-  nvar ModBy(const nvar& v1, const nvar& v2);
-
-  nvar Inc(const nvar& v);
+  class NObject : public NObjectBase{
+  public:
+    static const uint32_t classId;
+    
+    NObject();
+    
+    NObject(NScope* sharedScope);
+    
+    ~NObject();
+    
+    static const uint32_t Delegated = 0x00000001;
+    
+    nvar process(const nvar& v, uint32_t flags=0);
+    
+    virtual NFunc handle(const nvar& v, uint32_t flags=0);
+    
+    virtual bool instanceOf(uint32_t classId) const{
+      return classId == NObject::classId;
+    }
+    
+    void enableThreading();
+    
+    void setStrict(bool flag);
+    
+    void setExact(bool flag);
+    
+    void foo(nvar& x);
+    
+    static void registerFactory_(NFactory* factory);
+    
+    static NObjectBase* create(const nvar& f);
+    
+    static int precedence(const nvar& f);
+    
+    NScope* currentScope();
+    
+    NScope* objectScope();
+    
+    nvar Throw(const nvar& v1, const nvar& v2);
+    
+    nvar Add(const nvar& v1, const nvar& v2);
+    
+    nvar Sub(const nvar& v1, const nvar& v2);
+    
+    nvar Mul(const nvar& v1, const nvar& v2);
+    
+    nvar Div(const nvar& v1, const nvar& v2);
+    
+    nvar Mod(const nvar& v1, const nvar& v2);
+    
+    nvar Neg(const nvar& v);
+    
+    nvar AddBy(const nvar& v1, const nvar& v2);
+    
+    nvar SubBy(const nvar& v1, const nvar& v2);
+    
+    nvar MulBy(const nvar& v1, const nvar& v2);
+    
+    nvar DivBy(const nvar& v1, const nvar& v2);
+    
+    nvar ModBy(const nvar& v1, const nvar& v2);
+    
+    nvar Inc(const nvar& v);
+    
+    nvar PostInc(const nvar& v);
+    
+    nvar Dec(const nvar& v);
+    
+    nvar PostDec(const nvar& v);
+    
+    nvar LT(const nvar& v1, const nvar& v2);
+    
+    nvar LE(const nvar& v1, const nvar& v2);
+    
+    nvar GT(const nvar& v1, const nvar& v2);
+    
+    nvar GE(const nvar& v1, const nvar& v2);
+    
+    nvar EQ(const nvar& v1, const nvar& v2);
+    
+    nvar NE(const nvar& v1, const nvar& v2);
+    
+    nvar And(const nvar& v1, const nvar& v2);
+    
+    nvar Or(const nvar& v1, const nvar& v2);
+    
+    nvar Not(const nvar& v);
+    
+    nvar Sqrt(const nvar& v);
+    
+    nvar Exp(const nvar& v);
+    
+    nvar Abs(const nvar& v);
+    
+    nvar Floor(const nvar& v);
+    
+    nvar Ceil(const nvar& v);
+    
+    nvar Log10(const nvar& v);
+    
+    nvar Log(const nvar& v);
+    
+    nvar Cos(const nvar& v);
+    
+    nvar Acos(const nvar& v);
+    
+    nvar Cosh(const nvar& v);
+    
+    nvar Sin(const nvar& v);
+    
+    nvar Asin(const nvar& v);
+    
+    nvar Sinh(const nvar& v);
+    
+    nvar Tan(const nvar& v);
+    
+    nvar Atan(const nvar& v);
+    
+    nvar Tanh(const nvar& v);
+    
+    nvar Var(const nvar& v);
+    
+    nvar Var(const nvar& v1, const nvar& v2);
+    
+    nvar Set(const nvar& v1, const nvar& v2);
+    
+    nvar VarSet(const nvar& v1, const nvar& v2);
+    
+    nvar Get(const nvar& v);
+    
+    nvar Idx(const nvar& v1, const nvar& v2);
+    
+    nvar Dot(const nvar& v1, const nvar& v2);
+    
+    nvar Put(const nvar& v1, const nvar& v2);
+    
+    nvar DotPut(const nvar& v1, const nvar& v2);
+    
+    nvar Cls(const nvar& v);
+    
+    nvar In(const nvar& v1, const nvar& v2);
+    
+    nvar Call(const nvar& v);
+    
+    nvar Call(const nvar& v1, const nvar& v2);
+    
+    nvar Def(const nvar& v1, const nvar& v2, const nvar& v3);
+    
+    nvar Def(const nvar& v1, const nvar& v2);
+    
+    nvar New(const nvar& v);
+    
+    friend class NObject_;
+    
+  private:
+    class NObject_* x_;
+  };
   
-  nvar PostInc(const nvar& v);
-
-  nvar Dec(const nvar& v);
-  
-  nvar PostDec(const nvar& v);
-
-  nvar LT(const nvar& v1, const nvar& v2);
-
-  nvar LE(const nvar& v1, const nvar& v2);
-
-  nvar GT(const nvar& v1, const nvar& v2);
-
-  nvar GE(const nvar& v1, const nvar& v2);
-
-  nvar EQ(const nvar& v1, const nvar& v2);
-
-  nvar NE(const nvar& v1, const nvar& v2);
-
-  nvar And(const nvar& v1, const nvar& v2);
-
-  nvar Or(const nvar& v1, const nvar& v2);
-
-  nvar Not(const nvar& v);
-
-  nvar Sqrt(const nvar& v);
-
-  nvar Exp(const nvar& v);
-
-  nvar Abs(const nvar& v);
-
-  nvar Floor(const nvar& v);
-
-  nvar Ceil(const nvar& v);
-
-  nvar Log10(const nvar& v);
-
-  nvar Log(const nvar& v);
-
-  nvar Cos(const nvar& v);
-
-  nvar Acos(const nvar& v);
-
-  nvar Cosh(const nvar& v);
-
-  nvar Sin(const nvar& v);
-
-  nvar Asin(const nvar& v);
-
-  nvar Sinh(const nvar& v);
-
-  nvar Tan(const nvar& v);
-
-  nvar Atan(const nvar& v);
-
-  nvar Tanh(const nvar& v);
-
-  nvar Var(const nvar& v);
-
-  nvar Var(const nvar& v1, const nvar& v2);
-
-  nvar Set(const nvar& v1, const nvar& v2);
-
-  nvar VarSet(const nvar& v1, const nvar& v2);
-
-  nvar Get(const nvar& v);
-
-  nvar Idx(const nvar& v1, const nvar& v2);
-
-  nvar Dot(const nvar& v1, const nvar& v2);
-
-  nvar Put(const nvar& v1, const nvar& v2);
-
-  nvar DotPut(const nvar& v1, const nvar& v2);
-
-  nvar Cls(const nvar& v);
-
-  nvar In(const nvar& v1, const nvar& v2);
-
-  nvar Call(const nvar& v);
-
-  nvar Call(const nvar& v1, const nvar& v2);
-
-  nvar Def(const nvar& v1, const nvar& v2, const nvar& v3);
-
-  nvar Def(const nvar& v1, const nvar& v2);
-
-  nvar New(const nvar& v);
-
-  friend class NObject_;
-
-private:
-  class NObject_* x_;
-};
-
 } // end namespace neu
 
 #endif // N_OBJECT_H

@@ -39,41 +39,45 @@
 
 #include <pthread.h>
 
-class NRWMutex{
-public:
-  NRWMutex(){
-    pthread_rwlock_init(&mutex_, 0);
-  }
+namespace neu{
   
-  ~NRWMutex(){
-    pthread_rwlock_destroy(&mutex_);
-  }
-
-  void readLock(){
-    pthread_rwlock_rdlock(&mutex_);
-  }
-
-  bool tryReadLock(){
-    return pthread_rwlock_tryrdlock(&mutex_) == 0;
-  }
-
-  void writeLock(){
-    pthread_rwlock_wrlock(&mutex_);
-  }
-
-  bool tryWriteLock(){
-    return pthread_rwlock_trywrlock(&mutex_) == 0;
-  }
-
-  void unlock(){
-    pthread_rwlock_unlock(&mutex_);
-  }
-
-  NRWMutex(const NRWMutex&) = delete;
-  NRWMutex& operator=(const NRWMutex&) = delete;  
-
-private:
-  pthread_rwlock_t mutex_;
-};
+  class NRWMutex{
+  public:
+    NRWMutex(){
+      pthread_rwlock_init(&mutex_, 0);
+    }
+    
+    ~NRWMutex(){
+      pthread_rwlock_destroy(&mutex_);
+    }
+    
+    void readLock(){
+      pthread_rwlock_rdlock(&mutex_);
+    }
+    
+    bool tryReadLock(){
+      return pthread_rwlock_tryrdlock(&mutex_) == 0;
+    }
+    
+    void writeLock(){
+      pthread_rwlock_wrlock(&mutex_);
+    }
+    
+    bool tryWriteLock(){
+      return pthread_rwlock_trywrlock(&mutex_) == 0;
+    }
+    
+    void unlock(){
+      pthread_rwlock_unlock(&mutex_);
+    }
+    
+    NRWMutex(const NRWMutex&) = delete;
+    NRWMutex& operator=(const NRWMutex&) = delete;
+    
+  private:
+    pthread_rwlock_t mutex_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_N_RW_MUTEX_H

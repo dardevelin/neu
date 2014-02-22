@@ -38,41 +38,45 @@
 #ifndef NEU_NMUTEX_H
 #define NEU_NMUTEX_H
 
-class NMutex{
-public:
-  NMutex(){
-
-  }
+namespace neu{
   
-  ~NMutex(){
-
-  }
-
-  void lock(){
-    mutex_.lock();
-  }
-
-  bool lock(double dt){
-    return mutex_.try_lock_for(std::chrono::nanoseconds(uint64_t(dt*1e9)));
-  }
-
-  bool tryLock(){
-    return mutex_.try_lock();
-  }
-
-  void unlock(){
-    mutex_.unlock();
-  }
-
-  std::timed_mutex& mutex(){
-    return mutex_;
-  }
-
-  NMutex(const NMutex&);
-  NMutex& operator=(const NMutex&);  
-
-private:
-  std::timed_mutex mutex_;
-};
+  class NMutex{
+  public:
+    NMutex(){
+      
+    }
+    
+    ~NMutex(){
+      
+    }
+    
+    void lock(){
+      mutex_.lock();
+    }
+    
+    bool lock(double dt){
+      return mutex_.try_lock_for(std::chrono::nanoseconds(uint64_t(dt*1e9)));
+    }
+    
+    bool tryLock(){
+      return mutex_.try_lock();
+    }
+    
+    void unlock(){
+      mutex_.unlock();
+    }
+    
+    std::timed_mutex& mutex(){
+      return mutex_;
+    }
+    
+    NMutex(const NMutex&);
+    NMutex& operator=(const NMutex&);
+    
+  private:
+    std::timed_mutex mutex_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_NMUTEX_H

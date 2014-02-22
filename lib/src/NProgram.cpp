@@ -68,9 +68,9 @@ namespace{
   static NMutex _exitMutex;
   
   static void signal_handler(int signo){
-
+    
     signal(signo, signal_handler);
-
+    
     switch(signo){
       case SIGHUP:
       {
@@ -205,22 +205,22 @@ namespace neu{
   public:
     NProgram_(NProgram* program, const nvar& args)
     : o_(program){
-
+      
       _args = args;
-
+      
       init_();
       config_();
     }
     
     NProgram_(NProgram* program, int& argc, char** argv, const nvar& args)
     : o_(program){
-
+      
       _args = NProgram::parseArgs(argc, argv);
       _args.merge(args);
-
+      
       NProgram::argc = argc;
       NProgram::argv = argv;
-
+      
       init_();
       config_();
     }
@@ -237,8 +237,8 @@ namespace neu{
       if(_nprogram){
         cerr << "NProgram already initialized" << endl;
         _nprogram->exit(1);
-      }      
-
+      }
+      
       _nprogram = o_;
       
       rlimit l;
@@ -248,17 +248,17 @@ namespace neu{
       
       NProgram::resetSignalHandlers();
       
-#ifndef META_NO_PRECISE      
+#ifndef META_NO_PRECISE
       size_t precision = 256;
-
+      
       if(precision < MPFR_PREC_MIN || precision > MPFR_PREC_MAX){
         NERROR("invalid mPrecision value");
       }
       
       mpfr_set_default_prec(precision);
-#endif      
-
-#ifdef META_DEBUG 
+#endif
+      
+#ifdef META_DEBUG
       if(false){
         size_t pid = getpid();
         
@@ -276,26 +276,26 @@ namespace neu{
         cerr << "NProgram: NEU_HOME is undefined" << endl;
         NProgram::exit(1);
       }
-
+      
       _tempPath = h + "/scratch";
-
+      
       if(!NSys::exists(_tempPath)){
         cerr << "NProgram: temp path does not exist: " << _tempPath << endl;
         NProgram::exit(1);
       }
-
+      
       nstr p = h + "/bin/MathKernel";
-
+      
       if(NSys::exists(p)){
         NMObject::setMathKernelPath(p);
       }
-
+      
       // ndm - finish implementing
     }
     
   private:
     NProgram* o_;
-  }; 
+  };
   
 } // end namespace neu
 
@@ -406,7 +406,7 @@ void NProgram::onSigCont(){
 }
 
 void NProgram::onSigChld(){
-
+  
 }
 
 void NProgram::onSigIo(){
@@ -432,7 +432,7 @@ void NProgram::onSigVtAlrm(){
 }
 
 void NProgram::onSigProf(){
-
+  
 }
 
 void NProgram::onSigWInch(){
@@ -483,7 +483,7 @@ void NProgram::exit(int status){
     if(_nprogram){
       _nprogram->onExit();
     }
-
+    
     _resourceManager->release();
     std::exit(status);
   }
@@ -505,7 +505,7 @@ nstr NProgram::toArgStr(const nvar& v){
 
 nvar NProgram::args(){
   NReadGuard guard(_argsMutex);
-
+  
   return _args;
 }
 
@@ -517,13 +517,13 @@ void NProgram::setArgs(const nvar& args){
 
 bool NProgram::hasArg(const nstr& key){
   NReadGuard guard(_argsMutex);
-
+  
   return _args.hasKey(key);
 }
 
 nvar NProgram::arg(const nstr& key){
   NReadGuard guard(_argsMutex);
-
+  
   try{
     return _args[key];
   }
@@ -543,11 +543,11 @@ void NProgram::argDefault(const nstr& key,
                           const nvar& value,
                           const nstr& description){
   _argsMutex.writeLock();
-
+  
   if(!_argMap.hasKey(key)){
     _argMap(key)("value") = value;
     _argMap(key)("description") = description;
-
+    
     if(!alias.empty()){
       _argMap(key)("alias") = alias;
     }
@@ -555,7 +555,7 @@ void NProgram::argDefault(const nstr& key,
   
   bool has = !_args.hasKey(key);
   
-  if((has || (_configArgMap.hasKey(key) && !_configArgMap.hasKey(alias))) && 
+  if((has || (_configArgMap.hasKey(key) && !_configArgMap.hasKey(alias))) &&
      !alias.empty() && _args.hasKey(alias)){
     _args(key) = _args[alias];
   }
@@ -594,19 +594,19 @@ void NProgram::argDefault(const nstr& key,
 nstr NProgram::usage(const nstr& msg){
   stringstream ostr;
   nstr idt = "       ";
-
+  
   ostr << "SYNOPSIS" << endl;
   ostr << idt << msg << endl << endl;
   ostr << "DESCRIPTION" << endl;
-
+  
   _argsMutex.readLock();
-
+  
   nvec keys;
   _argMap.keys(keys);
-
+  
   for(size_t i = 0; i < keys.size(); ++i){
     const nstr& key = keys[i];
-
+    
     ostr << idt << "-" << key;
     
     if(_argMap[key].hasKey("alias")){
@@ -616,20 +616,20 @@ nstr NProgram::usage(const nstr& msg){
     if(_argMap[key].hasKey("value")){
       ostr << "=" << _argMap[key]["value"];
     }
-
+    
     ostr << endl;
-
+    
     const nstr& desc = _argMap[key]["description"];
-
+    
     if(!desc.empty()){
       ostr << idt << idt << desc;
     }
-
+    
     ostr << endl << endl;
   }
-
+  
   _argsMutex.unlock();
-
+  
   return ostr.str();
 }
 

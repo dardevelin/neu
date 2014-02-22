@@ -38,30 +38,30 @@
 #include <neu/nvar.h>
 
 namespace neu{
-
-class NMLParser{
-public:
-  NMLParser();
   
-  ~NMLParser();
-
-  nvar parse(const nstr& code, nvar* tags=0);
+  class NMLParser{
+  public:
+    NMLParser();
+    
+    ~NMLParser();
+    
+    nvar parse(const nstr& code, nvar* tags=0);
+    
+    nvar parseFile(const nstr& path, nvar* tags=0);
+    
+    void setErrorStream(std::ostream& estr);
+    
+    static bool isReservedName(const nstr& name);
+    
+    void setMetadata(bool flag);
+    
+    NMLParser& operator=(const NMLParser&) = delete;
+    NMLParser(const NMLParser&) = delete;
+    
+  private:
+    class NMLParser_* x_;
+  };
   
-  nvar parseFile(const nstr& path, nvar* tags=0);
-  
-  void setErrorStream(std::ostream& estr);
-
-  static bool isReservedName(const nstr& name);
-
-  void setMetadata(bool flag);
-
-  NMLParser& operator=(const NMLParser&) = delete;
-  NMLParser(const NMLParser&) = delete;
-
-private:
-  class NMLParser_* x_;
-};
-
 } // end namespace neu
 
 #endif // NEU_NML_PARSER_H

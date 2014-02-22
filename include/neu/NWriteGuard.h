@@ -37,41 +37,45 @@
 
 #include <neu/NRWMutex.h>
 
-class NWriteGuard{
-public:
-  NWriteGuard(NRWMutex& t)
-  : t_(t),
-    locked_(true){
-    t_.writeLock();
-  }
+namespace neu{
   
-  ~NWriteGuard(){
-    if(locked_){
-      t_.unlock();
+  class NWriteGuard{
+  public:
+    NWriteGuard(NRWMutex& t)
+    : t_(t),
+    locked_(true){
+      t_.writeLock();
     }
-  }
-
-  void release(){
-    t_.unlock();
-    locked_ = false;
-  }
-
-  void acquire(){
-    t_.writeLock();
-    locked_ = true;
-  }
-
-  bool tryAcquire(){
-    locked_ = t_.tryWriteLock();
-    return locked_;
-  }
-
-  NWriteGuard(const NWriteGuard&) = delete;
-  NWriteGuard& operator=(const NWriteGuard&) = delete;  
-
-private:
-  NRWMutex& t_;
-  bool locked_;
-};
+    
+    ~NWriteGuard(){
+      if(locked_){
+        t_.unlock();
+      }
+    }
+    
+    void release(){
+      t_.unlock();
+      locked_ = false;
+    }
+    
+    void acquire(){
+      t_.writeLock();
+      locked_ = true;
+    }
+    
+    bool tryAcquire(){
+      locked_ = t_.tryWriteLock();
+      return locked_;
+    }
+    
+    NWriteGuard(const NWriteGuard&) = delete;
+    NWriteGuard& operator=(const NWriteGuard&) = delete;
+    
+  private:
+    NRWMutex& t_;
+    bool locked_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_N_WRITE_GUARD_H

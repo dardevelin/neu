@@ -40,11 +40,11 @@ using namespace neu;
 #include <neu/NObject.h>
 
 namespace{
-
+  
   enum SymbolKey{
-
+    
   };
-
+  
   enum FunctionKey{
     FKEY_NO_KEY,
     FKEY_Var_1,
@@ -87,7 +87,7 @@ namespace{
   static FunctionMap _functionMap;
   
   static void _initSymbolMap(){
-
+    
   }
   
   static void _initFunctionMap(){
@@ -131,129 +131,129 @@ namespace{
   };
   
   static _FunctionMapLoader* _functionMapLoader = new _FunctionMapLoader;
-
+  
 } // end namespace
 
 namespace neu{
-
-class NMLGenerator_{
-public:
-  NMLGenerator_(NMLGenerator* o)
-  : o_(o){
-
-  }
-
-  ~NMLGenerator_(){
-
-  }
-
-  void generate(ostream& ostr, const nvar& v){
-    emitExpression(ostr, "", v);
-  }
-
-  FunctionKey getFunctionKey(const nvar& f){
-    FunctionMap::const_iterator itr = 
+  
+  class NMLGenerator_{
+  public:
+    NMLGenerator_(NMLGenerator* o)
+    : o_(o){
+      
+    }
+    
+    ~NMLGenerator_(){
+      
+    }
+    
+    void generate(ostream& ostr, const nvar& v){
+      emitExpression(ostr, "", v);
+    }
+    
+    FunctionKey getFunctionKey(const nvar& f){
+      FunctionMap::const_iterator itr =
       _functionMap.find(make_pair(f.str(), f.size()));
-    
-    if(itr == _functionMap.end()){
-      itr = _functionMap.find(make_pair(f.str(), -1));
+      
+      if(itr == _functionMap.end()){
+        itr = _functionMap.find(make_pair(f.str(), -1));
+      }
+      
+      if(itr == _functionMap.end()){
+        return FKEY_NO_KEY;
+      }
+      
+      return itr->second;
     }
     
-    if(itr == _functionMap.end()){
-      return FKEY_NO_KEY;
+    void emitExpression(ostream& ostr,
+                        const nstr& indent,
+                        const nvar& v,
+                        int prec=100){
+      switch(v.type()){
+        case nvar::Function:
+          break;
+        default:
+          ostr << v;
+          return;
+      }
+      
+      FunctionKey key = getFunctionKey(v);
+      
+      switch(key){
+        case FKEY_Add_2:{
+          int p = NObject::precedence(v);
+          
+          if(p > prec){
+            ostr << "(";
+          }
+          
+          emitExpression(ostr, indent, v[0], p);
+          ostr << " + ";
+          emitExpression(ostr, indent, v[1], p);
+          
+          if(p > prec){
+            ostr << ")";
+          }
+          break;
+        }
+        case FKEY_Sub_2:{
+          int p = NObject::precedence(v);
+          
+          if(p > prec){
+            ostr << "(";
+          }
+          
+          emitExpression(ostr, indent, v[0], p);
+          ostr << " - ";
+          emitExpression(ostr, indent, v[1], p);
+          
+          if(p > prec){
+            ostr << ")";
+          }
+          break;
+        }
+        case FKEY_Mul_2:{
+          int p = NObject::precedence(v);
+          
+          if(p > prec){
+            ostr << "(";
+          }
+          
+          emitExpression(ostr, indent, v[0], p);
+          ostr << " * ";
+          emitExpression(ostr, indent, v[1], p);
+          
+          if(p > prec){
+            ostr << ")";
+          }
+          break;
+        }
+        case FKEY_Div_2:{
+          int p = NObject::precedence(v);
+          
+          if(p > prec){
+            ostr << "(";
+          }
+          
+          emitExpression(ostr, indent, v[0], p);
+          ostr << " / ";
+          emitExpression(ostr, indent, v[1], p);
+          
+          if(p > prec){
+            ostr << ")";
+          }
+          break;
+        }
+        default:
+          NERROR("[1] invalid function: " + v.toStr());
+      }
     }
     
-    return itr->second;
-  }
-
-  void emitExpression(ostream& ostr,
-                      const nstr& indent,
-                      const nvar& v,
-                      int prec=100){
-    switch(v.type()){
-    case nvar::Function:
-      break;
-    default:
-      ostr << v;
-      return;
-    }
-
-    FunctionKey key = getFunctionKey(v);
-
-    switch(key){
-    case FKEY_Add_2:{
-      int p = NObject::precedence(v);
-
-      if(p > prec){
-        ostr << "(";
-      }
-
-      emitExpression(ostr, indent, v[0], p);
-      ostr << " + ";
-      emitExpression(ostr, indent, v[1], p);
-
-      if(p > prec){
-        ostr << ")";
-      }
-      break;
-    }
-    case FKEY_Sub_2:{
-      int p = NObject::precedence(v);
-
-      if(p > prec){
-        ostr << "(";
-      }
-
-      emitExpression(ostr, indent, v[0], p);
-      ostr << " - ";
-      emitExpression(ostr, indent, v[1], p);
-
-      if(p > prec){
-        ostr << ")";
-      }
-      break;
-    }
-    case FKEY_Mul_2:{
-      int p = NObject::precedence(v);
-
-      if(p > prec){
-        ostr << "(";
-      }
-
-      emitExpression(ostr, indent, v[0], p);
-      ostr << " * ";
-      emitExpression(ostr, indent, v[1], p);
-
-      if(p > prec){
-        ostr << ")";
-      }
-      break;
-    }
-    case FKEY_Div_2:{
-      int p = NObject::precedence(v);
-
-      if(p > prec){
-        ostr << "(";
-      }
-
-      emitExpression(ostr, indent, v[0], p);
-      ostr << " / ";
-      emitExpression(ostr, indent, v[1], p);
-
-      if(p > prec){
-        ostr << ")";
-      }
-      break;
-    }
-    default:
-      NERROR("[1] invalid function: " + v.toStr());
-    }
-  }
-
-private:
-  NMLGenerator* o_;
-};
-
+  private:
+    NMLGenerator* o_;
+  };
+  
 } // end namespace neu
 
 NMLGenerator::NMLGenerator(){
@@ -270,9 +270,9 @@ void NMLGenerator::generate(std::ostream& ostr, const nvar& v){
 
 nstr NMLGenerator::toStr(const nvar& v){
   NMLGenerator generator;
-
+  
   stringstream ostr;
   generator.generate(ostr, v);
-
+  
   return ostr.str();
 }

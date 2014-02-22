@@ -34,4 +34,7 @@
 
 #include <neu/NThread.h>
 
+using namespace std;
+using namespace neu;
+
 NThread::id NThread::mainThreadId = NThread::thisThreadId();

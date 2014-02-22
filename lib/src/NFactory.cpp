@@ -40,7 +40,7 @@ using namespace std;
 using namespace neu;
 
 NFactory::NFactory(const nstr& className)
-  : className_(className){
+: className_(className){
   
   NObject::registerFactory_(this);
 }

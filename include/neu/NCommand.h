@@ -38,56 +38,56 @@
 #include <neu/nvar.h>
 
 namespace neu{
-
-class NRegex;
-
-class NCommand{
-public:
-
-  static const int Input = 0x01;
-  static const int Output = 0x02;
-  static const int Error = 0x04;
-  static const int OutputWithError = 0x08;
-  static const int Persistent = 0x10;
-
-  NCommand(const nstr& command, int mode=0);
-
-  ~NCommand();
-
-  bool readOutput(nstr& out, double timeout);
-
-  void matchOutput(const NRegex& regex, nvec& m);
-
-  bool matchOutput(const NRegex& regex, nvec& m, double timeout);
   
-  bool readError(nstr& err, double timeout);
-
-  void matchError(const NRegex& regex, nvec& m);
+  class NRegex;
   
-  bool matchError(const NRegex& regex, nvec& m, double timeout);
+  class NCommand{
+  public:
+    
+    static const int Input = 0x01;
+    static const int Output = 0x02;
+    static const int Error = 0x04;
+    static const int OutputWithError = 0x08;
+    static const int Persistent = 0x10;
+    
+    NCommand(const nstr& command, int mode=0);
+    
+    ~NCommand();
+    
+    bool readOutput(nstr& out, double timeout);
+    
+    void matchOutput(const NRegex& regex, nvec& m);
+    
+    bool matchOutput(const NRegex& regex, nvec& m, double timeout);
+    
+    bool readError(nstr& err, double timeout);
+    
+    void matchError(const NRegex& regex, nvec& m);
+    
+    bool matchError(const NRegex& regex, nvec& m, double timeout);
+    
+    void write(const nstr& in);
+    
+    int await();
+    
+    int processId();
+    
+    int status();
+    
+    void setCloseSignal(size_t signalNum);
+    
+    void close(bool await=true);
+    
+    void signal(size_t signalNum);
+    
+    bool isPersistent() const;
+    
+    const nstr& command() const;
+    
+  private:
+    class NCommand_* x_;
+  };
   
-  void write(const nstr& in);
-
-  int await();
-
-  int processId();
-
-  int status();
-
-  void setCloseSignal(size_t signalNum);
-
-  void close(bool await=true);
-
-  void signal(size_t signalNum);
-
-  bool isPersistent() const;
-
-  const nstr& command() const;
-
-private:
-  class NCommand_* x_;
-};
-
 } // end namespace neu
 
 #endif // NEU_N_COMMAND_H

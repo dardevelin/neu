@@ -37,62 +37,66 @@
 #ifndef NEU_NTHREAD_H
 #define NEU_NTHREAD_H
 
-class NThread{
-public:
-  typedef std::thread::id id;
-
-  NThread()
-  : thread_(0){
-
-  }
-
-  ~NThread(){
-    if(thread_){
-      delete thread_;
-    }
-  }
-
-  virtual void run() = 0;
-
-  void start(){
-    auto f = [&](){
-      run();
-    };
-
-    thread_ = new std::thread(f);
-  }
-
-  void join(){
-    thread_->join();
-  }
-
-  void detach(){
-    thread_->detach();
-  }
-
-  std::thread& thread(){
-    return *thread_;
-  }
-
-  const std::thread& thread() const{
-    return *thread_;
-  }  
-
-  id threadId() const{
-    return thread_->get_id();
-  }
+namespace neu{
   
-  static id thisThreadId(){
-    return std::this_thread::get_id();
-  }
-
-  static id mainThreadId; 
-
-  NThread& operator=(const NThread&) = delete;
-  NThread(const NThread&) = delete;
-
-private:
-  std::thread* thread_;
-};
+  class NThread{
+  public:
+    typedef std::thread::id id;
+    
+    NThread()
+    : thread_(0){
+      
+    }
+    
+    ~NThread(){
+      if(thread_){
+        delete thread_;
+      }
+    }
+    
+    virtual void run() = 0;
+    
+    void start(){
+      auto f = [&](){
+        run();
+      };
+      
+      thread_ = new std::thread(f);
+    }
+    
+    void join(){
+      thread_->join();
+    }
+    
+    void detach(){
+      thread_->detach();
+    }
+    
+    std::thread& thread(){
+      return *thread_;
+    }
+    
+    const std::thread& thread() const{
+      return *thread_;
+    }
+    
+    id threadId() const{
+      return thread_->get_id();
+    }
+    
+    static id thisThreadId(){
+      return std::this_thread::get_id();
+    }
+    
+    static id mainThreadId;
+    
+    NThread& operator=(const NThread&) = delete;
+    NThread(const NThread&) = delete;
+    
+  private:
+    std::thread* thread_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_NTHREAD_H

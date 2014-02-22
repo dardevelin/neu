@@ -38,15 +38,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-int zlib_compress_(const char* in, char* out, int inSize, int outSize);
-
-char* zlib_decompress_(const char* in,
-                       int inSize,
-                       char* out,
-                       int* outSize,
-                       int resize);
-
+  
+  int zlib_compress_(const char* in, char* out, int inSize, int outSize);
+  
+  char* zlib_decompress_(const char* in,
+                         int inSize,
+                         char* out,
+                         int* outSize,
+                         int resize);
+  
 #ifdef __cplusplus
 }
 #endif

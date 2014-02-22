@@ -46,7 +46,7 @@ namespace neu{
     ~NRegex();
     
     bool match(const char* text, nvec& m) const;
-
+    
     bool match(const nstr& text, nvec& m) const{
       return match(text.c_str(), m);
     }

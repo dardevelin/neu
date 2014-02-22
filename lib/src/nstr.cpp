@@ -47,17 +47,17 @@ using namespace neu;
 namespace{
   static NRegex _numericRegex("^[ \t]*(([0-9]+\\.[0-9]+)|(\\.[0-9]+)|"
                               "([0-9]+))([Ee][\\+\\-]?[0-9]+)?[ \t]*$");
-
+  
   static inline int hex_digit(char c){
     return ((c >= '0' && c <= '9') ||
             (c >= 'A' && c <= 'F') ||
             (c >= 'a' && c <= 'f'));
   }
-
+  
   static inline int octal_digit(char c){
     return (c >= '0' && c <= '7');
   }
-
+  
   static inline int u8_wc_toutf8(char* dest, u_int32_t ch){
     if(ch < 0x80){
       dest[0] = (char)ch;
@@ -83,12 +83,12 @@ namespace{
     }
     return 0;
   }
-
+  
   static inline int u8_read_escape_sequence(char* str, u_int32_t* dest){
     u_int32_t ch;
     char digs[9] = "\0\0\0\0\0\0\0\0";
     int dno = 0, i = 1;
-
+    
     ch = (u_int32_t)str[0];    /* take literal character */
     if(str[0] == 'n'){
       ch = L'\n';
@@ -143,15 +143,15 @@ namespace{
       }
     }
     *dest = ch;
-
+    
     return i;
   }
-
+  
   static inline int u8_unescape(char* buf, int sz, char* src){
     int c = 0, amt;
     u_int32_t ch;
     char temp[4];
-  
+    
     while(*src && c < sz){
       if(*src == '\\'){
         src++;
@@ -172,7 +172,7 @@ namespace{
     if(c < sz){
       buf[c] = '\0';
     }
-
+    
     return c;
   }
   
@@ -181,14 +181,14 @@ namespace{
 nstr nstr::unescapeUTF8() const{
   size_t inLength = length();
   char* buf = (char*)malloc(inLength);
-
+  
   size_t outLength = u8_unescape(buf, inLength, (char*)data());
-
+  
   nstr ret;
   ret.append(buf, outLength);
   
   free(buf);
-
+  
   return ret;
 }
 
@@ -202,10 +202,10 @@ bool nstr::isNeumeric() const{
 
 nstr nstr::getB62Id(uint64_t id){
   nstr ret;
-
+  
   for(size_t i = 0; i < 10; ++i){
     char c = id % 62;
-
+    
     if(c < 10){
       ret.insert(0, 1, char(48 + c));
     }
@@ -215,9 +215,9 @@ nstr nstr::getB62Id(uint64_t id){
     else{
       ret.insert(0, 1, char(61 + c));
     }
-
+    
     id /= 62;
-
+    
     if(id == 0){
       break;
     }

@@ -43,28 +43,28 @@
 namespace neu{
   class NResourceManager;
   class NProgram;
-
+  
   extern bool _improper;
-
+  
   // larger block sizes are better when packing larger nvar's
   extern size_t _packBlockSize;
-
+  
   extern nstr _tempPath;
-
+  
   extern NResourceManager* _resourceManager;
-
+  
   extern std::ostream* _outputStream;
-
+  
   extern NProgram* _nprogram;
-
+  
   extern NRWMutex _argsMutex;
-
+  
   extern nvar _args;
-
+  
   extern nvar _argMap;
-
+  
   extern nvar _configArgMap;
-
+  
 } // end namespace neu
 
 #endif // NEU_GLOBAL_H

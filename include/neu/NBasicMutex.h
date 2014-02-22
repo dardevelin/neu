@@ -38,37 +38,41 @@
 #ifndef NEU_N_BASIC_MUTEX_H
 #define NEU_N_BASIC_MUTEX_H
 
-class NBasicMutex{
-public:
-  NBasicMutex(){
-
-  }
+namespace neu{
   
-  ~NBasicMutex(){
-
-  }
-
-  void lock(){
-    mutex_.lock();
-  }
-
-  bool tryLock(){
-    return mutex_.try_lock();
-  }
-
-  void unlock(){
-    mutex_.unlock();
-  }
-
-  std::mutex& mutex(){
-    return mutex_;
-  }
-
-  NBasicMutex(const NBasicMutex&);
-  NBasicMutex& operator=(const NBasicMutex&);  
-
-private:
-  std::mutex mutex_;
-};
+  class NBasicMutex{
+  public:
+    NBasicMutex(){
+      
+    }
+    
+    ~NBasicMutex(){
+      
+    }
+    
+    void lock(){
+      mutex_.lock();
+    }
+    
+    bool tryLock(){
+      return mutex_.try_lock();
+    }
+    
+    void unlock(){
+      mutex_.unlock();
+    }
+    
+    std::mutex& mutex(){
+      return mutex_;
+    }
+    
+    NBasicMutex(const NBasicMutex&);
+    NBasicMutex& operator=(const NBasicMutex&);
+    
+  private:
+    std::mutex mutex_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_N_BASIC_MUTEX_H

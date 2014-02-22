@@ -40,23 +40,24 @@
 #include <neu/nstr.h>
 
 namespace neu{
+  
   class NMObject;
-
+  
   class NMGenerator{
   public:
     NMGenerator(NMObject* obj);
     
     ~NMGenerator();
-
+    
     void generate(std::ostream& ostr, const nvar& v);
-
+    
     typedef uint8_t Type;
-
+    
     static const Type Supported = 0x01;
     static const Type Requested = 0x03;
-
+    
     static Type type(const nvar& v);
-
+    
     NMGenerator& operator=(const NMGenerator&) = delete;
     NMGenerator(const NMGenerator&) = delete;
   private:

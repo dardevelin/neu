@@ -56,23 +56,23 @@ namespace neu{
   public:
     NCommand_(NCommand* o, const nstr& command, int mode)
     : o_(o),
-      command_(command),
-      closeSignal_(15),
-      ifd_(-1),
-      ofd_(-1),
-      efd_(-1),
-      mode_(mode){
+    command_(command),
+    closeSignal_(15),
+    ifd_(-1),
+    ofd_(-1),
+    efd_(-1),
+    mode_(mode){
       
       int ip[2];
       int op[2];
       int ep[2];
-
+      
       if(mode_ & NCommand::OutputWithError &&
          (mode_ & NCommand::Output || mode_ & NCommand::Error)){
         NERROR("OutputWithError mode cannot be combined with Output or "
                "Error modes");
       }
-
+      
       if(mode_ & NCommand::Input){
         pipe(ip);
       }
@@ -84,7 +84,7 @@ namespace neu{
       if(mode_ & NCommand::Error){
         pipe(ep);
       }
-
+      
       if(mode_ & NCommand::OutputWithError){
         pipe(op);
       }
@@ -124,7 +124,7 @@ namespace neu{
           dup2(op[1], 2);
           ::close(op[1]);
         }
-
+        
         if(execl("/bin/bash", "bash", "-c", command.c_str(), NULL) < 0){
           NERROR("failed to execute command: " + command);
         }
@@ -146,7 +146,7 @@ namespace neu{
           efd_ = ep[0];
           fcntl(efd_, F_SETFL, O_NONBLOCK);
         }
-
+        
         if(mode_ & NCommand::OutputWithError){
           ::close(op[1]);
           ofd_ = op[0];
@@ -167,20 +167,20 @@ namespace neu{
       if(ofd_ < 0){
         NERROR("command was not started with output mode");
       }
-
+      
       char buf[2049];
-        
+      
       fd_set fds;
       FD_ZERO(&fds);
       FD_SET(ofd_, &fds);
-        
+      
       double sec = floor(timeout);
       double fsec = timeout - sec;
- 
+      
       timeval tv;
       tv.tv_sec = sec;
       tv.tv_usec = fsec*1e6;
-        
+      
       if(select(ofd_ + 1, &fds, NULL, NULL, &tv)){
         for(;;){
           int n = ::read(ofd_, buf, 2048);
@@ -188,7 +188,7 @@ namespace neu{
             timeval tv2;
             tv2.tv_sec = 0;
             tv2.tv_usec = 50000;
-              
+            
             if(!select(ofd_ + 1, &fds, NULL, NULL, &tv2)){
               break;
             }
@@ -196,7 +196,7 @@ namespace neu{
           else if(n == 0){
             return true;
           }
-
+          
           buf[n] = '\0';
           out += buf;
         }
@@ -206,34 +206,34 @@ namespace neu{
         return false;
       }
     }
-     
+    
     bool matchOutput(const NRegex& regex, nvec& m, double timeout){
       if(ofd_ < 0){
         NERROR("command was not started with output mode");
       }
-
+      
       char buf[2049];
-        
+      
       fd_set fds;
       FD_ZERO(&fds);
       FD_SET(ofd_, &fds);
-                
+      
       nstr out;
-        
+      
       for(;;){
         double sec = floor(timeout);
         double fsec = timeout - sec;
- 
+        
         timeval tv;
         tv.tv_sec = sec;
         tv.tv_usec = fsec*1e6;
-
+        
         if(select(ofd_ + 1, &fds, NULL, NULL, &tv)){
           int n = ::read(ofd_, buf, 2048);
           if(n > 0){
             buf[n] = '\0';
             out += buf;
-
+            
             if(regex.match(out, m)){
               return true;
             }
@@ -249,19 +249,19 @@ namespace neu{
       if(efd_ < 0){
         NERROR("command was not started with error mode");
       }
-
+      
       char buf[2049];
-        
+      
       fd_set fds;
       FD_ZERO(&fds);
       FD_SET(efd_, &fds);
-        
+      
       double sec = floor(timeout);
       double fsec = timeout - sec;
       
       timeval tv;
       tv.tv_sec = sec;
-      tv.tv_usec = fsec*1e6;  
+      tv.tv_usec = fsec*1e6;
       
       if(select(efd_ + 1, &fds, NULL, NULL, &tv)){
         for(;;){
@@ -270,7 +270,7 @@ namespace neu{
             timeval tv2;
             tv2.tv_sec = 0;
             tv2.tv_usec = 50000;
-              
+            
             if(!select(ofd_ + 1, &fds, NULL, NULL, &tv2)){
               break;
             }
@@ -278,7 +278,7 @@ namespace neu{
           else if(n == 0){
             return true;
           }
-            
+          
           buf[n] = '\0';
           err += buf;
         }
@@ -295,27 +295,27 @@ namespace neu{
       }
       
       char buf[2049];
-        
+      
       fd_set fds;
       FD_ZERO(&fds);
       FD_SET(ofd_, &fds);
-        
+      
       nstr err;
-        
+      
       for(;;){
         double sec = floor(timeout);
         double fsec = timeout - sec;
-          
+        
         timeval tv;
         tv.tv_sec = sec;
         tv.tv_usec = fsec*1e6;
-          
+        
         if(select(efd_ + 1, &fds, NULL, NULL, &tv)){
           int n = ::read(efd_, buf, 2048);
           if(n > 0){
             buf[n] = '\0';
             err += buf;
-
+            
             if(regex.match(err, m)){
               return true;
             }
@@ -331,7 +331,7 @@ namespace neu{
       if(ifd_ < 0){
         NERROR("command was not started with input mode");
       }
-
+      
       int n = ::write(ifd_, in.c_str(), in.length());
       if(n < 0){
         NERROR("error while writing");
@@ -360,45 +360,45 @@ namespace neu{
       if(pid_ < 0){
         return;
       }
-
+      
       kill(pid_, closeSignal_);
-
+      
       if(await){
         int status;
         waitpid(pid_, &status, 0);
       }
-
+      
       if(ifd_ >= 0){
         ::close(ifd_);
       }
-        
+      
       if(ofd_ >= 0){
         ::close(ofd_);
       }
-        
+      
       if(efd_ >= 0){
         ::close(efd_);
       }
-
+      
       pid_ = -1;
     }
-
+    
     void setCloseSignal(size_t signalNum){
       closeSignal_ = signalNum;
     }
-
+    
     void signal(size_t signalNum){
       kill(pid_, signalNum);
     }
-
+    
     bool isPersistent() const{
       return mode_ & NCommand::Persistent;
     }
-
+    
     const nstr& command() const{
       return command_;
     }
-
+    
   private:
     NCommand* o_;
     nstr command_;

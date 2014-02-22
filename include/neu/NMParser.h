@@ -38,24 +38,24 @@
 #include <neu/nvar.h>
 
 namespace neu{
-
-class NMParser{
-public:
-  NMParser();
   
-  ~NMParser();
-
-  nvar parse(const nstr& code, nvar* tags=0);
+  class NMParser{
+  public:
+    NMParser();
+    
+    ~NMParser();
+    
+    nvar parse(const nstr& code, nvar* tags=0);
+    
+    nvar parseFile(const nstr& path, nvar* tags=0);
+    
+    NMParser& operator=(const NMParser&) = delete;
+    NMParser(const NMParser&) = delete;
+    
+  private:
+    class NMParser_* x_;
+  };
   
-  nvar parseFile(const nstr& path, nvar* tags=0);
-  
-  NMParser& operator=(const NMParser&) = delete;
-  NMParser(const NMParser&) = delete;
-
-private:
-  class NMParser_* x_;
-};
-
 } // end namespace neu
 
 #endif // NEU_N_M_PARSER_H

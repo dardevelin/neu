@@ -47,154 +47,154 @@ using namespace std;
 using namespace neu;
 
 namespace{
-
-nstr _mathKernelPath;
-
-class CommandPool : public NPool<NCommand>{
-public:
-  CommandPool()
+  
+  nstr _mathKernelPath;
+  
+  class CommandPool : public NPool<NCommand>{
+  public:
+    CommandPool()
     : NPool(2){
-
-  }
-
-  NCommand* init(){
-    NCommand* cmd = 
+      
+    }
+    
+    NCommand* init(){
+      NCommand* cmd =
       new NCommand(_mathKernelPath,
                    NCommand::Input|NCommand::Output|NCommand::Error);
-
-    cmd->setCloseSignal(3);
-    return cmd;
-  }
-
-};
-
-CommandPool _commandPool;
-
-class FuncMap : public NFuncMap{
-public:
-  FuncMap();
-};
-
-NFunc _processFunc;
-
-FuncMap _funcMap;
-
-class Factory : public NFactory{
-public:
-  Factory() : NFactory("NMObject"){
-    
-  }
-  
-  NObjectBase* create(const nvar& f){
-    switch(f.size()){
-    case 0:
-      return new NMObject;
-    case 1:
-      return new NMObject(static_cast<NScope*>(f[0].obj()));
-    default:
-      return 0;
+      
+      cmd->setCloseSignal(3);
+      return cmd;
     }
-  }
-};
-
-Factory _factory;
-
-NRegex _outputRegex("[^]*Out\\[\\d+\\]//FullForm= ([^]+)"
-                    "In\\[\\d+\\]:=[^]*");
-
+    
+  };
+  
+  CommandPool _commandPool;
+  
+  class FuncMap : public NFuncMap{
+  public:
+    FuncMap();
+  };
+  
+  NFunc _processFunc;
+  
+  FuncMap _funcMap;
+  
+  class Factory : public NFactory{
+  public:
+    Factory() : NFactory("NMObject"){
+      
+    }
+    
+    NObjectBase* create(const nvar& f){
+      switch(f.size()){
+        case 0:
+          return new NMObject;
+        case 1:
+          return new NMObject(static_cast<NScope*>(f[0].obj()));
+        default:
+          return 0;
+      }
+    }
+  };
+  
+  Factory _factory;
+  
+  NRegex _outputRegex("[^]*Out\\[\\d+\\]//FullForm= ([^]+)"
+                      "In\\[\\d+\\]:=[^]*");
+  
 } // end namespace
 
 namespace neu{
-
-class NMObject_{
-public:
-
-  NMObject_(NMObject* o)
-  : o_(o){
-
-  }
-
-  NMObject_(NMObject* o, NScope* sharedScope)
-  : o_(o){
-
-  }
-
-  NFunc handle(const nvar& v, uint32_t flags){
-    NMGenerator::Type t = type(v);
-
-    if(t == NMGenerator::Requested ||
-       (t & NMGenerator::Supported && flags & NObject::Delegated)){
-      v.setFunc(_processFunc);
-      return _processFunc;
+  
+  class NMObject_{
+  public:
+    
+    NMObject_(NMObject* o)
+    : o_(o){
+      
     }
-
-    return o_->NObject::handle(v, flags);
-  }
-
-  NMGenerator::Type type(const nvar& v){
-    switch(v.type()){
-    case nvar::Function:{
-      NMGenerator::Type t = NMGenerator::type(v);
-
-      if(!(t & NMGenerator::Supported) || t == NMGenerator::Requested){
-        return t;
+    
+    NMObject_(NMObject* o, NScope* sharedScope)
+    : o_(o){
+      
+    }
+    
+    NFunc handle(const nvar& v, uint32_t flags){
+      NMGenerator::Type t = type(v);
+      
+      if(t == NMGenerator::Requested ||
+         (t & NMGenerator::Supported && flags & NObject::Delegated)){
+        v.setFunc(_processFunc);
+        return _processFunc;
       }
-
-      size_t size = v.size();
-      for(size_t i = 0; i < size; ++i){
-        NMGenerator::Type ti = type(v[i]);
+      
+      return o_->NObject::handle(v, flags);
+    }
+    
+    NMGenerator::Type type(const nvar& v){
+      switch(v.type()){
+        case nvar::Function:{
+          NMGenerator::Type t = NMGenerator::type(v);
+          
+          if(!(t & NMGenerator::Supported) || t == NMGenerator::Requested){
+            return t;
+          }
+          
+          size_t size = v.size();
+          for(size_t i = 0; i < size; ++i){
+            NMGenerator::Type ti = type(v[i]);
+            
+            if(!(ti & NMGenerator::Supported)){
+              return ti;
+            }
+            else if(ti == NMGenerator::Requested){
+              t = ti;
+            }
+          }
+          
+          return t;
+        }
+        case nvar::Symbol:
+          return o_->Get(v) == none ?
+          NMGenerator::Requested : NMGenerator::Supported;
+      }
+      
+      return NMGenerator::Supported;
+    }
+    
+    nvar process_(const nvar& v){
+      NMGenerator generator(o_);
+      
+      stringstream sstr;
+      generator.generate(sstr, v);
+      
+      NCommand* cmd = _commandPool.acquire();
+      
+      cmd->write(sstr.str());
+      
+      nvec m;
+      
+      if(!cmd->matchOutput(_outputRegex, m, 10.0)){
+        delete cmd;
+        _commandPool.release(0);
         
-        if(!(ti & NMGenerator::Supported)){
-          return ti;
-        }
-        else if(ti == NMGenerator::Requested){
-          t = ti;
-        }
+        NERROR("failed to process: " + v.toStr());
       }
-
-      return t;
+      
+      _commandPool.release(cmd);
+      
+      return parser_.parse(m[1]);
     }
-    case nvar::Symbol:
-      return o_->Get(v) == none ? 
-        NMGenerator::Requested : NMGenerator::Supported;
+    
+    static NMObject_* inner(NMObject* o){
+      return o->x_;
     }
-
-    return NMGenerator::Supported;
-  }
-
-  nvar process_(const nvar& v){
-    NMGenerator generator(o_);
-
-    stringstream sstr;
-    generator.generate(sstr, v);
-
-    NCommand* cmd = _commandPool.acquire();
-
-    cmd->write(sstr.str());
-
-    nvec m;
-
-    if(!cmd->matchOutput(_outputRegex, m, 10.0)){
-      delete cmd;
-      _commandPool.release(0);
-
-      NERROR("failed to process: " + v.toStr());
-    }
-
-    _commandPool.release(cmd);
-
-    return parser_.parse(m[1]);
-  }
-
-  static NMObject_* inner(NMObject* o){
-    return o->x_;
-  }
-
-private:
-  NMObject* o_;
-  NMParser parser_;
-};
-
+    
+  private:
+    NMObject* o_;
+    NMParser parser_;
+  };
+  
 } // end namespace neu
 
 FuncMap::FuncMap(){
@@ -211,7 +211,7 @@ NMObject::NMObject(){
 }
 
 NMObject::NMObject(NScope* sharedScope)
-  : NObject(sharedScope){
+: NObject(sharedScope){
   x_ = new NMObject_(this, sharedScope);
   setStrict(false);
   setExact(true);

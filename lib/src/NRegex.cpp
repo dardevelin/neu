@@ -43,78 +43,78 @@ using namespace neu;
 
 namespace neu{
   
-class NRegex_{
-public:
-  
-  NRegex_(NRegex* o, const nstr& pattern, uint32_t flags)
-  : o_(o){
-
-    try{
-      regex_ = new regex(pattern.c_str());
-    }
-    catch(std::exception& e){
-      NERROR("invalid pattern: " + pattern);
-    }
-  }
-  
-  ~NRegex_(){
-    delete regex_;
-  }
-  
-  bool match(const char* text, nvec& vmatch) const{
-    cmatch m;
+  class NRegex_{
+  public:
     
-    if(regex_match(text, m, *regex_)){
-      for(size_t i = 0; i < m.size(); ++i){
-        vmatch.push_back(nstr(m[i].first, m[i].second));
+    NRegex_(NRegex* o, const nstr& pattern, uint32_t flags)
+    : o_(o){
+      
+      try{
+        regex_ = new regex(pattern.c_str());
+      }
+      catch(std::exception& e){
+        NERROR("invalid pattern: " + pattern);
+      }
+    }
+    
+    ~NRegex_(){
+      delete regex_;
+    }
+    
+    bool match(const char* text, nvec& vmatch) const{
+      cmatch m;
+      
+      if(regex_match(text, m, *regex_)){
+        for(size_t i = 0; i < m.size(); ++i){
+          vmatch.push_back(nstr(m[i].first, m[i].second));
+        }
+        
+        return true;
       }
       
-      return true;
+      return false;
     }
     
-    return false;
-  }
-  
-  bool match(const char* text) const{
-    cmatch m;
-    
-    if(regex_match(text, *regex_)){
-      return true;
-    }
-    
-    return false;
-  }
-  
-  bool findAll(const char* text, nvec& vmatch) const{
-    size_t n = regex_->mark_count() + 1;
-
-    vector<int> sm;
-    for(size_t i = 0; i < n; ++i){
-      sm.push_back(i);
-    }
-
-    cregex_token_iterator itr(text, text + strlen(text), *regex_, sm);
-    
-    bool matched = false;
-    
-    cregex_token_iterator itrEnd;
-    while(itr != itrEnd){
-      vmatch.push_back(nvec());
-      nvec& mi = vmatch.back();
-      for(size_t i = 0; i < n; ++i){
-        mi.push_back(itr->str());
-        ++itr;
+    bool match(const char* text) const{
+      cmatch m;
+      
+      if(regex_match(text, *regex_)){
+        return true;
       }
-      matched = true;
+      
+      return false;
     }
-    return matched;
-  }
+    
+    bool findAll(const char* text, nvec& vmatch) const{
+      size_t n = regex_->mark_count() + 1;
+      
+      vector<int> sm;
+      for(size_t i = 0; i < n; ++i){
+        sm.push_back(i);
+      }
+      
+      cregex_token_iterator itr(text, text + strlen(text), *regex_, sm);
+      
+      bool matched = false;
+      
+      cregex_token_iterator itrEnd;
+      while(itr != itrEnd){
+        vmatch.push_back(nvec());
+        nvec& mi = vmatch.back();
+        for(size_t i = 0; i < n; ++i){
+          mi.push_back(itr->str());
+          ++itr;
+        }
+        matched = true;
+      }
+      return matched;
+    }
+    
+  private:
+    NRegex* o_;
+    regex* regex_;
+  };
   
-private:
-  NRegex* o_;
-  regex* regex_;
-};
-
 } // end namespace neu
 
 NRegex::NRegex(const nstr& pattern, uint32_t flags){

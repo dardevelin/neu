@@ -40,7 +40,7 @@
 #include <ostream>
 
 namespace neu{
-
+  
   class NProgram{
   public:
     NProgram(int& argc, char** argv, const nvar& args=undef);
@@ -141,7 +141,7 @@ namespace neu{
     
     static char** argv;
     
-  private:  
+  private:
     NProgram& operator=(const NProgram&);
     NProgram(const NProgram&);
     

@@ -77,27 +77,27 @@ namespace neu{
     NMap(const NMap<Key, T, Compare, Allocator>& x)
     : map_(x.map_){
     }
-
+    
     NMap(NMap&& x)
     : map_(std::move(x.map_)){
       
     }
-
+    
     NMap(NMap&& x, const allocator_type& a)
-      : map_(std::move(x.map_), a){
+    : map_(std::move(x.map_), a){
       
     }
-
+    
     NMap(std::initializer_list<value_type> il,
-        const key_compare& comp = key_compare())
-      : map_(il, comp){
+         const key_compare& comp = key_compare())
+    : map_(il, comp){
       
     }
-
+    
     NMap(std::initializer_list<value_type> il,
          const key_compare& comp,
          const allocator_type& a)
-      : map_(il, comp, a){
+    : map_(il, comp, a){
       
     }
     
@@ -186,12 +186,12 @@ namespace neu{
     iterator insert(iterator position, const value_type& x){
       return map_.insert(position, x);
     }
-
+    
     template <class... Args>
     std::pair<iterator, bool> emplace(Args&&... args){
       return map_.emplace(std::forward<Args>(args)...);
-    }    
-
+    }
+    
     void merge(const NMap<Key,T,Compare,Allocator>& m){
       map_.insert(m.begin(), m.end());
     }
@@ -243,33 +243,33 @@ namespace neu{
       return *this;
     }
     
-    NMap<Key,T,Compare,Allocator>& 
+    NMap<Key,T,Compare,Allocator>&
     operator=(NMap<Key,T,Compare,Allocator>&& x){
       map_ = std::move(x.map_);
       return *this;
     }
-
-    NMap<Key,T,Compare,Allocator>& 
+    
+    NMap<Key,T,Compare,Allocator>&
     operator=(std::initializer_list<value_type> il){
       map_ = il;
-
+      
       return *this;
     }
-
+    
     T& operator[](const key_type& x){
       return map_[x];
     }
-
+    
     const T& get(const key_type& x, const T& def) const{
       auto itr = map_.find(x);
-      return itr == map_.end() ? def : itr->second; 
+      return itr == map_.end() ? def : itr->second;
     }
-
+    
     T& get(const key_type& x, T& def){
       auto itr = map_.find(x);
-      return itr == map_.end() ? def : itr->second; 
+      return itr == map_.end() ? def : itr->second;
     }
-        
+    
     reverse_iterator rbegin(){
       return map_.rbegin();
     }
@@ -317,7 +317,7 @@ namespace neu{
           return itr->first;
         }
       }
-
+      
       NERROR("failed to find key for value");
     }
     

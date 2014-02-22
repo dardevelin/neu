@@ -38,37 +38,41 @@
 #ifndef NEU_N_BASIC_REC_MUTEX_H
 #define NEU_N_BASIC_REC_MUTEX_H
 
-class NBasicRecMutex{
-public:
-  NBasicRecMutex(){
-
-  }
+namespace neu{
   
-  ~NBasicRecMutex(){
-
-  }
-
-  void lock(){
-    mutex_.lock();
-  }
-
-  bool tryLock(){
-    return mutex_.try_lock();
-  }
-
-  void unlock(){
-    mutex_.unlock();
-  }
-
-  std::recursive_mutex& mutex(){
-    return mutex_;
-  }
-
-  NBasicRecMutex(const NBasicRecMutex&);
-  NBasicRecMutex& operator=(const NBasicRecMutex&);  
-
-private:
-  std::recursive_mutex mutex_;
-};
+  class NBasicRecMutex{
+  public:
+    NBasicRecMutex(){
+      
+    }
+    
+    ~NBasicRecMutex(){
+      
+    }
+    
+    void lock(){
+      mutex_.lock();
+    }
+    
+    bool tryLock(){
+      return mutex_.try_lock();
+    }
+    
+    void unlock(){
+      mutex_.unlock();
+    }
+    
+    std::recursive_mutex& mutex(){
+      return mutex_;
+    }
+    
+    NBasicRecMutex(const NBasicRecMutex&);
+    NBasicRecMutex& operator=(const NBasicRecMutex&);
+    
+  private:
+    std::recursive_mutex mutex_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_N_BASIC_REC_MUTEX_H

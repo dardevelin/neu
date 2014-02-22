@@ -38,26 +38,26 @@
 #include <neu/nstr.h>
 
 namespace neu{
-
-class NObjectBase;
-class nvar;
-
-class NFactory{
-public:
-  NFactory(const nstr& className);
-
-  virtual NObjectBase* create(const nvar& f){
-    return 0;
-  }
-
-  const nstr& className() const{
-    return className_;
-  }
-
-private:
-  nstr className_;
-};
-
+  
+  class NObjectBase;
+  class nvar;
+  
+  class NFactory{
+  public:
+    NFactory(const nstr& className);
+    
+    virtual NObjectBase* create(const nvar& f){
+      return 0;
+    }
+    
+    const nstr& className() const{
+      return className_;
+    }
+    
+  private:
+    nstr className_;
+  };
+  
 } // end namespace neu
 
 #endif // NEU_N_FACTORY_H

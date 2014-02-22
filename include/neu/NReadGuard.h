@@ -37,41 +37,45 @@
 
 #include <neu/NRWMutex.h>
 
-class NReadGuard{
-public:
-  NReadGuard(NRWMutex& t)
-  : t_(t),
-    locked_(true){
-    t_.readLock();
-  }
+namespace neu{
   
-  ~NReadGuard(){
-    if(locked_){
-      t_.unlock();
+  class NReadGuard{
+  public:
+    NReadGuard(NRWMutex& t)
+    : t_(t),
+    locked_(true){
+      t_.readLock();
     }
-  }
-
-  void release(){
-    t_.unlock();
-    locked_ = false;
-  }
-
-  void acquire(){
-    t_.readLock();
-    locked_ = true;
-  }
-
-  bool tryAcquire(){
-    locked_ = t_.tryReadLock();
-    return locked_;
-  }
-
-  NReadGuard(const NReadGuard&) = delete;
-  NReadGuard& operator=(const NReadGuard&) = delete;  
-
-private:
-  NRWMutex& t_;
-  bool locked_;
-};
+    
+    ~NReadGuard(){
+      if(locked_){
+        t_.unlock();
+      }
+    }
+    
+    void release(){
+      t_.unlock();
+      locked_ = false;
+    }
+    
+    void acquire(){
+      t_.readLock();
+      locked_ = true;
+    }
+    
+    bool tryAcquire(){
+      locked_ = t_.tryReadLock();
+      return locked_;
+    }
+    
+    NReadGuard(const NReadGuard&) = delete;
+    NReadGuard& operator=(const NReadGuard&) = delete;
+    
+  private:
+    NRWMutex& t_;
+    bool locked_;
+  };
+  
+} // end namespace neu
 
 #endif // NEU_N_READ_GUARD_H

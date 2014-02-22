@@ -45,13 +45,13 @@
 #include <neu/nstr.h>
 
 namespace neu{
-
+  
   extern bool _improper;
   
   class nrat{
   public:
     nrat(){
-
+      
     }
     
     nrat(const nrat& r)
@@ -65,18 +65,18 @@ namespace neu{
     
     nrat(int64_t numerator)
     : r_(numerator){
-
+      
     }
     
     nrat(int64_t numerator, int64_t denominator)
     : r_(numerator, denominator){
-
+      
     }
     
     ~nrat(){
       
     }
-
+    
     static nrat fromDouble(double f){
       int64_t sign = f < 0 ? -1 : 1;
       f = fabs(f);
@@ -97,7 +97,7 @@ namespace neu{
           break;
         }
       }
-
+      
       return nrat(sign*n, d);
     }
     
@@ -229,7 +229,7 @@ namespace neu{
     
     bool operator<(double d) const{
       return this->toDouble() < d;
-    }  
+    }
     
     bool operator>(const nrat& r) const{
       return r_ > r.r_;
@@ -242,7 +242,7 @@ namespace neu{
     
     bool operator>(double d) const{
       return this->toDouble() > d;
-    }  
+    }
     
     bool operator==(const nrat& r) const{
       return r_ == r.r_;
@@ -310,10 +310,10 @@ namespace neu{
     
     nstr toStr(int prec) const{
       std::stringstream ostr;
-  
+      
       int64_t n = numerator();
       int64_t d = denominator();
-  
+      
       if(_improper || abs(n) < d){
         // Div precedence from NGenerator
         int p = 7;
@@ -334,19 +334,19 @@ namespace neu{
         }
         else if(p > prec){
           ostr << "(";
-        }     
+        }
         ostr << abs(i) << "+" << abs(n) % d << "/" << d;
         if(i < 0 || p > prec){
           ostr << ")";
         }
       }
-  
+      
       return ostr.str();
     }
     
   private:
     typedef boost::rational<int64_t> Rational_;
-
+    
     Rational_ r_;
   };
   
@@ -359,7 +359,7 @@ namespace neu{
   inline bool operator<(int t, const nrat& r){
     return nrat(t) < r;
   }
-
+  
   inline bool operator<(int64_t t, const nrat& r){
     return nrat(t) < r;
   }
@@ -371,7 +371,7 @@ namespace neu{
   inline bool operator>(int t, const nrat& r){
     return nrat(t) > r;
   }
-
+  
   inline bool operator>(int64_t t, const nrat& r){
     return nrat(t) > r;
   }
@@ -379,11 +379,11 @@ namespace neu{
   inline bool operator<=(double d, const nrat& r){
     return d <= r.toDouble();
   }
-
+  
   inline bool operator<=(int t, const nrat& r){
     return nrat(t) <= r;
   }
-
+  
   inline bool operator<=(int64_t t, const nrat& r){
     return nrat(t) <= r;
   }
@@ -391,11 +391,11 @@ namespace neu{
   inline bool operator>=(double d, const nrat& r){
     return d >= r.toDouble();
   }
-
+  
   inline bool operator>=(int t, const nrat& r){
     return nrat(t) >= r;
   }
-
+  
   inline bool operator>=(int64_t t, const nrat& r){
     return nrat(t) >= r;
   }
@@ -407,7 +407,7 @@ namespace neu{
   inline bool operator==(int t, const nrat& r){
     return nrat(t) == r;
   }
-
+  
   inline bool operator==(int64_t t, const nrat& r){
     return nrat(t) == r;
   }
@@ -419,7 +419,7 @@ namespace neu{
   inline bool operator!=(int t, const nrat& r){
     return nrat(t) != r;
   }
-
+  
   inline bool operator!=(int64_t t, const nrat& r){
     return nrat(t) != r;
   }
@@ -431,7 +431,7 @@ namespace neu{
   inline nrat operator+(int t, const nrat& r){
     return nrat(t) + r;
   }
-
+  
   inline nrat operator+(int64_t t, const nrat& r){
     return nrat(t) + r;
   }
@@ -443,7 +443,7 @@ namespace neu{
   inline nrat operator-(int t, const nrat& r){
     return nrat(t) - r;
   }
-
+  
   inline nrat operator-(int64_t t, const nrat& r){
     return nrat(t) - r;
   }
@@ -455,7 +455,7 @@ namespace neu{
   inline nrat operator*(int t, const nrat& r){
     return nrat(t) * r;
   }
-
+  
   inline nrat operator*(int64_t t, const nrat& r){
     return nrat(t) * r;
   }
@@ -467,11 +467,11 @@ namespace neu{
   inline nrat operator/(int t, const nrat& r){
     return nrat(t) / r;
   }
-
+  
   inline nrat operator/(int64_t t, const nrat& r){
     return nrat(t) / r;
   }
-
+  
   inline std::ostream& operator<<(std::ostream& ostr, const nrat& r){
     return ostr << r.toStr(9999);
   }

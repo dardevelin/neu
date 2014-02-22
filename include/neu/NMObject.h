@@ -38,28 +38,28 @@
 #include <neu/NObject.h>
 
 namespace neu{
-
-class NScope;
-
-class NMObject : public NObject{
-public:
-
-  NMObject();
-
-  NMObject(NScope* sharedScope);
-
-  ~NMObject();
-
-  virtual NFunc handle(const nvar& v, uint32_t flags=0);
-
-  friend class NMObject_;
-
-  static void setMathKernelPath(const nstr& path);
-
-private:
-  class NMObject_* x_;
-};
-
+  
+  class NScope;
+  
+  class NMObject : public NObject{
+  public:
+    
+    NMObject();
+    
+    NMObject(NScope* sharedScope);
+    
+    ~NMObject();
+    
+    virtual NFunc handle(const nvar& v, uint32_t flags=0);
+    
+    friend class NMObject_;
+    
+    static void setMathKernelPath(const nstr& path);
+    
+  private:
+    class NMObject_* x_;
+  };
+  
 } // end namespace neu
 
 #endif // N_M_OBJECT_H

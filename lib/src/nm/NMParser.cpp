@@ -40,7 +40,7 @@ using namespace std;
 using namespace neu;
 
 namespace{
-
+  
   enum FunctionKey{
     FKEY_Times_n=1,
     FKEY_Plus_n,
@@ -79,13 +79,13 @@ namespace{
     SKEY_True=1,
     SKEY_False
   };
-
+  
   typedef NMap<nstr, SymbolKey> SymbolMap;
-
+  
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionMap;
-
+  
   static FunctionMap _functionMap;
-
+  
   static SymbolMap _symbolMap;
   
   void _initFunctionMap(){
@@ -121,12 +121,12 @@ namespace{
     _functionMap[make_pair("ArcTan", 1)] = FKEY_ArcTan_1;
     _functionMap[make_pair("Tanh", 1)] = FKEY_Tanh_1;
   }
-
+  
   void _initSymbolMap(){
     _symbolMap["True"] = SKEY_True;
     _symbolMap["False"] = SKEY_False;
   }
-
+  
   class _FunctionMapLoader{
   public:
     _FunctionMapLoader(){
@@ -136,15 +136,15 @@ namespace{
   };
   
   static _FunctionMapLoader* _functionMapLoader = new _FunctionMapLoader();
-
+  
 } // end namespace
 
 void NMParser_::translate(nvar& v){
   if(v.isSymbol()){
     SymbolMap::const_iterator itr = _symbolMap.find(v.str());
-
+    
     SymbolKey key = itr->second;
-
+    
     switch(key){
       case SKEY_True:
         v = true;
@@ -160,7 +160,7 @@ void NMParser_::translate(nvar& v){
   
   size_t size = v.size();
   
-  FunctionMap::const_iterator itr = 
+  FunctionMap::const_iterator itr =
   _functionMap.find(make_pair(v.str(), size));
   
   if(itr == _functionMap.end()){
@@ -173,82 +173,82 @@ void NMParser_::translate(nvar& v){
   }
   
   FunctionKey key = itr->second;
-
+  
   switch(key){
-  case FKEY_Set_2:
-  case FKEY_Mod_2:
-  case FKEY_Not_1:
-  case FKEY_And_2:
-  case FKEY_Or_2:
-  case FKEY_Exp_1:
-  case FKEY_Sqrt_1:
-  case FKEY_Abs_1:
-  case FKEY_Log_1:
-  case FKEY_Cos_1:
-  case FKEY_Sin_1:
-  case FKEY_Sinh_1:
-  case FKEY_Tan_1:
-  case FKEY_Tanh_1:
-    return;
-  case FKEY_Times_n:
-    if(size < 2){
-      break;
-    }
-    
-    v.str() = "Mul";
-    return;
-  case FKEY_Plus_n:
-    if(size < 2){
-      break;
-    }
+    case FKEY_Set_2:
+    case FKEY_Mod_2:
+    case FKEY_Not_1:
+    case FKEY_And_2:
+    case FKEY_Or_2:
+    case FKEY_Exp_1:
+    case FKEY_Sqrt_1:
+    case FKEY_Abs_1:
+    case FKEY_Log_1:
+    case FKEY_Cos_1:
+    case FKEY_Sin_1:
+    case FKEY_Sinh_1:
+    case FKEY_Tan_1:
+    case FKEY_Tanh_1:
+      return;
+    case FKEY_Times_n:
+      if(size < 2){
+        break;
+      }
       
-    v.str() = "Add";
-    return;
-  case FKEY_Power_2:
-    v.str() = "Pow";
-    return;
-  case FKEY_Less_2:
-    v.str() = "LT";
-    return;
-  case FKEY_Greater_2:
-    v.str() = "GT";
-    return;
-  case FKEY_LessEqual_2:
-    v.str() = "LE";
-    return;
-  case FKEY_GreaterEqual_2:
-    v.str() = "GE";
-    return;
-  case FKEY_Equal_2:
-    v.str() = "EQ";
-    return;
-  case FKEY_Unequal_2:
-    v.str() = "NE";
-    return;
-  case FKEY_Increment_1:
-    v.str() = "PostInc";
-    return;
-  case FKEY_PreIncrement_1:
-    v.str() = "Inc";
-    return;
-  case FKEY_Decrement_1:
-    v.str() = "PostDec";
-    return;
-  case FKEY_PreDecrement_1:
-    v.str() = "Dec";
-    return;
-  case FKEY_ArcCos_1:
-    v.str() = "ACos";
-    return;
-  case FKEY_Cosh_1:
-    v.str() = "CosH";
-    return;
-  case FKEY_ArcSin_1:
-    v.str() = "ASin";
-    return;
-  case FKEY_ArcTan_1:
-    v.str() = "Atan";
-    return;
+      v.str() = "Mul";
+      return;
+    case FKEY_Plus_n:
+      if(size < 2){
+        break;
+      }
+      
+      v.str() = "Add";
+      return;
+    case FKEY_Power_2:
+      v.str() = "Pow";
+      return;
+    case FKEY_Less_2:
+      v.str() = "LT";
+      return;
+    case FKEY_Greater_2:
+      v.str() = "GT";
+      return;
+    case FKEY_LessEqual_2:
+      v.str() = "LE";
+      return;
+    case FKEY_GreaterEqual_2:
+      v.str() = "GE";
+      return;
+    case FKEY_Equal_2:
+      v.str() = "EQ";
+      return;
+    case FKEY_Unequal_2:
+      v.str() = "NE";
+      return;
+    case FKEY_Increment_1:
+      v.str() = "PostInc";
+      return;
+    case FKEY_PreIncrement_1:
+      v.str() = "Inc";
+      return;
+    case FKEY_Decrement_1:
+      v.str() = "PostDec";
+      return;
+    case FKEY_PreDecrement_1:
+      v.str() = "Dec";
+      return;
+    case FKEY_ArcCos_1:
+      v.str() = "ACos";
+      return;
+    case FKEY_Cosh_1:
+      v.str() = "CosH";
+      return;
+    case FKEY_ArcSin_1:
+      v.str() = "ASin";
+      return;
+    case FKEY_ArcTan_1:
+      v.str() = "Atan";
+      return;
   }
   
   error(v, "unrecognized function: " + v.toStr());

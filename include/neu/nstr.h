@@ -53,14 +53,14 @@ namespace neu{
     typedef std::string::reverse_iterator reverse_iterator;
     
     typedef std::string::const_reverse_iterator const_reverse_iterator;
-
+    
     nstr(const nstr& s)
-      : str_(s.str_){
+    : str_(s.str_){
       
     }
     
     nstr(const std::string& str)
-      : str_(str){
+    : str_(str){
       
     }
     
@@ -70,31 +70,31 @@ namespace neu{
     }
     
     nstr(const char* s, size_t n)
-      : str_(s, n){
+    : str_(s, n){
       
     }
-
+    
     nstr(size_t n, char c)
-      : str_(n, c){
-
+    : str_(n, c){
+      
     }
-
+    
     nstr(nstr&& s)
     : str_(move(s.str_)){
-
+      
     }
-
+    
     template<class InputIterator>
     nstr(InputIterator begin, InputIterator end) : str_(begin, end){
       
     }
     
     nstr(){
-
+      
     }
     
     ~nstr(){
-
+      
     }
     
     static const size_t npos = std::string::npos;
@@ -111,7 +111,7 @@ namespace neu{
       str_ = str.str_;
       return *this;
     }
-
+    
     nstr& operator=(nstr&& str) noexcept{
       str_ = move(str.str_);
       return *this;
@@ -252,25 +252,25 @@ namespace neu{
     void insert(iterator p, size_t n, char c){
       str_.insert(p, n, c);
     }
-
+    
     bool beginsWith(const nstr& str){
       size_t length = str.length();
-
+      
       if(str_.length() < length){
         return false;
       }
-
-      return str_.substr(0, length) == str.str_; 
+      
+      return str_.substr(0, length) == str.str_;
     }
-
+    
     bool endsWith(const nstr& str){
       size_t length = str.length();
-
+      
       if(str_.length() < length){
         return false;
       }
-
-      return str_.substr(str_.length() - length, length) == str.str_; 
+      
+      return str_.substr(str_.length() - length, length) == str.str_;
     }
     
     template<class InputIterator>
@@ -362,9 +362,9 @@ namespace neu{
         pos += len;
       }
     }
-
+    
     nstr unescapeUTF8() const;
-   
+    
     operator std::string() const{
       return str_;
     }
@@ -450,7 +450,7 @@ namespace neu{
           if(str_.empty()){
             break;
           }
-      
+          
           if(str_[0] == '\t' || str_[0] == ' ' || str_[0] == '\n'){
             str_.erase(0, 1);
           }
@@ -459,13 +459,13 @@ namespace neu{
           }
         }
       }
-  
+      
       if(end){
         for(;;){
           if(str_.empty()){
             break;
           }
-      
+          
           size_t last = str_.length() - 1;
           if(str_[last] == '\t' || str_[last] == ' ' || str_[last] == '\n'){
             str_.erase(last, 1);
@@ -499,14 +499,14 @@ namespace neu{
       out += "\"";
       return out;
     }
-
+    
     bool isSymbol() const{
       bool match = false;
       size_t size = str_.size();
-
+      
       for(size_t i = 0; i < size; ++i){
         char c = str_[i];
-
+        
         if(isAlpha(c)){
           match = true;
         }
@@ -519,17 +519,17 @@ namespace neu{
           return false;
         }
       }
-
+      
       return match;
     }
-
+    
     bool isSymbolWithoutUnderscore() const{
       bool match = false;
       size_t size = str_.size();
-
+      
       for(size_t i = 0; i < size; ++i){
         char c = str_[i];
-
+        
         if(isAlpha(c)){
           match = true;
         }
@@ -542,17 +542,17 @@ namespace neu{
           return false;
         }
       }
-
+      
       return match;
     }
-
+    
     bool isSymbolWithAllCaps() const{
       bool match = false;
       size_t size = str_.size();
-
+      
       for(size_t i = 0; i < size; ++i){
         char c = str_[i];
-
+        
         if(c >= 65 && c <= 90){
           match = true;
         }
@@ -565,12 +565,12 @@ namespace neu{
           return false;
         }
       }
-
+      
       return match;
     }
-
+    
     static nstr getB62Id(uint64_t id);
-
+    
     static bool isLower(int c){
       return std::islower(c);
     }
@@ -594,7 +594,7 @@ namespace neu{
     static int toUpper(int c){
       return std::toupper(c);
     }
-
+    
     bool isNeumeric() const;
     
     bool empty() const{
@@ -606,13 +606,13 @@ namespace neu{
       findReplace("\\t", "\t");
       findReplace("\\\\", "\\");
     }
-
+    
     void escapeForC(){
       findReplace("\n", "\\n");
       findReplace("\t", "\\t");
       findReplace("\"", "\\\"");
     }
-
+    
     template<typename T>
     static nstr join(const T& v,
                      const nstr& delimiter,
@@ -622,7 +622,7 @@ namespace neu{
       typename T::const_iterator itr = v.begin();
       while(itr != v.end()){
         if(itr != v.begin()){
-          ostr << delimiter.str_; 
+          ostr << delimiter.str_;
         }
         ostr << nstr::toStr(*itr, concise, quote);
         ++itr;

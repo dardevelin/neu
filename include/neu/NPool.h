@@ -40,85 +40,85 @@
 #include <neu/NBasicMutex.h>
 
 namespace neu{
-
-template<typename T>
-class NPool{
-public:
-  NPool(size_t maxSize)
-    : sem_(maxSize, maxSize){
-    
-  }
-
-  virtual ~NPool(){
-    clear();
-  }
-
-  virtual T* init() = 0;
   
-  T* acquire(double dt){
-    
-    if(!sem_.acquire(dt)){
-      return 0;
-    }
-
-    mutex_.lock();
-    
-    T* item;
-    if(pool_.empty()){
-      item = init();
-    }
-    else{
-      item = pool_.popFront();
+  template<typename T>
+  class NPool{
+  public:
+    NPool(size_t maxSize)
+    : sem_(maxSize, maxSize){
+      
     }
     
-    mutex_.unlock();
-
-    return item;
-  }
-
-  T* acquire(){
-    sem_.acquire();
-
-    mutex_.lock();
-    
-    T* item;
-    if(pool_.empty()){
-      item = init();
-    }
-    else{
-      item = pool_.popFront();
+    virtual ~NPool(){
+      clear();
     }
     
-    mutex_.unlock();
-
-    return item;
-  }
-
-  void release(T* item){
-    mutex_.lock();
-    if(item){
-      pool_.push_back(item);
+    virtual T* init() = 0;
+    
+    T* acquire(double dt){
+      
+      if(!sem_.acquire(dt)){
+        return 0;
+      }
+      
+      mutex_.lock();
+      
+      T* item;
+      if(pool_.empty()){
+        item = init();
+      }
+      else{
+        item = pool_.popFront();
+      }
+      
+      mutex_.unlock();
+      
+      return item;
     }
-    sem_.release();
-    mutex_.unlock();
-  }
-
-  void clear(){
-    mutex_.lock();
-    for(auto& itr : pool_){
-      delete itr;
+    
+    T* acquire(){
+      sem_.acquire();
+      
+      mutex_.lock();
+      
+      T* item;
+      if(pool_.empty()){
+        item = init();
+      }
+      else{
+        item = pool_.popFront();
+      }
+      
+      mutex_.unlock();
+      
+      return item;
     }
-    mutex_.unlock();
-  }
-
-private:
-  typedef NList<T*> Pool_;
- 
-  Pool_ pool_;
-  NVSemaphore sem_;
-  NBasicMutex mutex_;
-};
-
+    
+    void release(T* item){
+      mutex_.lock();
+      if(item){
+        pool_.push_back(item);
+      }
+      sem_.release();
+      mutex_.unlock();
+    }
+    
+    void clear(){
+      mutex_.lock();
+      for(auto& itr : pool_){
+        delete itr;
+      }
+      mutex_.unlock();
+    }
+    
+  private:
+    typedef NList<T*> Pool_;
+    
+    Pool_ pool_;
+    NVSemaphore sem_;
+    NBasicMutex mutex_;
+  };
+  
 } // end namespace neu
 
 #endif // NEU_N_POOL_H

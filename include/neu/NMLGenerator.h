@@ -40,17 +40,17 @@
 #include <neu/nstr.h>
 
 namespace neu{
-
+  
   class NMLGenerator{
   public:
     NMLGenerator();
     
     ~NMLGenerator();
-
+    
     void generate(std::ostream& ostr, const nvar& v);
-
+    
     static nstr toStr(const nvar& v);
-
+    
     NMLGenerator& operator=(const NMLGenerator&) = delete;
     NMLGenerator(const NMLGenerator&) = delete;
   private:

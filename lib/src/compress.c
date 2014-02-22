@@ -42,24 +42,24 @@
 int zlib_compress_(const char* in, char* out, int inSize, int outSize){
   int ret;
   z_stream strm;
-
+  
   strm.zalloc = Z_NULL;
   strm.zfree = Z_NULL;
   strm.opaque = Z_NULL;
   
   ret = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
   assert(ret == Z_OK);
-
+  
   strm.avail_in = inSize;
   strm.next_in = (unsigned char*)in;
-
+  
   strm.avail_out = outSize;
   strm.next_out = (unsigned char*)out;
-
+  
   ret = deflate(&strm, Z_FINISH);
-
+  
   assert(ret != Z_STREAM_ERROR);
-
+  
   deflateEnd(&strm);
   
   return outSize - strm.avail_out;
@@ -72,7 +72,7 @@ char* zlib_decompress_(const char* in,
                        int resize){
   int ret;
   z_stream strm;
-
+  
   strm.zalloc = Z_NULL;
   strm.zfree = Z_NULL;
   strm.opaque = Z_NULL;
@@ -82,20 +82,20 @@ char* zlib_decompress_(const char* in,
   if(inflateInit(&strm) != Z_OK){
     return 0;
   }
-
+  
   int pos = 0;
   int chunk = *outSize;
-
+  
   strm.avail_in = inSize;
   strm.next_in = (unsigned char*)in;
   strm.avail_out = chunk;
   strm.next_out = (unsigned char*)out;
-
+  
   for(;;){
     ret = inflate(&strm, Z_NO_FLUSH);
-
+    
     switch(ret){
-      case Z_ERRNO:  
+      case Z_ERRNO:
       case Z_STREAM_ERROR:
       case Z_DATA_ERROR:
       case Z_MEM_ERROR:
@@ -103,13 +103,13 @@ char* zlib_decompress_(const char* in,
       case Z_VERSION_ERROR:
         return 0;
     }
-
+    
     pos += chunk - strm.avail_out;
-
+    
     if(ret == Z_STREAM_END){
       break;
     }
-
+    
     if(strm.avail_out > 0 || strm.avail_in == 0){
       break;
     }
@@ -117,9 +117,9 @@ char* zlib_decompress_(const char* in,
     if(!resize){
       return 0;
     }
-
+    
     (*outSize) *= 2;
-
+    
     out = (char*)realloc(out, sizeof(char)*(*outSize));
     if(!out){
       return 0;
@@ -129,9 +129,9 @@ char* zlib_decompress_(const char* in,
     strm.next_out = (unsigned char*)(out + pos);
     chunk = (*outSize)/2;
   }
-
+  
   inflateEnd(&strm);
   *outSize = pos + 1;
-
+  
   return out;
 }

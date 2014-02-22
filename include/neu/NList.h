@@ -86,24 +86,24 @@ namespace neu{
     i_(-1){
       
     }
-
+    
     NList(NList&& x)
     : list_(std::move(x.list_)){
       
     }
-
+    
     NList(NList&& x, const allocator_type& a)
-      : list_(std::move(x), a){
+    : list_(std::move(x), a){
       
     }
     
     NList(std::initializer_list<value_type> il)
-      : list_(il){
+    : list_(il){
       
     }
-
+    
     NList(std::initializer_list<value_type> il, const allocator_type& a)
-      : list_(il, a){
+    : list_(il, a){
       
     }
     
@@ -117,7 +117,7 @@ namespace neu{
     
     List_ list(){
       return list_;
-    }  
+    }
     
     template<class InputIterator>
     void assign(InputIterator first, InputIterator last){
@@ -230,7 +230,7 @@ namespace neu{
       list_ = x.list_;
       return *this;
     }
-
+    
     NList<T, Allocator>& operator=(NList<T, Allocator>&& x){
       i_ = -1;
       list_ = std::move(x.list_);
@@ -242,7 +242,7 @@ namespace neu{
       list_ = il;
       return *this;
     }
-
+    
     void pop_back(){
       list_.pop_back();
     }
@@ -272,18 +272,18 @@ namespace neu{
     template <class... Args>
     void emplace_back(Args&&... args){
       return list_.emplace_back(std::forward<Args>(args)...);
-    } 
-
+    }
+    
     void push_front(const T& x){
       i_ = -1;
       list_.push_front(x);
     }
-
+    
     template <class... Args>
     void emplace_front(Args&&... args){
       return list_.emplace_front(std::forward<Args>(args)...);
-    }    
-
+    }
+    
     reverse_iterator rbegin(){
       return list_.rbegin();
     }
@@ -443,7 +443,7 @@ namespace neu{
       if(i > 0){
         ostr << ",";
       }
-
+      
       if(index){
         ostr << i << ":";
       }

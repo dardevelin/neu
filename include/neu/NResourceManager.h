@@ -36,25 +36,25 @@
 #define NEU_N_RESOURCE_MANAGER_H
 
 namespace neu{
-
-class NCommand;
-
-class NResourceManager{
-public:
-  NResourceManager();
-
-  ~NResourceManager();
-
-  void release();
-
-  void add(NCommand* command);
   
-  void remove(NCommand* command);
-
-private:
-  class NResourceManager_* x_;
-};
-
+  class NCommand;
+  
+  class NResourceManager{
+  public:
+    NResourceManager();
+    
+    ~NResourceManager();
+    
+    void release();
+    
+    void add(NCommand* command);
+    
+    void remove(NCommand* command);
+    
+  private:
+    class NResourceManager_* x_;
+  };
+  
 } // end namespace neu
 
 #endif // NEU_N_RESOURCE_MANAGER_H

@@ -135,9 +135,9 @@ nvar NSys::sysInfo(){
   else{
     info("load1") = -1;
     info("load5") = -1;
-    info("load15") = -1;    
+    info("load15") = -1;
   }
-
+  
   info("freeram") = -1;
   info("bufferram") = -1;
   info("totalswap") = -1;
@@ -146,7 +146,7 @@ nvar NSys::sysInfo(){
   info("totalhigh") = -1;
   info("freehigh") = -1;
   info("mem_unit") = -1;
-
+  
   return info;
   
 #else
@@ -167,7 +167,7 @@ nvar NSys::sysInfo(){
     info("totalhigh") = i.totalhigh;
     info("freehigh") = i.freehigh;
     info("mem_unit") = i.mem_unit;
-
+    
     return info;
   }
   
@@ -180,14 +180,14 @@ nstr NSys::hostname(){
   if(::gethostname(buf, 256) != 0){
     return "";
   }
-
+  
   return buf;
 }
 
 nstr NSys::basename(const nstr& path){
   nvec m;
   _basenameRegex.match(path, m);
-
+  
   return m[1];
 }
 
@@ -211,16 +211,16 @@ nstr NSys::tempPath(){
 
 nstr NSys::tempFilePath(const nstr& extension){
   nstr p = _tempPath;
-
+  
   nstr h = nstr::toStr(hash<NThread::id>()(NThread::thisThreadId()));
-
+  
   double t = now();
   p += "/" + nstr::toStr(processId()) + "." + h + "." + nstr::toStr(t, false);
-
+  
   if(!extension.empty()){
     p += "." + extension;
   }
-
+  
   return p;
 }
 
@@ -243,25 +243,25 @@ bool NSys::exists(const nstr& path){
 nstr NSys::currentDir(){
   char cwd[4096];
   getcwd(cwd, 4096);
-
+  
   return cwd;
 }
 
 bool NSys::getEnv(const nstr& key, nstr& value){
   const char* v = getenv(key.c_str());
-
+  
   if(!v){
     return false;
   }
   value = v;
-
+  
   return true;
 }
 
 
 bool NSys::setEnv(const nstr& key, const nstr& value, bool redef){
   int r = setenv(key.c_str(), value.c_str(), redef);
-
+  
   if(r == 0){
     return true;
   }
@@ -300,79 +300,79 @@ bool NSys::rename(const nstr& sourcePath, const nstr& destPath){
 
 nstr NSys::fileExtension(const nstr& filePath){
   nvec m;
-
+  
   if(_extensionRegex.match(filePath, m)){
     return m[1];
   }
-
+  
   return "";
 }
 
 nstr NSys::normalizePath(const nstr& path){
   nstr ret = path;
   ret.findReplace(" ", "\\ ");
-
+  
   return ret;
 }
 
 nstr NSys::stripPath(const nstr& path){
   size_t offset = 0;
-
+  
   for(size_t i = path.length() - 1; i > 0; --i){
     if(path[i] == '/'){
-      ++offset; 
+      ++offset;
     }
     else{
       break;
     }
   }
-
+  
   return path.substr(0, path.length() - offset);
 }
 
 bool NSys::dirFiles(const nstr& dirPath, nvec& files){
   DIR* dir = opendir(dirPath.c_str());
-
+  
   if(!dir){
     return false;
   }
-
+  
   dirent* de;
-
+  
   while((de = readdir(dir))){
     nstr p = de->d_name;
-
+    
     if(p != "." && p != ".."){
       files.push_back(de->d_name);
     }
   }
-
+  
   closedir(dir);
-
+  
   return true;
 }
 
 nstr NSys::fileToStr(const nstr& path){
   FILE* file = fopen(path.c_str(), "rb");
-
+  
   if(!file){
     return "";
   }
-
+  
   fseek(file, 0, SEEK_END);
   long size = ftell(file);
   rewind(file);
-
+  
   char* buf = (char*)malloc(sizeof(char)*size);
   int r = fread(buf, 1, size, file);
-
+  
   fclose(file);
-
+  
   nstr ret;
   ret.append(buf, size);
-
+  
   free(buf);
-
+  
   return ret;
 }
 
@@ -390,6 +390,6 @@ void NSys::sleep(double dt){
   timespec ts;
   ts.tv_sec = sec;
   ts.tv_nsec = fsec*1e9;
-
+  
   nanosleep(&ts, 0);
 }
