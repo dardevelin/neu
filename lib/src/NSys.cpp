@@ -68,7 +68,6 @@ using namespace neu;
 
 namespace{
   
-  static NRegex _basenameRegex(".*?([^/]*)$");
   static NRegex _parentRegex("(.*?)[^/]*$");
   static NRegex _extensionRegex(".*\\.([a-zA-Z0-9]+)");
   
@@ -185,10 +184,17 @@ nstr NSys::hostname(){
 }
 
 nstr NSys::basename(const nstr& path){
-  nvec m;
-  _basenameRegex.match(path, m);
+  nstr ret;
   
-  return m[1];
+  for(int i = path.length() - 1; i >= 0; --i){
+    if(path[i] == '/'){
+      break;
+    }
+  
+    ret.insert(0, 1, path[i]);
+  }
+  
+  return ret;
 }
 
 nstr NSys::parentDirectory(const nstr& path){
@@ -210,6 +216,10 @@ nstr NSys::tempPath(){
 }
 
 nstr NSys::tempFilePath(const nstr& extension){
+  if(_tempPath.empty()){
+    NERROR("temp file path is undefined");
+  }
+  
   nstr p = _tempPath;
   
   nstr h = nstr::toStr(hash<NThread::id>()(NThread::thisThreadId()));
@@ -229,7 +239,7 @@ long NSys::processId(){
 }
 
 bool NSys::exists(const nstr& path){
-  // ndm - there is a better way to do this
+  // TODO - there is a better way to do this?
   
   ifstream f(path.c_str());
   if(f.fail()){

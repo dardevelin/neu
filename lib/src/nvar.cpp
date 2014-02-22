@@ -42,6 +42,7 @@
 #include <neu/compress.h>
 #include <neu/NObject.h>
 #include <neu/NSys.h>
+#include <neu/NMLParser.h>
 
 using namespace std;
 using namespace neu;
@@ -13793,6 +13794,18 @@ void nvar::setHead(const nvar& x){
           break;
       }
   }
+}
+
+nvar nvar::fromStr(const nstr& str){
+  NMLParser parser;
+
+  nvar ret = parser.parse(str + ";");
+
+  if(ret.some()){
+    return ret;
+  }
+  
+  NERROR("failed to parse: " + str);
 }
 
 char* nvar::pack(size_t& length, bool compress) const{

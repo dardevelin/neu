@@ -313,14 +313,17 @@ namespace neu{
     nvar(Type t, Head h)
     : t_(t),
     h_(h){
+    
     }
     
     nvar()
     : t_(Undefined){
+    
     }
     
     nvar(bool x)
     : t_(x ? True : False){
+    
     }
     
     nvar(uint8_t x)
@@ -2885,6 +2888,8 @@ namespace neu{
       return ostr.str();
     }
     
+    static nvar fromStr(const nstr& str);
+    
     size_t size() const{
       switch(t_){
         case Vector:
@@ -3227,6 +3232,90 @@ namespace neu{
       
       t_ = Integer;
       h_.i = x;
+      return *this;
+    }
+    
+    nvar& operator=(bool x){
+      switch(t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Float:
+        case StringPointer:
+        case RawPointer:
+        case ObjectPointer:
+        case Pointer:
+          t_ = x ? True : False;
+          return *this;
+        case Rational:
+          delete h_.r;
+          t_ = x ? True : False;
+          return *this;
+        case Real:
+          delete h_.x;
+          t_ = x ? True : False;
+          return *this;
+        case String:
+        case Binary:
+        case Symbol:
+          delete h_.s;
+          t_ = x ? True : False;
+          return *this;
+        case Vector:
+          delete h_.v;
+          t_ = x ? True : False;
+          return *this;
+        case List:
+          delete h_.l;
+          t_ = x ? True : False;
+          return *this;
+        case Function:
+          delete h_.f;
+          t_ = x ? True : False;
+          return *this;
+        case Map:
+          delete h_.m;
+          t_ = x ? True : False;
+          return *this;
+        case Multimap:
+          delete h_.mm;
+          t_ = x ? True : False;
+          return *this;
+        case Reference:
+          if(h_.ref->deref()){
+            delete h_.ref;
+          }
+          t_ = x ? True : False;
+          return *this;
+        case HeadSequence:
+          h_.hs->dealloc();
+          delete h_.hs;
+          break;
+        case HeadMap:
+          h_.hm->dealloc();
+          delete h_.hm;
+          break;
+        case LocalObject:
+          delete h_.o;
+          break;
+        case SharedObject:
+          if(h_.o->deref()){
+            delete h_.o;
+          }
+          break;
+        case SequenceMap:
+          h_.sm->dealloc();
+          delete h_.sm;
+          break;
+        case HeadSequenceMap:
+          h_.hsm->dealloc();
+          delete h_.hsm;
+          break;
+      }
+      
+      t_ = x ? True : False;
       return *this;
     }
     

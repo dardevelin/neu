@@ -205,24 +205,22 @@ namespace neu{
   public:
     NProgram_(NProgram* program, const nvar& args)
     : o_(program){
+
+      init_();
       
       _args = args;
-      
-      init_();
-      config_();
     }
     
     NProgram_(NProgram* program, int& argc, char** argv, const nvar& args)
     : o_(program){
+      
+      init_();
       
       _args = NProgram::parseArgs(argc, argv);
       _args.merge(args);
       
       NProgram::argc = argc;
       NProgram::argv = argv;
-      
-      init_();
-      config_();
     }
     
     ~NProgram_(){
@@ -235,16 +233,10 @@ namespace neu{
     
     void init_(){
       if(_nprogram){
-        cerr << "NProgram already initialized" << endl;
-        _nprogram->exit(1);
+        NERROR("NProgram exists");
       }
       
       _nprogram = o_;
-      
-      rlimit l;
-      l.rlim_cur = 8192;
-      l.rlim_max = 8192;
-      setrlimit(RLIMIT_NOFILE, &l);
       
       NProgram::resetSignalHandlers();
       
@@ -258,30 +250,15 @@ namespace neu{
       mpfr_set_default_prec(precision);
 #endif
       
-#ifdef META_DEBUG
-      if(false){
-        size_t pid = getpid();
-        
-        cout << "PID: " << pid << endl;
-        cout << "<press return>" << endl;
-        string s;
-        getline(cin, s);
-      }
-#endif
-    }
-    
-    void config_(){
       nstr h;
       if(!NSys::getEnv("NEU_HOME", h)){
-        cerr << "NProgram: NEU_HOME is undefined" << endl;
-        NProgram::exit(1);
+        NERROR("NEU_HOME environment variable is undefined");
       }
       
       _tempPath = h + "/scratch";
       
       if(!NSys::exists(_tempPath)){
-        cerr << "NProgram: temp path does not exist: " << _tempPath << endl;
-        NProgram::exit(1);
+        NERROR("temp path does not exist: " + _tempPath);
       }
       
       nstr p = h + "/bin/MathKernel";
@@ -289,8 +266,6 @@ namespace neu{
       if(NSys::exists(p)){
         NMObject::setMathKernelPath(p);
       }
-      
-      // ndm - finish implementing
     }
     
   private:
@@ -494,13 +469,111 @@ NProgram* NProgram::instance(){
 }
 
 nvar NProgram::parseArgs(int argc, char** argv){
-  // ndm - implement
-  return undef;
+  nvar ret;
+  
+  for(int i = 0; i < argc; ++i){
+    ret("raw").pushBack(argv[i]);
+  }
+  
+  ret("bin") = argv[0];
+  
+  nstr lastKey;
+  for(int i = 1; i < argc; ++i){
+    nstr arg = argv[i];
+    
+    if(arg == "-" || arg == "--"){
+      nstr text;
+      bool first = true;
+      for(int j = i + 1; j < argc; ++j){
+        if(first){
+          first = false;
+        }
+        else{
+          text += " ";
+        }
+        
+        text += argv[j];
+      }
+      
+      ret("text") = text;
+      break;
+    }
+    
+    if(arg.beginsWith("--")){
+      if(!lastKey.empty()){
+        NERROR("expected a value");
+      }
+      
+      lastKey = arg.substr(2, arg.length() - 2);
+    }
+    else if(arg.beginsWith("-")){
+      if(!lastKey.empty()){
+        NERROR("expected a value");
+      }
+      
+      ret(arg.substr(1, arg.length() - 1)) = true;
+    }
+    else if(lastKey.empty()){
+      ret.pushBack(arg);
+    }
+    else{
+      ret(lastKey) = nvar::fromStr(arg);
+      lastKey = "";
+    }
+  }
+  
+  if(!lastKey.empty()){
+    NERROR("expected a value");
+  }
+  
+  if(!ret.hasKey("name")){
+    ret("name") = NSys::basename(argv[0]);
+  }
+  
+  return ret;
 }
 
 nstr NProgram::toArgStr(const nvar& v){
-  // ndm - implement
-  return "";
+  nstr ret;
+  
+  nvec keys;
+  v.keys(keys);
+  
+  size_t size = keys.size();
+  
+  bool first = true;
+  
+  for(size_t i = 0; i < size; ++i){
+    if(first){
+      first = false;
+    }
+    else{
+      ret += " ";
+    }
+    
+    if(v[keys[i]].isTrue()){
+      ret += "-" + keys[i].str();
+    }
+    else{
+      ret += "--" + keys[i].str();
+      ret += " \"" + v[keys[i]].toStr() + "\"";
+    }
+  }
+  
+  size = v.size();
+  
+  for(size_t i = 0; i < size; ++i){
+    if(first){
+      first = false;
+    }
+    else{
+      ret += " ";
+    }
+
+    ret += v[i].toStr();
+  }
+  
+  return ret;
 }
 
 nvar NProgram::args(){
