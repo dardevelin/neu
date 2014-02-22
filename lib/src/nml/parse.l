@@ -273,7 +273,7 @@ KW_NEW                  new
 
 . { 
   nstr msg = nstr("invalid character: '") + yytext + "'";
-  numl_error(PS, yyscanner, msg.c_str());
+  nml_error(PS, yyscanner, msg.c_str());
 }
 
 %%

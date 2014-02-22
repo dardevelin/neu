@@ -45,7 +45,7 @@
   
 %}
 
-%name-prefix="numl_"
+%name-prefix="nml_"
 %pure-parser
 %parse-param {NMLParser_* PS}
 %parse-param {void* scanner}
@@ -434,7 +434,7 @@ get_vec: get_vec get_item {
 
 %%
 
-int numl_error(NMLParser_* parser, const void*, const char *s){
+int nml_error(NMLParser_* parser, const void*, const char *s){
   parser->error(s);
   return 1;
 }

@@ -14,7 +14,7 @@ all: .depend $(MODULES) $(OBJECTS)
 
 parse.l.o: parse.l parse.y $(MODULES)
 	bison -v -d parse.y
-	flex -Pnuml_ -oparse.l.c parse.l
+	flex -Pnml_ -oparse.l.c parse.l
 	$(COMPILE) -x c++ -c parse.l.c -o parse.l.o
 
 parse.tab.o: parse.l.o $(MODULES)

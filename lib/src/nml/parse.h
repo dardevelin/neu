@@ -43,14 +43,14 @@ struct NMLType{
   neu::nvar v;
 };
 
-extern int numl_parse(neu::NMLParser_*, void*);
-extern int numl_error(neu::NMLParser_*, const void*, const char *s);
-extern int numl_lex(NMLType*, void*);
-extern int numl_lex_destroy(void*);
-extern int numl_lex_init(void**);
-extern void numl_get_extra(neu::NMLParser_*, void*);
-extern void numl_set_extra(neu::NMLParser_*, void*);
-extern void numl_set_in(FILE* file, void* scanner);
+extern int nml_parse(neu::NMLParser_*, void*);
+extern int nml_error(neu::NMLParser_*, const void*, const char *s);
+extern int nml_lex(NMLType*, void*);
+extern int nml_lex_destroy(void*);
+extern int nml_lex_init(void**);
+extern void nml_get_extra(neu::NMLParser_*, void*);
+extern void nml_set_extra(neu::NMLParser_*, void*);
+extern void nml_set_in(FILE* file, void* scanner);
 
 #endif // NEU_NML_PARSE_H
 

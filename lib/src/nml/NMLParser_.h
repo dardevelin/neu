@@ -118,8 +118,8 @@ namespace neu{
       status_ = 0;
       file_ = "";
       
-      numl_lex_init(&scanner_);
-      numl_set_extra(this, scanner_);
+      nml_lex_init(&scanner_);
+      nml_set_extra(this, scanner_);
       
       nstr tempPath = NSys::tempFilePath();
       FILE* file = fopen(tempPath.c_str(), "w+");
@@ -127,8 +127,8 @@ namespace neu{
       fclose(file);
       
       file = fopen(tempPath.c_str(), "r");
-      numl_set_in(file, scanner_);
-      numl_parse(this, scanner_);
+      nml_set_in(file, scanner_);
+      nml_parse(this, scanner_);
       fclose(file);
       
       if(remove(tempPath.c_str()) != 0){
@@ -137,7 +137,7 @@ namespace neu{
         NProgram::exit(1);
       }
       
-      numl_lex_destroy(scanner_);
+      nml_lex_destroy(scanner_);
       
       if(status_ != 0){
         return none;
@@ -155,8 +155,8 @@ namespace neu{
       status_ = 0;
       file_ = NSys::basename(path);
       
-      numl_lex_init(&scanner_);
-      numl_set_extra(this, scanner_);
+      nml_lex_init(&scanner_);
+      nml_set_extra(this, scanner_);
       
       FILE* file = fopen(path.c_str(), "r");
       
@@ -164,11 +164,11 @@ namespace neu{
         NERROR("failed to open: " + path);
       }
       
-      numl_set_in(file, scanner_);
-      numl_parse(this, scanner_);
+      nml_set_in(file, scanner_);
+      nml_parse(this, scanner_);
       fclose(file);
       
-      numl_lex_destroy(scanner_);
+      nml_lex_destroy(scanner_);
       
       if(status_ != 0){
         return none;
