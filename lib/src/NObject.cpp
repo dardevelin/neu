@@ -784,6 +784,15 @@ namespace neu{
       
       return r;
     }
+
+    nvar Get(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      nvar& v = *p1.get(p2);
+      
+      return nvar(&v, nvar::PointerType);
+    }
     
     nvar Idx(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
@@ -1237,6 +1246,12 @@ FuncMap::FuncMap(){
         return NObject_::inner(static_cast<NObject*>(o))->
         Get(v[0]);
       });
+
+  add("Get", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Get(v[0], v[1]);
+      });
   
   add("Idx", 2,
       [](void* o, const nvar& v) -> nvar{
@@ -1551,6 +1566,10 @@ nvar NObject::Get(const nvar& v){
 
 nvar NObject::Idx(const nvar& v1, const nvar& v2){
   return x_->Idx(v1, v2);
+}
+
+nvar NObject::Get(const nvar& v1, const nvar& v2){
+  return x_->Get(v1, v2);
 }
 
 nvar NObject::Dot(const nvar& v1, const nvar& v2){

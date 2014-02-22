@@ -43,7 +43,7 @@
   using namespace std;
   using namespace neu;
   
-  %}
+%}
 
 %name-prefix="nm_"
 %pure-parser

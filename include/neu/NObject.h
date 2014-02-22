@@ -173,6 +173,8 @@ namespace neu{
     
     nvar Get(const nvar& v);
     
+    nvar Get(const nvar& v1, const nvar& v2);
+    
     nvar Idx(const nvar& v1, const nvar& v2);
     
     nvar Dot(const nvar& v1, const nvar& v2);

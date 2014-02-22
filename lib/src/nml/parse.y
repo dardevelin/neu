@@ -43,7 +43,7 @@
   using namespace std;
   using namespace neu;
   
-  %}
+%}
 
 %name-prefix="numl_"
 %pure-parser
@@ -53,7 +53,7 @@
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW ENDL DOUBLE INTEGER REAL
 
-%type<v> stmt expr expr_num expr_map expr_vec expr_list get_item get_vec func func_vec block stmts
+%type<v> stmt expr expr_num expr_map expr_vec expr_multi_vec expr_list expr_multi_list get_item get_vec func func_vec block stmts
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -211,6 +211,13 @@ expr: expr_num {
   $$ = move($5);
   $$.setHead($3);
 }
+| '[' '|' expr_multi_vec '|' ']' {
+  $$ = move($3);
+}
+| '[' '|' ':' expr ',' expr_multi_vec '|' ']' {
+  $$ = move($6);
+  $$.setHead($4);
+}
 | '(' expr_list ')' {
   if($2.size() == 1){
     $$ = move($2[0]);
@@ -225,6 +232,16 @@ expr: expr_num {
 | '(' ':' expr ',' expr_list ')' {
   $$ = move($5);
   $$.setHead($3);
+}
+| '(' '|' expr_multi_list '|' ')' {
+  $$ = move($3);
+}
+| '(' '|' expr_multi_list ',' ')' {
+  $$ = move($3);
+}
+| '(' '|' ':' expr ',' expr_multi_list ')' {
+  $$ = move($6);
+  $$.setHead($4);
 }
 | IDENTIFIER get_vec {
   $$ = undef;
@@ -241,7 +258,7 @@ expr: expr_num {
     $$ = PS->func("Call") << move($1);
   }
   else{
-    $$ = 1;
+    $$ = move($1);
   }
 }
 ;
@@ -272,6 +289,30 @@ expr_vec: /* empty */ {
 }
 ;
 
+expr_multi_vec: /* empty */ {
+  $$ = nvec();
+  $$.touchMultimap();
+}
+| expr_multi_vec ',' expr {
+  $$ = move($1);
+  $$ << move($3);
+}
+| expr {
+  $$ = nvec();
+  $$.touchMultimap();
+  $$ << move($1);
+}
+| expr_map {
+  $$ = undef;
+  $$.touchMultimap();
+  $$($1[0]) = move($1[1]);
+}
+| expr_multi_vec ',' expr_map {
+  $$ = move($1);
+  $$($3[0]) = move($3[1]);
+}
+;
+
 expr_list: /* empty */ {
   $$ = nlist();
 }
@@ -287,6 +328,30 @@ expr_list: /* empty */ {
   $$($1[0]) = move($1[1]);
 }
 | expr_list ',' expr_map {
+  $$ = move($1);
+  $$($3[0]) = move($3[1]);
+}
+;
+
+expr_multi_list: /* empty */ {
+  $$ = nlist();
+  $$.touchMultimap();
+}
+| expr_multi_list ',' expr {
+  $$ = move($1);
+  $$ << move($3);
+}
+| expr {
+  $$ = nlist();
+  $$.touchMultimap();
+  $$ << move($1);
+}
+| expr_map {
+  $$ = nlist();
+  $$.touchMultimap();
+  $$($1[0]) = move($1[1]);
+}
+| expr_multi_list ',' expr_map {
   $$ = move($1);
   $$($3[0]) = move($3[1]);
 }
