@@ -51,6 +51,13 @@ namespace neu{
     NError_(NError* o, const nstr& msg)
     : o_(o),
     msg_(msg){
+      
+    }
+    
+    NError_(NError* o, const nstr& msg, const nvar& var)
+    : o_(o),
+    msg_(msg),
+    var_(var){
 
     }
     
@@ -95,6 +102,10 @@ namespace neu{
 
 NError::NError(const nstr& msg) throw(){
   x_ = new NError_(this, msg);
+}
+
+NError::NError(const nstr& msg, const nvar& var) throw(){
+  x_ = new NError_(this, msg, var);
 }
 
 NError::NError(const NError& error){

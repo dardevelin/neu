@@ -36,6 +36,7 @@
 #define NEU_N_ERROR_H
 
 #define NERROR(msg) throw NError(nstr(__PRETTY_FUNCTION__) + ": " + msg)
+#define NVERROR(msg, var) throw NError(nstr(__PRETTY_FUNCTION__) + ": " + msg, var)
 
 #include <exception>
 #include <ostream>
@@ -50,6 +51,8 @@ namespace neu{
     NError& operator=(const NError&) = delete;
     
     NError(const nstr& message) throw();
+    
+    NError(const nstr& message, const nvar& var) throw();
 
     NError(const NError& error);
     

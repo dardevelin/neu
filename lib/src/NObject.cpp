@@ -313,9 +313,7 @@ public:
   }
 
   void getSymbol(ThreadContext* context, const nstr& s, nvar& v){
-    int i;
-
-    for(i = context->scopeStack.size() - 1; i >= 0; --i){
+    for(int i = context->scopeStack.size() - 1; i >= 0; --i){
       NScope* scope = context->getScope(i);
 
       if(scope->getSymbol(s, v)){
@@ -335,9 +333,7 @@ public:
   }
 
   void getSymbolNone(ThreadContext* context, const nstr& s, nvar& v){
-    int i;
-
-    for(i = context->scopeStack.size() - 1; i >= 0; --i){
+    for(int i = context->scopeStack.size() - 1; i >= 0; --i){
       NScope* scope = context->getScope(i);
 
       if(scope->getSymbol(s, v)){
@@ -357,9 +353,7 @@ public:
                    size_t arity,
                    nvar& s,
                    nvar& b){
-    int i;
-
-    for(i = context->scopeStack.size() - 1; i >= 0; --i){
+    for(int i = context->scopeStack.size() - 1; i >= 0; --i){
       NScope* scope = context->getScope(i);
 
       if(scope->getFunction(f, arity, s, b)){
