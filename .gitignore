@@ -1,0 +1,8 @@
+*.o
+*.dylib
+*.a
+*.depend
+parse.tab.*
+parse.output
+parse.l.c
+.DS_Store
