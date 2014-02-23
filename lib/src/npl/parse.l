@@ -84,9 +84,8 @@
 
 %option reentrant bison-bridge
 %option always-interactive
+%option yylineno
 
-TYPE (bool)|(char)|(short)|(int)|(long)|(float)|(double)
-VEC_TYPE (bool[0-9]+)|(char[0-9]+)|(short[0-9]+)|(int[0-9]+)|(long[0-9]+)|(float[0-9]+)|(double[0-9]+)
 IDENTIFIER ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)
 INTEGER [0-9]+
 DOUBLE (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?
@@ -108,6 +107,16 @@ OR  "||"
 KW_TRUE true
 KW_FALSE false
 KW_VOID void
+KW_FOR for
+KW_IF if
+KW_ELSE else
+KW_WHILE while
+KW_RETURN return
+KW_BREAK break
+KW_CONTINUE continue
+TYPE (bool)|(char)|(short)|(int)|(long)|(float)|(double)
+VEC_TYPE (bool[0-9]+)|(char[0-9]+)|(short[0-9]+)|(int[0-9]+)|(long[0-9]+)|(float[0-9]+)|(double[0-9]+)
+DEFINE "#define"
 
 %%
 
@@ -189,6 +198,46 @@ KW_VOID void
 {KW_VOID} {
   PS->advance(yytext, "keyword");
   return KW_VOID;
+}
+
+{KW_FOR} {
+  PS->advance(yytext, "keyword");
+  return KW_FOR;
+}
+
+{KW_IF} {
+  PS->advance(yytext, "keyword");
+  return KW_IF;
+}
+
+{KW_ELSE} {
+  PS->advance(yytext, "keyword");
+  return KW_ELSE;
+}
+
+{KW_WHILE} {
+  PS->advance(yytext, "keyword");
+  return KW_WHILE;
+}
+
+{KW_RETURN} {
+  PS->advance(yytext, "keyword");
+  return KW_RETURN;
+}
+
+{KW_BREAK} {
+  PS->advance(yytext, "keyword");
+  return KW_BREAK;
+}
+
+{KW_CONTINUE} {
+  PS->advance(yytext, "keyword");
+  return KW_CONTINUE;
+}
+
+{DEFINE} {
+  PS->advance(yytext, "keyword");
+  return DEFINE;
 }
 
 {INTEGER} {

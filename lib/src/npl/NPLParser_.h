@@ -180,6 +180,10 @@ namespace neu{
       out_({f[1].str(), f[1].size()}) = move(f);
     }
     
+    void define(const nstr& sym, const nvar& expr){
+      defineMap_(sym) = expr;
+    }
+    
     void setErrorStream(ostream& estr){
       estr_ = &estr;
     }
@@ -228,7 +232,15 @@ namespace neu{
     }
     
     nvar sym(const nstr& s){
-      nvar v = nsym(s);
+      nvar v;
+      
+      if(defineMap_.hasKey(s)){
+        v = defineMap_[s];
+      }
+      else{
+        v = nsym(s);
+      }
+
       v("_line") = line_;
       
       if(!file_.empty()){
@@ -243,7 +255,15 @@ namespace neu{
     }
     
     nvar sym(const char* s){
-      nvar v = nsym(s);
+      nvar v;
+      
+      if(defineMap_.hasKey(s)){
+        v = defineMap_[s];
+      }
+      else{
+        v = nsym(s);
+      }
+      
       v("_line") = line_;
       
       if(!file_.empty()){
@@ -284,6 +304,7 @@ namespace neu{
     void* scanner_;
     nvar out_;
     bool metadata_;
+    nvar defineMap_;
   };
   
 } // end namespace neu
