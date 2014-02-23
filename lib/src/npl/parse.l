@@ -85,10 +85,11 @@
 %option reentrant bison-bridge
 %option always-interactive
 
+TYPE (bool)|(char)|(short)|(int)|(long)|(float)|(double)
+VEC_TYPE (bool[0-9]+)|(char[0-9]+)|(short[0-9]+)|(int[0-9]+)|(long[0-9]+)|(float[0-9]+)|(double[0-9]+)
 IDENTIFIER ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)
 INTEGER [0-9]+
 DOUBLE (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?
-REAL (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?[rR]
 STRING_LITERAL \"([^\"]|\\\")*\"
 STRING_LITERAL_SQ	\'([^\']|\\\')*\'
 EQ "=="
@@ -104,12 +105,9 @@ DIV_BY "/="
 MOD_BY "%="
 AND "&&"
 OR  "||"
-PUSH "<<"
 KW_TRUE true
 KW_FALSE false
-KW_NONE none
-KW_UNDEF undef
-KW_NEW new
+KW_VOID void
 
 %%
 
@@ -188,53 +186,56 @@ KW_NEW new
   return KW_FALSE;
 }
 
-{KW_NEW} {
+{KW_VOID} {
   PS->advance(yytext, "keyword");
-  return KW_NEW;
-}
-
-{KW_NONE} {
-  PS->advance(yytext, "keyword");
-  return KW_NONE;
-}
-
-{KW_UNDEF} {
-  PS->advance(yytext, "keyword");
-  return KW_UNDEF;
+  return KW_VOID;
 }
 
 {INTEGER} {
   nreal r(yytext);
   PS->advance(yytext, "numeric");
-  if(r < M_INTEGER_MAX && r >= -M_INTEGER_MAX){
-    yylval->v = r.toLong();
-    return INTEGER;
-  }
-  yylval->v = r;
-  return REAL;
+  yylval->v = r.toLong();
+  return INTEGER;
 }
 
 {DOUBLE} {
   nstr s = yytext;
   PS->advance(yytext, "numeric");
-  
-  if(precision(s) > 17){
-    yylval->v = nreal(s.c_str());
-    return REAL;
-  }
-  
   double d;
   sscanf(yytext, "%lf", &d);
   yylval->v = d;
   return DOUBLE;
 }
 
-{REAL} {
-  nstr r = yytext;
-  r.erase(r.length() - 1, 1);
-  yylval->v = nreal(r.c_str());
-  PS->advance(yytext, "numeric");
-  return REAL;
+{TYPE} {
+  PS->advance(yytext, "type");
+  
+  nstr t = yytext;
+  t.uppercase();
+  yylval->v = PS->func(t);
+  return TYPE;
+}
+
+{VEC_TYPE} {
+  PS->advance(yytext, "type");
+  
+  nstr t = yytext;
+  
+  size_t i;
+  size_t len = t.length();
+  for(i = 0; i < len; ++i){
+    if(nstr::isDigit(t[i])){
+      break;
+    }
+  }
+  
+  size_t n = atoi(t.substr(i, len - i).c_str());
+  t = t.substr(0, i);
+  t.uppercase();
+  
+  yylval->v = PS->func(t) << nvar(i);
+  
+  return TYPE;
 }
 
 {IDENTIFIER} {

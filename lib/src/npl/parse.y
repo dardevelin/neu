@@ -51,9 +51,9 @@
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW ENDL DOUBLE INTEGER REAL
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE DOUBLE INTEGER TYPE KW_VOID
 
-%type<v> stmt expr expr_num expr_map expr_vec expr_multi_vec expr_list expr_multi_list get_item get_vec func func_vec block stmts
+%type<v> stmt expr expr_num func_def func_def_vec block stmts
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -61,7 +61,6 @@
 %right AND
 %right EQ NE
 %right '<' '>' GE LE
-%left PUSH
 %left '+' '-'
 %left '*' '/' '%'
 %left '^'
@@ -70,14 +69,8 @@
 %%
 
 input: /* empty */
-| input stmt {
-  PS->emit($2);
-}
-| input func '{' expr '}'{
-  PS->emit(PS->func("Def") << $2 << $4);
-}
-| input func block {
-  PS->emit(PS->func("Def") << $2 << $3);
+| input KW_VOID func_def block {
+  PS->addFunc(PS->func("TypedFunc") << PS->sym("Void") << move($3) << move($4));
 }
 ;
 
@@ -85,9 +78,6 @@ expr_num: DOUBLE {
   $$ = PS->var($1);
 }
 | INTEGER {
-  $$ = PS->var($1);
-}
-| REAL {
   $$ = PS->var($1);
 }
 ;
@@ -103,12 +93,6 @@ expr: expr_num {
 }
 | KW_FALSE {
   $$ = PS->var(false);
-}
-| KW_UNDEF {
-  $$ = PS->var(undef);
-}
-| KW_NONE {
-  $$ = PS->var(none);
 }
 | STRING_LITERAL {
   $$ = move($1);
@@ -170,15 +154,7 @@ expr: expr_num {
   $$ = PS->func("ModBy") << move($1) << move($3);
 }
 | expr '=' expr {
-  if($1.isSymbol()){
-    $$ = PS->func("VarSet") << move($1) << move($3);
-  }
-  else{
-    if($1.isFunction("Dot")){
-      $1.str() = "DotPut";
-    }
-    $$ = PS->func("Set") << move($1) << move($3);
-  }
+  $$ = PS->func("Set") << move($1) << move($3);
 }
 | expr '<' expr {
   $$ = PS->func("LT") << move($1) << move($3);
@@ -204,175 +180,24 @@ expr: expr_num {
 | expr OR expr {
   $$ = PS->func("Or") << move($1) << move($3);
 }
-| '[' expr_vec ']' {
-  $$ = move($2);
-}
-| '[' ':' expr ',' expr_vec ']' {
-  $$ = move($5);
-  $$.setHead($3);
-}
-| '[' '|' expr_multi_vec '|' ']' {
-  $$ = move($3);
-}
-| '[' '|' ':' expr ',' expr_multi_vec '|' ']' {
-  $$ = move($6);
-  $$.setHead($4);
-}
-| '(' expr_list ')' {
-  if($2.size() == 1){
-    $$ = move($2[0]);
-  }
-  else{
-    $$ = move($2);
-  }
-}
-| '(' expr_list ',' ')' {
-  $$ = move($2);
-}
-| '(' ':' expr ',' expr_list ')' {
-  $$ = move($5);
-  $$.setHead($3);
-}
-| '(' '|' expr_multi_list '|' ')' {
-  $$ = move($3);
-}
-| '(' '|' expr_multi_list ',' ')' {
-  $$ = move($3);
-}
-| '(' '|' ':' expr ',' expr_multi_list ')' {
-  $$ = move($6);
-  $$.setHead($4);
-}
-| IDENTIFIER get_vec {
-  $$ = undef;
-  PS->handleGet(PS->sym($1), $2, $$);
-}
-| KW_NEW func {
-  $$ = PS->func("New") << move($2);
-}
-| KW_NEW IDENTIFIER {
-  $$ = PS->func("New") << PS->func($2);
-}
-| func {
-  if(nstr::isLower($1.str()[0])){
-    $$ = PS->func("Call") << move($1);
-  }
-  else{
-    $$ = move($1);
-  }
-}
 ;
 
-expr_map: expr ':' expr {
-  $$ = nvec();
-  $$ << move($1) << move($3);
-}
-
-expr_vec: /* empty */ {
-  $$ = nvec();
-}
-| expr_vec ',' expr {
-  $$ = move($1);
-  $$ << move($3);
-}
-| expr {
-  $$ = nvec();
-  $$ << move($1);
-}
-| expr_map {
-  $$ = undef;
-  $$($1[0]) = move($1[1]);
-}
-| expr_vec ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-expr_multi_vec: /* empty */ {
-  $$ = nvec();
-  $$.touchMultimap();
-}
-| expr_multi_vec ',' expr {
-  $$ = move($1);
-  $$ << move($3);
-}
-| expr {
-  $$ = nvec();
-  $$.touchMultimap();
-  $$ << move($1);
-}
-| expr_map {
-  $$ = undef;
-  $$.touchMultimap();
-  $$($1[0]) = move($1[1]);
-}
-| expr_multi_vec ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-expr_list: /* empty */ {
-  $$ = nlist();
-}
-| expr_list ',' expr {
-  $$ = move($1);
-  $$ << $3;
-}
-| expr {
-  $$ = nlist();
-  $$ << $1;
-}
-| expr_map {
-  $$($1[0]) = move($1[1]);
-}
-| expr_list ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-expr_multi_list: /* empty */ {
-  $$ = nlist();
-  $$.touchMultimap();
-}
-| expr_multi_list ',' expr {
-  $$ = move($1);
-  $$ << move($3);
-}
-| expr {
-  $$ = nlist();
-  $$.touchMultimap();
-  $$ << move($1);
-}
-| expr_map {
-  $$ = nlist();
-  $$.touchMultimap();
-  $$($1[0]) = move($1[1]);
-}
-| expr_multi_list ',' expr_map {
-  $$ = move($1);
-  $$($3[0]) = move($3[1]);
-}
-;
-
-func: IDENTIFIER '(' func_vec ')' {
+func_def: IDENTIFIER '(' func_def_vec ')' {
   $$ = PS->func($1);
   $$.append($3);
 }
 ;
 
-func_vec: /* empty */ {
+func_def_vec: /* empty */ {
   $$ = undef;
 }
-| func_vec ',' expr {
+| func_def_vec ',' TYPE IDENTIFIER {
   $$ = move($1);
-  $$ << move($3);
+  $$ << move($3 << move($4));
 }
-| expr {
-  $$ = nvec();
-  $$ << move($1);
+| TYPE IDENTIFIER {
+  $$ = move($1);
+  $$ << move($2);
 }
 ;
 
@@ -397,38 +222,6 @@ stmts: stmts stmt {
 }
 | stmt {
   $$ = PS->func("Block") << move($1);
-}
-;
-
-get_item: '[' expr ']' {
-  $$ = PS->func("Idx") << move($2);
-}
-| '.' IDENTIFIER {
-  $$ = PS->func("Dot") << PS->sym($2);
-}
-| '.' '(' expr ')' {
-  $$ = PS->func("Dot") << move($3);
-}
-| '{' expr '}' {
-  $$ = PS->func("Put") << move($2);
-}
-| '.' func {
-  if(nstr::isLower($2.str()[0])){
-    $$ = PS->func("Call") << move($2);
-  }
-  else{
-    $$ = PS->func("In") << move($2);
-  }
-}
-;
-
-get_vec: get_vec get_item {
-  $$ = move($1);
-  $$ << move($2);
-}
-| get_item {
-  $$ = nvec();
-  $$ << move($1);
 }
 ;
 

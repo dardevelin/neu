@@ -110,7 +110,7 @@ namespace neu{
     }
     
     nvar parse(const nstr& code, nvar* tags){
-      out_ = nfunc("Block");
+      out_ = undef;
       
       tags_ = tags;
       line_ = 1;
@@ -128,6 +128,7 @@ namespace neu{
       
       file = fopen(tempPath.c_str(), "r");
       npl_set_in(file, scanner_);
+      
       npl_parse(this, scanner_);
       fclose(file);
       
@@ -141,11 +142,11 @@ namespace neu{
         return none;
       }
       
-      return out_.size() == 1 ? out_[0] : out_;
+      return out_;
     }
     
     nvar parseFile(const nstr& path, nvar* tags){
-      out_ = nfunc("Block");
+      out_ = undef;
       
       tags_ = tags;
       line_ = 1;
@@ -172,7 +173,11 @@ namespace neu{
         return none;
       }
       
-      return out_.size() == 1 ? out_[0] : out_;
+      return out_;
+    }
+    
+    void addFunc(nvar& f){
+      out_({f[1].str(), f[1].size()}) = move(f);
     }
     
     void setErrorStream(ostream& estr){
@@ -188,7 +193,7 @@ namespace neu{
     nvar error(const nvar& n, const nstr& message, bool warn=false){
       status_ = 1;
       
-      cout << "error!" << endl;
+      cout << "error: " << message << endl;
       return nsym("Error");
     }
     

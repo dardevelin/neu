@@ -419,29 +419,20 @@ namespace neu{
       return *this;
     }
     
-    nstr allCaps() const{
-      std::string out = str_;
-      transform(out.begin(), out.end(), out.begin(), ::toupper);
-      return out;
+    void allCaps(){
+      transform(str_.begin(), str_.end(), str_.begin(), ::toupper);
     }
     
-    nstr allLower() const{
-      std::string out = str_;
-      transform(out.begin(), out.end(), out.begin(), ::tolower);
-      return out;
+    void allLower(){
+      transform(str_.begin(), str_.end(), str_.begin(), ::tolower);
     }
     
-    nstr uppercase() const{
-      std::string out = str_;
-      
-      transform(out.begin(), out.begin()+1, out.begin(), ::toupper);
-      return out;
+    void uppercase(){
+      transform(str_.begin(), str_.begin()+1, str_.begin(), ::toupper);
     }
     
-    nstr lowercase() const{
-      std::string out = str_;
-      transform(out.begin(), out.begin()+1, out.begin(), ::tolower);
-      return out;
+    void lowercase(){
+      transform(str_.begin(), str_.begin()+1, str_.begin(), ::tolower);
     }
     
     void strip(bool start=true, bool end=true){
