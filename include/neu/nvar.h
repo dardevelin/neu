@@ -2900,6 +2900,21 @@ namespace neu{
           return h_.f->v.size();
         case HeadSequence:
           return h_.hs->s->size();
+        case SequenceMap:
+          return h_.sm->s->size();
+        case HeadSequenceMap:
+          return h_.hsm->s->size();
+        case Reference:
+          return h_.ref->v->size();
+        case Pointer:
+          return h_.vp->size();
+        default:
+          return 0;
+      }
+    }
+    
+    size_t numKeys() const{
+      switch(t_){
         case Map:
           return h_.m->size();
         case Multimap:
@@ -2907,9 +2922,9 @@ namespace neu{
         case HeadMap:
           return h_.hm->m->size();
         case SequenceMap:
-          return h_.sm->s->size();
+          return h_.sm->m->size();
         case HeadSequenceMap:
-          return h_.hsm->s->size();
+          return h_.hsm->m->size();
         case Reference:
           return h_.ref->v->size();
         case Pointer:
@@ -3316,6 +3331,100 @@ namespace neu{
       }
       
       t_ = x ? True : False;
+      return *this;
+    }
+
+    nvar& operator=(const char* x){
+      switch(t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Float:
+        case StringPointer:
+        case RawPointer:
+        case ObjectPointer:
+        case Pointer:
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case Rational:
+          delete h_.r;
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case Real:
+          delete h_.x;
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case String:
+        case Binary:
+        case Symbol:
+          t_ = String;
+          *h_.s = x;
+          return *this;
+        case Vector:
+          delete h_.v;
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case List:
+          delete h_.l;
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case Function:
+          delete h_.f;
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case Map:
+          delete h_.m;
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case Multimap:
+          delete h_.mm;
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case Reference:
+          if(h_.ref->deref()){
+            delete h_.ref;
+          }
+          t_ = String;
+          h_.s = new nstr(x);
+          return *this;
+        case HeadSequence:
+          h_.hs->dealloc();
+          delete h_.hs;
+          break;
+        case HeadMap:
+          h_.hm->dealloc();
+          delete h_.hm;
+          break;
+        case LocalObject:
+          delete h_.o;
+          break;
+        case SharedObject:
+          if(h_.o->deref()){
+            delete h_.o;
+          }
+          break;
+        case SequenceMap:
+          h_.sm->dealloc();
+          delete h_.sm;
+          break;
+        case HeadSequenceMap:
+          h_.hsm->dealloc();
+          delete h_.hsm;
+          break;
+      }
+      
+      t_ = String;
+      h_.s = new nstr(x);
       return *this;
     }
     

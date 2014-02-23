@@ -481,6 +481,8 @@ nvar NProgram::parseArgs(int argc, char** argv){
   for(int i = 1; i < argc; ++i){
     nstr arg = argv[i];
     
+    cout << "arg is: {" << arg << "}" << endl;
+    
     if(arg == "-" || arg == "--"){
       nstr text;
       bool first = true;
@@ -556,7 +558,7 @@ nstr NProgram::toArgStr(const nvar& v){
     }
     else{
       ret += "--" + keys[i].str();
-      ret += " \"" + v[keys[i]].toStr() + "\"";
+      ret += " '" + v[keys[i]].toStr() + "'";
     }
   }
   
