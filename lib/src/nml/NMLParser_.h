@@ -132,9 +132,7 @@ namespace neu{
       fclose(file);
       
       if(remove(tempPath.c_str()) != 0){
-        cerr << "NMLParser: failed to delete to delete temp file: " <<
-        tempPath << endl;
-        NProgram::exit(1);
+        NERROR("failed to delete to delete temp file: " + tempPath);
       }
       
       nml_lex_destroy(scanner_);

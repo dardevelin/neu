@@ -85,31 +85,31 @@
 %option reentrant bison-bridge
 %option always-interactive
 
-IDENTIFIER              ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)
-INTEGER                 [0-9]+
-DOUBLE			(([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?
-REAL                    (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?[rR]
-STRING_LITERAL	        \"([^\"]|\\\")*\"
+IDENTIFIER ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)
+INTEGER [0-9]+
+DOUBLE (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?
+REAL (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?[rR]
+STRING_LITERAL \"([^\"]|\\\")*\"
 STRING_LITERAL_SQ	\'([^\']|\\\')*\'
-EQ                      "=="
-NE                      "!="
-GE                      ">="
-LE                      "<="
-ADD_BY                  "+="
-SUB_BY                  "-="
-INC                     "++"
-DEC                     "--"
-MUL_BY                  "*="
-DIV_BY                  "/="
-MOD_BY                  "%="
-AND                     "&&"
-OR                      "||"
-PUSH                    "<<"
-KW_TRUE                 true
-KW_FALSE                false
-KW_NONE                 none
-KW_UNDEF                undef
-KW_NEW                  new
+EQ "=="
+NE "!="
+GE ">="
+LE "<="
+ADD_BY "+="
+SUB_BY "-="
+INC "++"
+DEC "--"
+MUL_BY "*="
+DIV_BY "/="
+MOD_BY "%="
+AND "&&"
+OR "||"
+PUSH "<<"
+KW_TRUE true
+KW_FALSE false
+KW_NONE none
+KW_UNDEF undef
+KW_NEW new
 
 %%
 
