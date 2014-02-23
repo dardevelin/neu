@@ -481,8 +481,6 @@ nvar NProgram::parseArgs(int argc, char** argv){
   for(int i = 1; i < argc; ++i){
     nstr arg = argv[i];
     
-    cout << "arg is: {" << arg << "}" << endl;
-    
     if(arg == "-" || arg == "--"){
       nstr text;
       bool first = true;

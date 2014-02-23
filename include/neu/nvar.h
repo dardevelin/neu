@@ -3517,6 +3517,10 @@ namespace neu{
       return *this;
     }
     
+    nvar& operator=(nvar* x){
+      return *this = nvar(x);
+    }
+    
     nvar& operator=(const nvar& x);
     
     nvar& operator=(unsigned long x){
