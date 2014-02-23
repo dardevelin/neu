@@ -37,7 +37,7 @@
   #include <string>
   #include <iostream>
   
-  #include "NMLParser_.h"
+  #include "NPLParser_.h"
   #include "parse.h"
   
   using namespace std;
@@ -45,9 +45,9 @@
   
 %}
 
-%name-prefix="nml_"
+%name-prefix="npl_"
 %pure-parser
-%parse-param {NMLParser_* PS}
+%parse-param {NPLParser_* PS}
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
@@ -434,7 +434,7 @@ get_vec: get_vec get_item {
 
 %%
 
-int nml_error(NMLParser_* parser, const void*, const char *s){
+int npl_error(NPLParser_* parser, const void*, const char *s){
   parser->error(s);
   return 1;
 }

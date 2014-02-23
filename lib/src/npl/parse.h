@@ -31,26 +31,26 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
  =======================================================================*/
-#ifndef NEU_NML_PARSE_H
-#define NEU_NML_PARSE_H
+#ifndef NEU_NPL_PARSE_H
+#define NEU_NPL_PARSE_H
 
 #include <neu/nvar.h>
 
-#define YY_EXTRA_TYPE   neu::NMLParser_*
-#define YYSTYPE         NMLType
+#define YY_EXTRA_TYPE   neu::NPLParser_*
+#define YYSTYPE         NPLType
 
-struct NMLType{
+struct NPLType{
   neu::nvar v;
 };
 
-extern int nml_parse(neu::NMLParser_*, void*);
-extern int nml_error(neu::NMLParser_*, const void*, const char *s);
-extern int nml_lex(NMLType*, void*);
-extern int nml_lex_destroy(void*);
-extern int nml_lex_init(void**);
-extern void nml_get_extra(neu::NMLParser_*, void*);
-extern void nml_set_extra(neu::NMLParser_*, void*);
-extern void nml_set_in(FILE* file, void* scanner);
+extern int npl_parse(neu::NPLParser_*, void*);
+extern int npl_error(neu::NPLParser_*, const void*, const char *s);
+extern int npl_lex(NPLType*, void*);
+extern int npl_lex_destroy(void*);
+extern int npl_lex_init(void**);
+extern void npl_get_extra(neu::NPLParser_*, void*);
+extern void npl_set_extra(neu::NPLParser_*, void*);
+extern void npl_set_in(FILE* file, void* scanner);
 
-#endif // NEU_NML_PARSE_H
+#endif // NEU_NPL_PARSE_H
 

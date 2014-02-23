@@ -42,7 +42,7 @@
   
   #include <iostream>
   
-  #include "NMLParser_.h"
+  #include "NPLParser_.h"
   #include "parse.tab.h"
   #include "parse.h"
   
@@ -273,7 +273,7 @@ KW_NEW                  new
 
 . { 
   nstr msg = nstr("invalid character: '") + yytext + "'";
-  nml_error(PS, yyscanner, msg.c_str());
+  npl_error(PS, yyscanner, msg.c_str());
 }
 
 %%
