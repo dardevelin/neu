@@ -36,7 +36,7 @@ C_MODULES = compress.o
 
 CPP_MODULES = global.o nreal.o nstr.o nvar.o NError.o NThread.o NRegex.o NFactory.o NObjectBase.o NObject.o NCommand.o NResourceManager.o NSys.o NProgram.o NMObject.o NMLGenerator.o NMGenerator.o NRandom.o
 
-CORE_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o nm/parse.tab.o nm/NMParser.o nm/parse.l.o
+CORE_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NMLParser.o npl/parse.l.o
 
 ALL_MODULES = $(CPP_MODULES) $(C_MODULES) $(CORE_MODULES)
 
@@ -48,6 +48,9 @@ neu_ml:
 neu_m:
 	(cd nm; $(MAKE))
 
+neu_pl:
+	(cd npl; $(MAKE))
+
 .depend: $(CPP_MODULES:.o=.cpp)
 	$(COMPILE) -MM $(CPP_MODULES:.o=.cpp) > .depend
 
@@ -55,7 +58,7 @@ neu_m:
 
 LLVM_LINK = -L$(HOME)/llvm-3.3/build-release/lib -lLLVMAsmParser -lLLVMInstrumentation -lLLVMLinker -lLLVMBitReader -lLLVMDebugInfo -lLLVMJIT -lLLVMipo -lLLVMVectorize -lLLVMBitWriter -lLLVMTableGen -lLLVMX86Disassembler -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMX86AsmParser -lLLVMX86Desc -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCDisassembler -lLLVMMCParser -lLLVMInterpreter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipa -lLLVMAnalysis -lLLVMMCJIT -lLLVMRuntimeDyld -lLLVMExecutionEngine -lLLVMTarget -lLLVMMC -lLLVMObject -lLLVMCore -lLLVMSupport
 
-LIB_DEPENDS = $(CPP_MODULES) $(C_MODULES) neu_ml neu_m
+LIB_DEPENDS = $(CPP_MODULES) $(C_MODULES) neu_ml neu_m neu_pl
 
 libneu: $(LIB_DEPENDS)
 
@@ -87,8 +90,10 @@ clean:
 	rm -f $(C_MODULES)
 	(cd nml; $(MAKE) clean)
 	(cd nm; $(MAKE) clean)
+	(cd npl; $(MAKE) clean)
 
 spotless: clean
 	rm -f ../libneu.*
 	(cd nml; $(MAKE) spotless)
 	(cd nm; $(MAKE) spotless)
+	(cd npl; $(MAKE) spotless)
