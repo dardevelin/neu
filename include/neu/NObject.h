@@ -205,4 +205,4 @@ namespace neu{
   
 } // end namespace neu
 
-#endif // N_OBJECT_H
+#endif // NEU_N_OBJECT_H

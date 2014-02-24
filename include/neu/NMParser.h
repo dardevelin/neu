@@ -32,8 +32,8 @@
  
  =======================================================================*/
 
-#ifndef NEU_N_M_PARSER_H
-#define NEU_N_M_PARSER_H
+#ifndef NEU_NM_PARSER_H
+#define NEU_NM_PARSER_H
 
 #include <neu/nvar.h>
 
@@ -58,4 +58,4 @@ namespace neu{
   
 } // end namespace neu
 
-#endif // NEU_N_M_PARSER_H
+#endif // NEU_NM_PARSER_H

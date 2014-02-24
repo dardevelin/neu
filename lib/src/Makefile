@@ -24,11 +24,7 @@ else
   export LINK = clang++ -L../ -fPIC -stdlib=libc++
 endif
 
-CXX_OPTS += -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$(HOME)/llvm-3.3/build-release/include -I$(HOME)/llvm-3.3/llvm/include
-
-#ifeq ($(PLATFORM), Darwin)
-#  CXX_OPTS += -D_XOPEN_SOURCE 
-#endif
+CXX_OPTS += -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$(HOME)/llvm-3.4/build-release/include -I$(HOME)/llvm-3.4/llvm/include
 
 COMPILE += $(CXX_OPTS)
 
@@ -36,7 +32,7 @@ C_MODULES = compress.o
 
 CPP_MODULES = global.o nreal.o nstr.o nvar.o NError.o NThread.o NRegex.o NFactory.o NObjectBase.o NObject.o NCommand.o NResourceManager.o NSys.o NProgram.o NMObject.o NMLGenerator.o NMGenerator.o NRandom.o
 
-CORE_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o
+CORE_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o npl/NPLModule.o
 
 ALL_MODULES = $(CPP_MODULES) $(C_MODULES) $(CORE_MODULES)
 
@@ -56,7 +52,7 @@ neu_pl:
 
 -include .depend
 
-LLVM_LINK = -L$(HOME)/llvm-3.3/build-release/lib -lLLVMAsmParser -lLLVMInstrumentation -lLLVMLinker -lLLVMBitReader -lLLVMDebugInfo -lLLVMJIT -lLLVMipo -lLLVMVectorize -lLLVMBitWriter -lLLVMTableGen -lLLVMX86Disassembler -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMX86AsmParser -lLLVMX86Desc -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCDisassembler -lLLVMMCParser -lLLVMInterpreter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipa -lLLVMAnalysis -lLLVMMCJIT -lLLVMRuntimeDyld -lLLVMExecutionEngine -lLLVMTarget -lLLVMMC -lLLVMObject -lLLVMCore -lLLVMSupport
+LLVM_LINK = -L$(HOME)/llvm-3.4/build-release/lib -lLLVMAsmParser -lLLVMInstrumentation -lLLVMLinker -lLLVMBitReader -lLLVMDebugInfo -lLLVMJIT -lLLVMipo -lLLVMVectorize -lLLVMBitWriter -lLLVMTableGen -lLLVMX86Disassembler -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMX86AsmParser -lLLVMX86Desc -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCDisassembler -lLLVMMCParser -lLLVMInterpreter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipa -lLLVMAnalysis -lLLVMMCJIT -lLLVMRuntimeDyld -lLLVMExecutionEngine -lLLVMTarget -lLLVMMC -lLLVMObject -lLLVMCore -lLLVMSupport
 
 LIB_DEPENDS = $(CPP_MODULES) $(C_MODULES) neu_ml neu_m neu_pl
 

@@ -197,12 +197,14 @@ namespace neu{
     nvar error(const nvar& n, const nstr& message, bool warn=false){
       status_ = 1;
       
-      cout << "error: " << message << endl;
+      (*estr_) << "NPLParser: " << file_ << ":" << line_ << ": " <<
+      message << endl;
+      
       return nsym("Error");
     }
     
     void error(const nstr& type){
-      error(none, "NPL parser error");
+      error(none, type);
     }
     
     nvar func(const nstr& f){
@@ -277,9 +279,17 @@ namespace neu{
       return v;
     }
     
+    void newLine(size_t count){
+      line_ += count;
+    }
+    
     void newLine(){
       ++line_;
       advance(1);
+    }
+    
+    size_t line() const{
+      return line_;
     }
     
     void handleGet(const nvar& head, nvar& rest, nvar& out){

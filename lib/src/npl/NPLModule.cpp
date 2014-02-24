@@ -32,71 +32,51 @@
  
  =======================================================================*/
 
-#include <thread>
+#include <neu/NPLModule.h>
 
-#ifndef NEU_N_THREAD_H
-#define NEU_N_THREAD_H
+using namespace std;
+using namespace neu;
 
 namespace neu{
-  
-  class NThread{
+
+  class NPLModule_{
   public:
-    typedef std::thread::id id;
-    
-    NThread()
-    : thread_(0){
+    NPLModule_(NPLModule* o)
+    : o_(o){
       
     }
     
-    ~NThread(){
-      if(thread_){
-        delete thread_;
-      }
-    }
-    
-    virtual void run() = 0;
-    
-    void start(){
-      auto f = [&](){
-        run();
-      };
+    ~NPLModule_(){
       
-      thread_ = new std::thread(f);
     }
     
-    void join(){
-      thread_->join();
+    llvm::Function* compile(const nvar& func){
+    
     }
     
-    void detach(){
-      thread_->detach();
+    llvm::Module* module(){
+      
     }
-    
-    std::thread& thread(){
-      return *thread_;
-    }
-    
-    const std::thread& thread() const{
-      return *thread_;
-    }
-    
-    id threadId() const{
-      return thread_->get_id();
-    }
-    
-    static id thisThreadId(){
-      return std::this_thread::get_id();
-    }
-    
-    static id mainThreadId;
-    
-    NThread& operator=(const NThread&) = delete;
-    NThread(const NThread&) = delete;
     
   private:
-    std::thread* thread_;
+    NPLModule* o_;
   };
-  
+
 } // end namespace neu
 
-#endif // NEU_N_THREAD_H
+NPLModule::NPLModule(){
+  x_ = new NPLModule_(this);
+}
+
+NPLModule::~NPLModule(){
+  delete x_;
+}
+
+llvm::Function* NPLModule::compile(const nvar& func){
+  return x_->compile(func);
+}
+
+llvm::Module* NPLModule::module(){
+  return x_->module();
+}
+

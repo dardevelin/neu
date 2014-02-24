@@ -32,71 +32,29 @@
  
  =======================================================================*/
 
-#include <thread>
+#ifndef NEU_NPL_MODULE_H
+#define NEU_NPL_MODULE_H
 
-#ifndef NEU_N_THREAD_H
-#define NEU_N_THREAD_H
+#include "llvm/IR/Module.h"
+
+#include <neu/nvar.h>
 
 namespace neu{
-  
-  class NThread{
+
+  class NPLModule{
   public:
-    typedef std::thread::id id;
+    NPLModule();
     
-    NThread()
-    : thread_(0){
-      
-    }
+    ~NPLModule();
     
-    ~NThread(){
-      if(thread_){
-        delete thread_;
-      }
-    }
+    llvm::Function* compile(const nvar& func);
     
-    virtual void run() = 0;
-    
-    void start(){
-      auto f = [&](){
-        run();
-      };
-      
-      thread_ = new std::thread(f);
-    }
-    
-    void join(){
-      thread_->join();
-    }
-    
-    void detach(){
-      thread_->detach();
-    }
-    
-    std::thread& thread(){
-      return *thread_;
-    }
-    
-    const std::thread& thread() const{
-      return *thread_;
-    }
-    
-    id threadId() const{
-      return thread_->get_id();
-    }
-    
-    static id thisThreadId(){
-      return std::this_thread::get_id();
-    }
-    
-    static id mainThreadId;
-    
-    NThread& operator=(const NThread&) = delete;
-    NThread(const NThread&) = delete;
+    llvm::Module* module();
     
   private:
-    std::thread* thread_;
+    class NPLModule_* x_;
   };
   
 } // end namespace neu
 
-#endif // NEU_N_THREAD_H
+#endif // NEU_NPL_MODULE_H

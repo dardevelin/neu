@@ -35,8 +35,8 @@
 #include <map>
 #include <ostream>
 
-#ifndef NEU_N_MULTI_MAP_H
-#define NEU_N_MULTI_MAP_H
+#ifndef NEU_N_MULTIMAP_H
+#define NEU_N_MULTIMAP_H
 
 namespace neu{
   
@@ -330,4 +330,4 @@ namespace neu{
   
 } // end namespace neu
 
-#endif // NEU_N_MULTI_MAP_H
+#endif // NEU_N_MULTIMAP_H

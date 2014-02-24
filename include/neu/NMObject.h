@@ -32,8 +32,8 @@
  
  =======================================================================*/
 
-#ifndef NEU_N_M_OBJECT_H
-#define NEU_N_M_OBJECT_H
+#ifndef NEU_NM_OBJECT_H
+#define NEU_NM_OBJECT_H
 
 #include <neu/NObject.h>
 
@@ -62,4 +62,4 @@ namespace neu{
   
 } // end namespace neu
 
-#endif // N_M_OBJECT_H
+#endif // N_NM_OBJECT_H

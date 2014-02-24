@@ -51,9 +51,9 @@
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE DOUBLE INTEGER TYPE KW_VOID
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_VOID KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE DEFINE DOUBLE INTEGER TYPE
 
-%type<v> stmt expr expr_num func_def func_def_vec block stmts
+%type<v> stmt expr expr_num func_def func_def_vec block stmts if_stmt expr_vec
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -64,13 +64,16 @@
 %left '+' '-'
 %left '*' '/' '%'
 %left '^'
-%left '!' INC DEC
+%left '!' INC DEC '@'
 
 %%
 
 input: /* empty */
 | input KW_VOID func_def block {
   PS->addFunc(PS->func("TypedFunc") << PS->sym("Void") << move($3) << move($4));
+}
+| input DEFINE IDENTIFIER expr {
+  PS->define($3, $4);
 }
 ;
 
@@ -87,6 +90,12 @@ expr: expr_num {
 }
 | IDENTIFIER {
   $$ = PS->sym($1);
+}
+| '(' expr ')' {
+  $$ = move($2);
+}
+| '@' IDENTIFIER {
+  $$ = PS->func("O2") << PS->sym($2);
 }
 | KW_TRUE {
   $$ = PS->var(true);
@@ -180,6 +189,11 @@ expr: expr_num {
 | expr OR expr {
   $$ = PS->func("Or") << move($1) << move($3);
 }
+| IDENTIFIER '(' expr_vec ')' {
+  nvar c = PS->func($1);
+  c.append($3);
+  $$ = PS->func("Call") << move(c);
+}
 ;
 
 func_def: IDENTIFIER '(' func_def_vec ')' {
@@ -201,11 +215,55 @@ func_def_vec: /* empty */ {
 }
 ;
 
+expr_vec: /* empty */ {
+  $$ = undef;
+}
+| expr_vec ',' expr {
+  $$ = move($1);
+  $$ << move($3);
+}
+| expr {
+  $$ = move($1);
+}
+;
+
 stmt: expr ';' {
   $$ = move($1);
 }
 | ';' {
   $$ = none;
+}
+| KW_RETURN ';' {
+  $$ = PS->func("Ret");
+}
+| KW_RETURN expr ';' {
+  $$ = PS->func("Ret") << move($2);
+}
+| KW_BREAK ';' {
+  $$ = PS->func("Break");
+}
+| KW_CONTINUE ';' {
+  $$ = PS->func("Continue");
+}
+| if_stmt {
+  $$ = move($1);
+}
+| KW_WHILE '(' expr ')' block {
+  $$ = PS->func("While") << move($3) << move($5);
+}
+| KW_FOR '(' stmt stmt expr ')' block {
+  $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
+}
+;
+
+if_stmt: KW_IF '(' expr ')' block {
+  $$ = PS->func("If") << move($3) << move($5);
+}
+| KW_IF '(' expr ')' block KW_ELSE block {
+  $$ = PS->func("If") << move($3) << move($5) << move($7);
+}
+| KW_IF '(' expr ')' block KW_ELSE if_stmt {
+  $$ = PS->func("If") << move($3) << move($5) << move($7);
 }
 ;
 

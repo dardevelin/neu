@@ -84,8 +84,9 @@
 
 %option reentrant bison-bridge
 %option always-interactive
-%option yylineno
 
+COMMENT "//".+\n
+MULTILINE_COMMENT "/*"[^"*/"]*"*/"
 IDENTIFIER ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)
 INTEGER [0-9]+
 DOUBLE (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?
@@ -119,6 +120,16 @@ VEC_TYPE (bool[0-9]+)|(char[0-9]+)|(short[0-9]+)|(int[0-9]+)|(long[0-9]+)|(float
 DEFINE "#define"
 
 %%
+
+{COMMENT} {
+  PS->newLine(1);
+  PS->advance(yytext, "comment");
+}
+
+{MULTILINE_COMMENT} {
+  PS->newLine(nstr(yytext).findCount("\n"));
+  PS->advance(yytext, "comment");
+}
 
 {EQ} {
   PS->advance(yytext, "operator");
@@ -310,7 +321,7 @@ DEFINE "#define"
   return STRING_LITERAL;
 }
 
-[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)] {
+[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)\@] {
   PS->advance(1, "operator");
   return *yytext;
 }
