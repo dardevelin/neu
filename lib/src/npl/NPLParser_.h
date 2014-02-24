@@ -176,8 +176,35 @@ namespace neu{
       return out_;
     }
     
-    void addFunc(nvar& f){
-      out_({f[1].str(), f[1].size()}) = move(f);
+    void addClass(const nstr& name, nvar& c){
+      if(out_.hasKey("name")){
+        error("class exists: " + name);
+        return;
+      }
+      
+      out_(name) = move(c);
+    }
+    
+    void addMethod(nvar& c, nvar& f){
+      nvar key = {f[1].str(), f[1].size()};
+      
+      if(c.hasKey(key)){
+        error("method exists: " + key.toStr());
+        return;
+      }
+      
+      c(key) = move(f);
+    }
+    
+    void addAttribute(nvar& c, nvar& a){
+      const nstr& name = a.back();
+      
+      if(c.hasKey(name)){
+        error("attribute exists: " + name);
+        return;
+      }
+      
+      c(name) = move(a);
     }
     
     void define(const nstr& sym, const nvar& expr){

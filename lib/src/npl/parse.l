@@ -115,6 +115,7 @@ KW_WHILE while
 KW_RETURN return
 KW_BREAK break
 KW_CONTINUE continue
+KW_CLASS class
 TYPE (bool)|(char)|(short)|(int)|(long)|(float)|(double)
 VEC_TYPE (bool[0-9]+)|(char[0-9]+)|(short[0-9]+)|(int[0-9]+)|(long[0-9]+)|(float[0-9]+)|(double[0-9]+)
 DEFINE "#define"
@@ -244,6 +245,11 @@ DEFINE "#define"
 {KW_CONTINUE} {
   PS->advance(yytext, "keyword");
   return KW_CONTINUE;
+}
+
+{KW_CLASS} {
+  PS->advance(yytext, "keyword");
+  return KW_CLASS;
 }
 
 {DEFINE} {
