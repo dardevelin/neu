@@ -78,13 +78,13 @@ input: /* empty */
 ;
 
 class_vec: KW_VOID func_def block {
-  $$ = undef;
+  $$ = PS->newClass();
   PS->addMethod($$, PS->func("TypedFunc") << PS->sym("Void") << move($2) << move($3));
 }
 | TYPE IDENTIFIER ';' {
   nvar t = move($1);
   t << PS->sym($2);
-  $$ = undef;
+  $$ = PS->newClass();
   PS->addAttribute($$, t);
 }
 | class_vec KW_VOID func_def block {

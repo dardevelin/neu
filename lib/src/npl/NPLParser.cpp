@@ -61,14 +61,14 @@ namespace{
       nameMap_("try") = true;
       nameMap_("catch") = true;
       
-      typeMap_("Bool"_nsym) = nvar::fromStr("[size:1]");
-      typeMap_("Char"_nsym) = nvar::fromStr("[size:1]");
-      typeMap_("Short"_nsym) = nvar::fromStr("[size:2]");
-      typeMap_("Int"_nsym) = nvar::fromStr("[size:4]");
-      typeMap_("Long"_nsym) = nvar::fromStr("[size:8]");
-      typeMap_("Float"_nsym) = nvar::fromStr("[size:4]");
-      typeMap_("Double"_nsym) = nvar::fromStr("[size:8]");
-      typeMap_("Var"_nsym) = nvar::fromStr("[size:9]");
+      typeMap_("bool") = nvar::fromStr("[size:1]");
+      typeMap_("char") = nvar::fromStr("[size:1]");
+      typeMap_("short") = nvar::fromStr("[size:2]");
+      typeMap_("int") = nvar::fromStr("[size:4]");
+      typeMap_("long") = nvar::fromStr("[size:8]");
+      typeMap_("float") = nvar::fromStr("[size:4]");
+      typeMap_("double") = nvar::fromStr("[size:8]");
+      typeMap_("var") = nvar::fromStr("[size:9]");
     }
     
     bool isReservedName(const nstr& name) const{
@@ -76,7 +76,7 @@ namespace{
     }
     
     const nvar& getType(const nstr& t){
-      
+      return typeMap_[t];
     }
     
     nvar nameMap_;

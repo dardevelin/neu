@@ -419,20 +419,44 @@ namespace neu{
       return *this;
     }
     
-    void allCaps(){
+    void toAllCaps(){
       transform(str_.begin(), str_.end(), str_.begin(), ::toupper);
     }
     
-    void allLower(){
+    void toAllLower(){
       transform(str_.begin(), str_.end(), str_.begin(), ::tolower);
     }
     
-    void uppercase(){
+    void toUppercase(){
       transform(str_.begin(), str_.begin()+1, str_.begin(), ::toupper);
     }
     
-    void lowercase(){
+    void toLowercase(){
       transform(str_.begin(), str_.begin()+1, str_.begin(), ::tolower);
+    }
+    
+    nstr allCaps() const{
+      nstr ret = str_;
+      transform(ret.begin(), ret.end(), ret.begin(), ::toupper);
+      return ret;
+    }
+    
+    nstr allLower() const{
+      nstr ret = str_;
+      transform(ret.begin(), ret.end(), ret.begin(), ::tolower);
+      return ret;
+    }
+    
+    nstr uppercase() const{
+      nstr ret = str_;
+      transform(ret.begin(), ret.begin()+1, ret.begin(), ::toupper);
+      return ret;
+    }
+    
+    nstr lowercase() const{
+      nstr ret = str_;
+      transform(ret.begin(), ret.begin()+1, ret.begin(), ::tolower);
+      return ret;
     }
     
     void strip(bool start=true, bool end=true){

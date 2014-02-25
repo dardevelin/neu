@@ -54,9 +54,9 @@ namespace neu{
   const nvec _emptyVec;
   
   const nvar::CopyFlag* nvar::Copy = 0;
-  const nvar::PointerFlag* nvar::PointerType = 0;
-  const nvar::SymbolFlag* nvar::SymbolType = 0;
-  const nvar::FunctionFlag* nvar::FunctionType = 0;
+  const nvar::PointerFlag* nvar::Ptr = 0;
+  const nvar::SymbolFlag* nvar::Sym = 0;
+  const nvar::FunctionFlag* nvar::Func = 0;
   const nvar::HeadSequenceFlag* nvar::HeadSequenceType = 0;
   const nvar::HeadMapFlag* nvar::HeadMapType = 0;
   const nvar::SequenceMapFlag* nvar::SequenceMapType = 0;

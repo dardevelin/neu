@@ -791,7 +791,7 @@ namespace neu{
       
       nvar& v = *p1.get(p2);
       
-      return nvar(&v, nvar::PointerType);
+      return nvar(&v, nvar::Ptr);
     }
     
     nvar Idx(const nvar& v1, const nvar& v2){
@@ -800,7 +800,7 @@ namespace neu{
       
       nvar& v = *p1[p2];
       
-      return nvar(&v, nvar::PointerType);
+      return nvar(&v, nvar::Ptr);
     }
     
     nvar Dot(const nvar& v1, const nvar& v2){
@@ -808,7 +808,7 @@ namespace neu{
       
       nvar& v = *p1[v2];
       
-      return nvar(&v, nvar::PointerType);
+      return nvar(&v, nvar::Ptr);
     }
     
     nvar Put(const nvar& v1, const nvar& v2){
@@ -817,7 +817,7 @@ namespace neu{
       
       nvar& v = *p1(p2);
       
-      return nvar(&v, nvar::PointerType);
+      return nvar(&v, nvar::Ptr);
     }
     
     nvar DotPut(const nvar& v1, const nvar& v2){
@@ -825,7 +825,7 @@ namespace neu{
       
       nvar& v = *p1(v2);
       
-      return nvar(&v, nvar::PointerType);
+      return nvar(&v, nvar::Ptr);
     }
     
     nvar Cls(const nvar& v){
@@ -835,7 +835,7 @@ namespace neu{
     nvar Call(const nvar& v){
       const nvar& p = *v;
       
-      nvar f(v.str(), nvar::FunctionType);
+      nvar f(v.str(), nvar::Func);
       
       size_t size = p.size();
       for(size_t i = 0; i < size; ++i){
@@ -852,7 +852,7 @@ namespace neu{
       
       NObject* o = static_cast<NObject*>(p1.obj());
       
-      nvar f(v2.str(), nvar::FunctionType);
+      nvar f(v2.str(), nvar::Func);
       
       size_t size = p2.size();
       for(size_t i = 0; i < size; ++i){

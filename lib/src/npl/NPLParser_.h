@@ -176,6 +176,13 @@ namespace neu{
       return out_;
     }
     
+    nvar newClass(){
+      nvar c;
+      c("__offset") = 0;
+      
+      return c;
+    }
+    
     void addClass(const nstr& c, nvar& cv){
       if(out_.hasKey(c)){
         error("class exists: " + c);
@@ -204,7 +211,15 @@ namespace neu{
         return;
       }
       
-      c(k) = move(a);
+      const nvar& t = getType(a);
+      
+      nvar av;
+      av("offset") = c["__offset"];
+      av("type") = nvar(a.str().lowercase(), nvar::Sym);
+
+      c["__offset"] += t["size"];
+      
+      c(k) = move(av);
     }
     
     void define(const nstr& sym, const nvar& expr){

@@ -479,11 +479,11 @@ namespace neu{
     
     struct SymbolFlag{};
     
-    static const SymbolFlag* SymbolType;
+    static const SymbolFlag* Sym;
     
     struct FunctionFlag{};
     
-    static const FunctionFlag* FunctionType;
+    static const FunctionFlag* Func;
     
     nvar(const nstr& str)
     : t_(String){
@@ -623,7 +623,7 @@ namespace neu{
     
     struct PointerFlag{};
     
-    static const PointerFlag* PointerType;
+    static const PointerFlag* Ptr;
     
     nvar(nvar* v, const PointerFlag*)
     : t_(Pointer){
@@ -1155,7 +1155,7 @@ namespace neu{
         case Symbol:
           return *this;
         case Function:
-          return nvar(h_.f->f, SymbolType);
+          return nvar(h_.f->f, Sym);
         case HeadSequence:
           return h_.hs->h->sym();
         case HeadMap:
@@ -5512,7 +5512,7 @@ namespace neu{
     
     nvar& operator()(const char* k){
       if(nstr::isSymbol(k)){
-        return (*this)(nvar(k, SymbolType));
+        return (*this)(nvar(k, Sym));
       }
       
       return (*this)(nvar(k));
@@ -5520,7 +5520,7 @@ namespace neu{
     
     nvar& operator()(const nstr& k){
       if(nstr::isSymbol(k)){
-        return (*this)(nvar(k, SymbolType));
+        return (*this)(nvar(k, Sym));
       }
       
       return (*this)(nvar(k));
@@ -6497,29 +6497,21 @@ namespace neu{
   };
   
   inline nvar nfunc(const nstr& f){
-    return new nvar(f, nvar::FunctionType);
+    return new nvar(f, nvar::Func);
   }
   
   inline nvar nfunc(const char* f){
-    return new nvar(f, nvar::FunctionType);
+    return new nvar(f, nvar::Func);
   }
   
   inline nvar nsym(const nstr& s){
-    return new nvar(s, nvar::SymbolType);
+    return new nvar(s, nvar::Sym);
   }
   
   inline nvar nsym(const char* s){
-    return new nvar(s, nvar::SymbolType);
+    return new nvar(s, nvar::Sym);
   }
-  
-  inline nvar operator""_nsym(const char* s, unsigned long){
-    return nvar(s, nvar::SymbolType);
-  }
-
-  inline nvar operator""_nfunc(const char* f, unsigned long){
-    return nvar(f, nvar::FunctionType);
-  }
-  
+    
   inline nvar nref(const nvar& v){
     switch(v.fullType()){
       case nvar::Reference:
@@ -6537,7 +6529,7 @@ namespace neu{
       case nvar::Pointer:
         return v;
       default:
-        return new nvar(&v, nvar::PointerType);
+        return new nvar(&v, nvar::Ptr);
     }
   }
   
