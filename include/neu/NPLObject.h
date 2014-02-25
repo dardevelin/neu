@@ -40,8 +40,7 @@
 namespace neu{
   
   class NPLObject{
-  public:
-    virtual void info(nvar& info) = 0;
+    
   };
   
 } // end namespace neu

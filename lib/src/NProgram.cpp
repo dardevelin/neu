@@ -511,7 +511,7 @@ nvar NProgram::parseArgs(int argc, char** argv){
       ret.pushBack(arg);
     }
     else{
-      ret(lastKey) = nvar::fromStr(arg);
+      ret(lastKey) = nml(arg);
       lastKey = "";
     }
   }

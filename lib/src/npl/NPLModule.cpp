@@ -50,12 +50,11 @@ namespace neu{
       
     }
     
-    llvm::Function* compile(const nvar& func){
+    NPLFunc compile(const nvar& code,
+                    const nstr& className,
+                    const nstr& func){
     
-    }
-    
-    llvm::Module* module(){
-      
+      return 0;
     }
     
   private:
@@ -72,11 +71,8 @@ NPLModule::~NPLModule(){
   delete x_;
 }
 
-llvm::Function* NPLModule::compile(const nvar& func){
-  return x_->compile(func);
+NPLFunc NPLModule::compile(const nvar& code,
+                           const nstr& className,
+                           const nstr& func){
+  return x_->compile(code, className, func);
 }
-
-llvm::Module* NPLModule::module(){
-  return x_->module();
-}
-

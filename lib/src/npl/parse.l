@@ -116,8 +116,8 @@ KW_RETURN return
 KW_BREAK break
 KW_CONTINUE continue
 KW_CLASS class
-TYPE (bool)|(char)|(short)|(int)|(long)|(float)|(double)|(var)
-VEC_TYPE (bool[0-9]+)|(char[0-9]+)|(short[0-9]+)|(int[0-9]+)|(long[0-9]+)|(float[0-9]+)|(double[0-9]+)
+TYPE (bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(var)
+VEC_TYPE (char[0-9]+)|(uchar[0-9]+)|(short[0-9]+)|(ushort[0-9]+)|(int[0-9]+)|(uint[0-9]+)|(long[0-9]+)|(ulong[0-9]+)|(float[0-9]+)|(double[0-9]+)
 DEFINE "#define"
 
 %%

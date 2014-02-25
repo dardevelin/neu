@@ -6511,7 +6511,7 @@ namespace neu{
   inline nvar nsym(const char* s){
     return new nvar(s, nvar::Sym);
   }
-    
+  
   inline nvar nref(const nvar& v){
     switch(v.fullType()){
       case nvar::Reference:
@@ -6531,6 +6531,10 @@ namespace neu{
       default:
         return new nvar(&v, nvar::Ptr);
     }
+  }
+  
+  inline nvar nml(const nstr& code){
+    return nvar::fromStr(code);
   }
   
   inline std::ostream& operator<<(std::ostream& ostr, const nvar& v){

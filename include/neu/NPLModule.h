@@ -35,21 +35,20 @@
 #ifndef NEU_NPL_MODULE_H
 #define NEU_NPL_MODULE_H
 
-#include "llvm/IR/Module.h"
-
 #include <neu/nvar.h>
+#include <neu/NPLObject.h>
 
 namespace neu{
 
+  typedef void (*NPLFunc)(NPLObject*, NPLObject*);
+  
   class NPLModule{
   public:
     NPLModule();
     
     ~NPLModule();
     
-    llvm::Function* compile(const nvar& func);
-    
-    llvm::Module* module();
+    NPLFunc compile(const nvar& code, const nstr& className, const nstr& func);
     
   private:
     class NPLModule_* x_;
