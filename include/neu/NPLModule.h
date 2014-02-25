@@ -39,8 +39,6 @@
 #include <neu/NPLObject.h>
 
 namespace neu{
-
-  typedef void (*NPLFunc)(NPLObject*, NPLObject*);
   
   class NPLModule{
   public:

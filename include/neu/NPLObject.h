@@ -43,6 +43,8 @@ namespace neu{
     
   };
   
+  typedef void (*NPLFunc)(NPLObject*, NPLObject*);
+  
 } // end namespace neu
 
 #endif // NEU_NPL_OBJECT_H

@@ -1,4 +1,4 @@
-MODULES = NPLParser.o NPLModule.o
+MODULES = NPLParser.o NPLModule.o NPLQueue.o
 
 OBJECTS = parse.l.o parse.tab.o
 
