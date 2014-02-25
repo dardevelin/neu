@@ -1150,6 +1150,27 @@ namespace neu{
       }
     }
     
+    nvar sym() const{
+      switch(t_){
+        case Symbol:
+          return *this;
+        case Function:
+          return nvar(h_.f->f, SymbolType);
+        case HeadSequence:
+          return h_.hs->h->sym();
+        case HeadMap:
+          return h_.hm->h->sym();
+        case HeadSequenceMap:
+          return h_.hsm->h->sym();
+        case Reference:
+          return h_.ref->v->sym();
+        case Pointer:
+          return h_.vp->sym();
+        default:
+          NERROR("var does not hold a symbol");
+      }
+    }
+    
     NObjectBase* obj() const{
       switch(t_){
         case ObjectPointer:

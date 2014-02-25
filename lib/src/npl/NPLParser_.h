@@ -186,7 +186,7 @@ namespace neu{
     }
     
     void addMethod(nvar& c, nvar& f){
-      nvar k = {f[1].str(), f[1].size()};
+      nvar k = {f[1].sym(), f[1].size()};
       
       if(c.hasKey(k)){
         error("method exists: " + k);
