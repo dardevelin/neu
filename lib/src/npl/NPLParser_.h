@@ -176,9 +176,7 @@ namespace neu{
       return out_;
     }
     
-    void addClass(const nstr& name, nvar& cv){
-      nvar c = nsym(name);
-      
+    void addClass(const nstr& c, nvar& cv){
       if(out_.hasKey(c)){
         error("class exists: " + c);
         return;
@@ -188,26 +186,25 @@ namespace neu{
     }
     
     void addMethod(nvar& c, nvar& f){
-      nvar key = {nsym(f[1].str()), f[1].size()};
+      nvar k = {f[1].str(), f[1].size()};
       
-      if(c.hasKey(key)){
-        cout << "c was: " << c << endl;
-        error("method exists: " + key);
+      if(c.hasKey(k)){
+        error("method exists: " + k);
         return;
       }
       
-      c(key) = move(f);
+      c(k) = move(f);
     }
     
-    void addAttribute(nvar& c, nvar& av){
-      nvar a = nsym(av.back().str());
+    void addAttribute(nvar& c, nvar& a){
+      const nstr& k = a.back();
       
-      if(c.hasKey(a)){
-        error("attribute exists: " + a);
+      if(c.hasKey(k)){
+        error("attribute exists: " + k);
         return;
       }
       
-      c(a) = move(av);
+      c(k) = move(a);
     }
     
     void define(const nstr& sym, const nvar& expr){
@@ -331,6 +328,8 @@ namespace neu{
         out = move(h);
       }
     }
+    
+    const nvar& getType(const nstr& t);
     
   private:
     NPLParser* o_;

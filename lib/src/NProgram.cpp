@@ -255,12 +255,6 @@ namespace neu{
         NERROR("NEU_HOME environment variable is undefined");
       }
       
-      _tempPath = h + "/scratch";
-      
-      if(!NSys::exists(_tempPath)){
-        NERROR("temp path does not exist: " + _tempPath);
-      }
-      
       nstr p = h + "/bin/MathKernel";
       
       if(NSys::exists(p)){

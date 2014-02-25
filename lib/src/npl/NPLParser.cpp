@@ -60,18 +60,36 @@ namespace{
       nameMap_("this") = true;
       nameMap_("try") = true;
       nameMap_("catch") = true;
+      
+      typeMap_("Bool"_nsym) = nvar::fromStr("[size:1]");
+      typeMap_("Char"_nsym) = nvar::fromStr("[size:1]");
+      typeMap_("Short"_nsym) = nvar::fromStr("[size:2]");
+      typeMap_("Int"_nsym) = nvar::fromStr("[size:4]");
+      typeMap_("Long"_nsym) = nvar::fromStr("[size:8]");
+      typeMap_("Float"_nsym) = nvar::fromStr("[size:4]");
+      typeMap_("Double"_nsym) = nvar::fromStr("[size:8]");
+      typeMap_("Var"_nsym) = nvar::fromStr("[size:9]");
     }
     
     bool isReservedName(const nstr& name) const{
       return nameMap_.hasKey(name);
     }
     
+    const nvar& getType(const nstr& t){
+      
+    }
+    
     nvar nameMap_;
+    nvar typeMap_;
   };
   
   Global _global;
   
 } // end namespace
+
+const nvar& NPLParser_::getType(const nstr& t){
+  return _global.getType(t);
+}
 
 NPLParser::NPLParser(){
   x_ = new NPLParser_(this);

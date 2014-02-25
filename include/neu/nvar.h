@@ -2800,7 +2800,7 @@ namespace neu{
         bool visible;
         const nvar& k = *itr.first;
         
-        if(k.t_ == String){
+        if(k.t_ == Symbol){
           const nstr& s = *k.h_.s;
           
           if(!s.empty() && s[0] == '_'){
@@ -2842,7 +2842,7 @@ namespace neu{
         bool visible;
         const nvar& k = *itr.first;
         
-        if(k.t_ == String){
+        if(k.t_ == Symbol){
           const nstr& s = *k.h_.s;
           
           if(!s.empty() && s[0] == '_'){
@@ -5431,7 +5431,7 @@ namespace neu{
           NERROR("invalid operand");
       }
     }
-    
+
     nvar& operator()(const nvar& key){
       switch(t_){
         case None:
@@ -5487,6 +5487,22 @@ namespace neu{
           return (*h.m)[key];
         }
       }
+    }
+    
+    nvar& operator()(const char* k){
+      if(nstr::isSymbol(k)){
+        return (*this)(nvar(k, SymbolType));
+      }
+      
+      return (*this)(nvar(k));
+    }
+    
+    nvar& operator()(const nstr& k){
+      if(nstr::isSymbol(k)){
+        return (*this)(nvar(k, SymbolType));
+      }
+      
+      return (*this)(nvar(k));
     }
     
     void erase(const nvar& key){

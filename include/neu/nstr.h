@@ -491,70 +491,246 @@ namespace neu{
       return out;
     }
     
-    bool isSymbol() const{
+    static bool isSymbol(const nstr& k){
+      return isSymbol(k.c_str());
+    }
+    
+    static bool isSymbol(const char* k){
       bool match = false;
-      size_t size = str_.size();
       
-      for(size_t i = 0; i < size; ++i){
-        char c = str_[i];
-        
-        if(isAlpha(c)){
-          match = true;
-        }
-        else if(isDigit(c)){
-          if(!match){
+      size_t i = 0;
+      for(;;){
+        switch(k[i]){
+          case '\0':
+            return match;
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            if(match){
+              break;
+            }
             return false;
-          }
+          case 'a':
+          case 'b':
+          case 'c':
+          case 'd':
+          case 'e':
+          case 'f':
+          case 'g':
+          case 'h':
+          case 'i':
+          case 'j':
+          case 'k':
+          case 'l':
+          case 'm':
+          case 'n':
+          case 'o':
+          case 'p':
+          case 'q':
+          case 'r':
+          case 's':
+          case 't':
+          case 'u':
+          case 'v':
+          case 'w':
+          case 'x':
+          case 'y':
+          case 'z':
+          case 'A':
+          case 'B':
+          case 'C':
+          case 'D':
+          case 'E':
+          case 'F':
+          case 'G':
+          case 'H':
+          case 'I':
+          case 'J':
+          case 'K':
+          case 'L':
+          case 'M':
+          case 'N':
+          case 'O':
+          case 'P':
+          case 'Q':
+          case 'R':
+          case 'S':
+          case 'T':
+          case 'U':
+          case 'V':
+          case 'W':
+          case 'X':
+          case 'Y':
+          case 'Z':
+            match = true;
+            break;
+          case '_':
+            break;
+          default:
+            return false;
         }
-        else if(c != '_'){
-          return false;
-        }
+        ++i;
       }
       
       return match;
     }
     
-    bool isSymbolWithoutUnderscore() const{
+    static bool isSymbolNoUnderscore(const nstr& k){
+      return isSymbolNoUnderscore(k.c_str());
+    }
+    
+    static bool isSymbolNoUnderscore(const char* k){
       bool match = false;
-      size_t size = str_.size();
       
-      for(size_t i = 0; i < size; ++i){
-        char c = str_[i];
-        
-        if(isAlpha(c)){
-          match = true;
-        }
-        else if(isDigit(c)){
-          if(!match){
+      size_t i = 0;
+      for(;;){
+        switch(k[i]){
+          case '\0':
+            return match;
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            if(match){
+              break;
+            }
             return false;
-          }
+          case 'a':
+          case 'b':
+          case 'c':
+          case 'd':
+          case 'e':
+          case 'f':
+          case 'g':
+          case 'h':
+          case 'i':
+          case 'j':
+          case 'k':
+          case 'l':
+          case 'm':
+          case 'n':
+          case 'o':
+          case 'p':
+          case 'q':
+          case 'r':
+          case 's':
+          case 't':
+          case 'u':
+          case 'v':
+          case 'w':
+          case 'x':
+          case 'y':
+          case 'z':
+          case 'A':
+          case 'B':
+          case 'C':
+          case 'D':
+          case 'E':
+          case 'F':
+          case 'G':
+          case 'H':
+          case 'I':
+          case 'J':
+          case 'K':
+          case 'L':
+          case 'M':
+          case 'N':
+          case 'O':
+          case 'P':
+          case 'Q':
+          case 'R':
+          case 'S':
+          case 'T':
+          case 'U':
+          case 'V':
+          case 'W':
+          case 'X':
+          case 'Y':
+          case 'Z':
+            match = true;
+            break;
+          default:
+            return false;
         }
-        else{
-          return false;
-        }
+        ++i;
       }
       
       return match;
     }
     
-    bool isSymbolWithAllCaps() const{
+    static bool isSymbolAllCaps(const nstr& k){
+      return isSymbolAllCaps(k.c_str());
+    }
+    
+    static bool isSymbolAllCaps(const char* k){
       bool match = false;
-      size_t size = str_.size();
       
-      for(size_t i = 0; i < size; ++i){
-        char c = str_[i];
-        
-        if(c >= 65 && c <= 90){
-          match = true;
-        }
-        else if(isDigit(c)){
-          if(!match){
+      size_t i = 0;
+      for(;;){
+        switch(k[i]){
+          case '\0':
+            return match;
+          case '0':
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+            if(match){
+              break;
+            }
             return false;
-          }
+          case 'A':
+          case 'B':
+          case 'C':
+          case 'D':
+          case 'E':
+          case 'F':
+          case 'G':
+          case 'H':
+          case 'I':
+          case 'J':
+          case 'K':
+          case 'L':
+          case 'M':
+          case 'N':
+          case 'O':
+          case 'P':
+          case 'Q':
+          case 'R':
+          case 'S':
+          case 'T':
+          case 'U':
+          case 'V':
+          case 'W':
+          case 'X':
+          case 'Y':
+          case 'Z':
+            match = true;
+            break;
+          case '_':
+            break;
+          default:
+            return false;
         }
-        else if(c != '_'){
-          return false;
-        }
+        ++i;
       }
       
       return match;

@@ -217,7 +217,16 @@ nstr NSys::tempPath(){
 
 nstr NSys::tempFilePath(const nstr& extension){
   if(_tempPath.empty()){
-    NERROR("temp file path is undefined");
+    nstr h;
+    if(!getEnv("NEU_HOME", h)){
+      NERROR("NEU_HOME environment variable is undefined");
+    }
+    
+    _tempPath = h + "/scratch";
+    
+    if(!exists(_tempPath)){
+      NERROR("temp path does not exist: " + _tempPath);
+    }
   }
   
   nstr p = _tempPath;
