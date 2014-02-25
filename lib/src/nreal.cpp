@@ -146,7 +146,7 @@ namespace neu{
     
     void setPrecision(size_t bits){
       if(bits < MPFR_PREC_MIN || bits > MPFR_PREC_MAX){
-        NERROR("invalid precision" << nvar(bits));
+        NERROR("invalid precision" + nvar(bits));
       }
       
       mpfr_prec_round(r_, bits, GMP_RNDN);
@@ -258,7 +258,7 @@ nreal::nreal(){
 nreal::nreal(const char* s){
   x_ = new nreal_(this);
   if(!x_->fromStr(s)){
-    NERROR("construction from string failed: " << nstr(s));
+    NERROR("construction from string failed: " + s);
   }
 }
 
@@ -355,7 +355,7 @@ void nreal::setPrecision(size_t bits){
 
 void nreal::setDefaultPrecision(size_t bits){
   if(bits < MPFR_PREC_MIN || bits > MPFR_PREC_MAX){
-    NERROR("invalid precision" << nvar(bits));
+    NERROR("invalid precision" + nvar(bits));
   }
   
   mpfr_set_default_prec(bits);
@@ -368,7 +368,7 @@ size_t nreal::defaultPrecision(){
 nreal nreal::fromStr(const nstr& str){
   nreal r;
   if(!r.x_->fromStr(str)){
-    NERROR("construction from string failed: " << str);
+    NERROR("construction from string failed: " + str);
   }
   return r;
 }

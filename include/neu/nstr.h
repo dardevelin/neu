@@ -770,20 +770,8 @@ namespace neu{
     return istr;
   }
   
-  inline nstr& operator<<(nstr& str, char c){
-    return str.append(1, c);
-  }
-  
   inline nstr operator+(const char* s, const nstr& str){
     return s + str.str();
-  }
-  
-  inline nstr& operator<<(nstr& str, const nvar& v){
-    return str += nstr::toStr(v, true);
-  }
-  
-  inline nstr operator<<(const nstr& str, const nvar& v){
-    return str + nstr::toStr(v, true);
   }
   
 } // end namespace neu

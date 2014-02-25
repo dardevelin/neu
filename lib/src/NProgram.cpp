@@ -601,7 +601,7 @@ nvar NProgram::arg(const nstr& key){
     return _args[key];
   }
   catch(NError& e){
-    NERROR("invalid key: " << key);
+    NERROR("invalid key: " + key);
   }
 }
 
