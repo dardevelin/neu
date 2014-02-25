@@ -176,19 +176,22 @@ namespace neu{
       return out_;
     }
     
-    void addClass(const nvar& name, nvar& c){
-      if(out_.hasKey(name)){
-        error("class exists: " + name);
+    void addClass(const nstr& name, nvar& cv){
+      nvar c = nsym(name);
+      
+      if(out_.hasKey(c)){
+        error("class exists: " + c);
         return;
       }
       
-      out_(name) = move(c);
+      out_(c) = move(cv);
     }
     
     void addMethod(nvar& c, nvar& f){
-      nvar key = {f[1].str(), f[1].size()};
+      nvar key = {nsym(f[1].str()), f[1].size()};
       
       if(c.hasKey(key)){
+        cout << "c was: " << c << endl;
         error("method exists: " + key);
         return;
       }
@@ -196,15 +199,15 @@ namespace neu{
       c(key) = move(f);
     }
     
-    void addAttribute(nvar& c, nvar& a){
-      const nstr& name = a.back();
+    void addAttribute(nvar& c, nvar& av){
+      nvar a = nsym(av.back().str());
       
-      if(c.hasKey(name)){
-        error("attribute exists: " + name);
+      if(c.hasKey(a)){
+        error("attribute exists: " + a);
         return;
       }
       
-      c(name) = move(a);
+      c(a) = move(av);
     }
     
     void define(const nstr& sym, const nvar& expr){

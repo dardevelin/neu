@@ -8838,16 +8838,23 @@ bool nvar::less(const nvar& x) const{
         case RawPointer:
           return false;
         case Vector:{
-          int y = h_.v->size() - x.h_.v->size();
+          size_t s1 = h_.v->size();
+          size_t s2 = x.h_.v->size();
           
-          if(y < 0){
+          if(s1 > s2){
             return true;
           }
-          else if(y > 0){
+          else if(s2 > s1){
             return false;
           }
           
-          return *h_.v < *x.h_.v;
+          for(size_t i = 0; i < s1; ++i){
+            if((*h_.v)[i].less((*x.h_.v)[i])){
+              return true;
+            }
+          }
+          
+          return false;
         }
         case Reference:
           return less(*x.h_.ref->v);
@@ -8877,16 +8884,23 @@ bool nvar::less(const nvar& x) const{
         case Vector:
           return false;
         case List:{
-          int y = h_.l->size() - x.h_.l->size();
+          size_t s1 = h_.l->size();
+          size_t s2 = x.h_.l->size();
           
-          if(y < 0){
+          if(s1 > s2){
             return true;
           }
-          else if(y > 0){
+          else if(s2 > s1){
             return false;
           }
           
-          return *h_.l < *x.h_.l;
+          for(size_t i = 0; i < s1; ++i){
+            if((*h_.l)[i].less((*x.h_.l)[i])){
+              return true;
+            }
+          }
+          
+          return false;
         }
         case Reference:
           return less(*x.h_.ref->v);
