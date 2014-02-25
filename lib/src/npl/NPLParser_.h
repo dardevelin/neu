@@ -176,8 +176,8 @@ namespace neu{
       return out_;
     }
     
-    void addClass(const nstr& name, nvar& c){
-      if(out_.hasKey("name")){
+    void addClass(const nvar& name, nvar& c){
+      if(out_.hasKey(name)){
         error("class exists: " + name);
         return;
       }
@@ -189,7 +189,7 @@ namespace neu{
       nvar key = {f[1].str(), f[1].size()};
       
       if(c.hasKey(key)){
-        error("method exists: " + key.toStr());
+        error("method exists: " + key);
         return;
       }
       

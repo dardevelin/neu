@@ -414,7 +414,7 @@ namespace neu{
             }
           }
           
-          NERROR("failed to process: " + v.toStr());
+          NERROR("failed to process: " + v);
         }
         case nvar::Symbol:{
           nvar p;
@@ -922,7 +922,7 @@ namespace neu{
         return o;
       }
       
-      return Throw(v, "New[0] failed to create: " + v.toStr());
+      return Throw(v, "New[0] failed to create: " + v);
     }
     
     nvar Block_n(const nvar& v){

@@ -904,7 +904,7 @@ namespace neu{
         case Pointer:
           return h_.vp->asDouble();
         default:
-          NERROR("var does not hold a long");
+          NERROR("var does not hold a double");
       }
     }
     
@@ -923,7 +923,7 @@ namespace neu{
         case Pointer:
           return h_.vp->asDouble();
         default:
-          NERROR("var does not hold a long");
+          NERROR("var does not hold a double");
       }
     }
     
@@ -1387,7 +1387,7 @@ namespace neu{
         case Pointer:
           return h_.vp->multimap();
         default:
-          NERROR("var does not hold a map");
+          NERROR("var does not hold a multimap");
       }
     }
     
@@ -1406,7 +1406,7 @@ namespace neu{
         case Pointer:
           return h_.vp->multimap();
         default:
-          NERROR("var does not hold a map");
+          NERROR("var does not hold a multimap");
       }
     }
     
@@ -2260,6 +2260,7 @@ namespace neu{
           return false;
       }
     }
+    
     bool isFunction() const{
       switch(t_){
         case Function:
@@ -5163,7 +5164,7 @@ namespace neu{
               size_t k = key.asLong();
 #ifndef NEU_FAST
               if(k >= h_.v->size()){
-                NERROR("index out of range: " + key.toStr());
+                NERROR("index out of range: " + key);
               }
 #endif
               return (*h_.v)[k];
@@ -5172,7 +5173,7 @@ namespace neu{
               size_t k = key.asLong();
 #ifndef NEU_FAST
               if(k >= h_.l->size()){
-                NERROR("index out of range: " + key.toStr());
+                NERROR("index out of range: " + key);
               }
 #endif
               return (*h_.l)[k];
@@ -5181,7 +5182,7 @@ namespace neu{
               size_t k = key.asLong();
 #ifndef NEU_FAST
               if(k >= h_.f->v.size()){
-                NERROR("index out of range: "  + key.toStr());
+                NERROR("index out of range: "  + key);
               }
 #endif
               return h_.f->v[k];
@@ -5192,7 +5193,7 @@ namespace neu{
               auto itr = h_.m->find(key);
 #ifndef NEU_FAST
               if(itr == h_.m->end()){
-                NERROR("invalid key: " + key.toStr());
+                NERROR("invalid key: " + key);
               }
 #endif
               return itr->second;
@@ -5221,7 +5222,7 @@ namespace neu{
                 auto itr = h_.f->m->find(key);
 #ifndef NEU_FAST
                 if(itr == h_.f->m->end()){
-                  NERROR("invalid key: " + key.toStr());
+                  NERROR("invalid key: " + key);
                 }
 #endif
                 return itr->second;
@@ -5231,7 +5232,7 @@ namespace neu{
               auto itr = h_.m->find(key);
 #ifndef NEU_FAST
               if(itr == h_.m->end()){
-                NERROR("invalid key: " + key.toStr());
+                NERROR("invalid key: " + key);
               }
 #endif
               return itr->second;
@@ -5358,7 +5359,7 @@ namespace neu{
             auto itr = h_.f->m->find(key);
 #ifndef NEU_FAST
             if(itr == h_.f->m->end()){
-              NERROR("invalid key: " + key.toStr());
+              NERROR("invalid key: " + key);
             }
 #endif
             return itr->second;
@@ -5368,7 +5369,7 @@ namespace neu{
           auto itr = h_.m->find(key);
 #ifndef NEU_FAST
           if(itr == h_.m->end()){
-            NERROR("invalid key: " + key.toStr());
+            NERROR("invalid key: " + key);
           }
 #endif
           return itr->second;
@@ -6474,6 +6475,14 @@ namespace neu{
     return new nvar(s, nvar::SymbolType);
   }
   
+  inline nvar operator""_nsym(const char* s, unsigned long){
+    return nvar(s, nvar::SymbolType);
+  }
+
+  inline nvar operator""_nfunc(const char* f, unsigned long){
+    return nvar(f, nvar::FunctionType);
+  }
+  
   inline nvar nref(const nvar& v){
     switch(v.fullType()){
       case nvar::Reference:
@@ -6586,6 +6595,18 @@ namespace neu{
   
   inline nvar operator%(int v1, const nvar& v2){
     return nvar(v1) % v2;
+  }
+  
+  inline nstr operator+(const char* s, const nvar& v){
+    return s + v.toStr();
+  }
+  
+  inline nstr& operator+=(nstr& s, const char* v){
+    return s += v;
+  }
+  
+  inline nstr& operator+=(nstr& s, const nvar& v){
+    return s += v.toStr();
   }
   
 } // end namespace neu

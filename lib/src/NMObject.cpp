@@ -178,7 +178,7 @@ namespace neu{
         delete cmd;
         _commandPool.release(0);
         
-        NERROR("failed to process: " + v.toStr());
+        NERROR("failed to process: " + v);
       }
       
       _commandPool.release(cmd);

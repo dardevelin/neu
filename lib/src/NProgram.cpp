@@ -556,7 +556,7 @@ nstr NProgram::toArgStr(const nvar& v){
     }
     else{
       ret += "--" + keys[i].str();
-      ret += " '" + v[keys[i]].toStr() + "'";
+      ret += " '" + v[keys[i]] + "'";
     }
   }
   
@@ -570,7 +570,7 @@ nstr NProgram::toArgStr(const nvar& v){
       ret += " ";
     }
 
-    ret += v[i].toStr();
+    ret += v[i];
   }
   
   return ret;

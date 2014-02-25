@@ -246,7 +246,7 @@ namespace neu{
           break;
         }
         default:
-          NERROR("[1] invalid function: " + v.toStr());
+          NERROR("[1] invalid function: " + v);
       }
     }
     

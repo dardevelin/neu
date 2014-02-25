@@ -168,7 +168,7 @@ void NMParser_::translate(nvar& v){
   }
   
   if(itr == _functionMap.end()){
-    error(v, "unrecognized function: " + v.toStr());
+    error(v, "unrecognized function: " + v);
     return;
   }
   
@@ -251,7 +251,7 @@ void NMParser_::translate(nvar& v){
       return;
   }
   
-  error(v, "unrecognized function: " + v.toStr());
+  error(v, "unrecognized function: " + v);
 }
 
 NMParser::NMParser(){
