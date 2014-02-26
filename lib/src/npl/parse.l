@@ -42,6 +42,8 @@
   
   #include <iostream>
   
+  #include <neu/NPLParser.h>
+  
   #include "NPLParser_.h"
   #include "parse.tab.h"
   #include "parse.h"
@@ -116,8 +118,7 @@ KW_RETURN return
 KW_BREAK break
 KW_CONTINUE continue
 KW_CLASS class
-TYPE (bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(var)
-VEC_TYPE (char[0-9]+)|(uchar[0-9]+)|(short[0-9]+)|(ushort[0-9]+)|(int[0-9]+)|(uint[0-9]+)|(long[0-9]+)|(ulong[0-9]+)|(float[0-9]+)|(double[0-9]+)
+TYPE ((bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(var))([0-9]+)?\*?
 DEFINE "#define"
 
 %%
@@ -275,32 +276,14 @@ DEFINE "#define"
 
 {TYPE} {
   PS->advance(yytext, "type");
-  
-  nstr t = yytext;
-  t.uppercase();
-  yylval->v = PS->func(t);
-  return TYPE;
-}
+  yylval->v = NPLParser::parseType(yytext);
 
-{VEC_TYPE} {
-  PS->advance(yytext, "type");
-  
-  nstr t = yytext;
-  
-  size_t i;
-  size_t len = t.length();
-  for(i = 0; i < len; ++i){
-    if(nstr::isDigit(t[i])){
-      break;
-    }
+  if(yylval->v == none){
+    nstr msg = "invalid type: ";
+    msg += yytext;
+    npl_error(PS, yyscanner, msg.c_str());
   }
-  
-  size_t n = atoi(t.substr(i, len - i).c_str());
-  t = t.substr(0, i);
-  t.uppercase();
-  
-  yylval->v = PS->func(t).add("length", n);
-  
+
   return TYPE;
 }
 

@@ -49,6 +49,7 @@
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/IntrinsicInst.h"
 
+#include <neu/NPLParser.h>
 #include <neu/NBasicMutex.h>
 
 using namespace std;
@@ -95,18 +96,6 @@ namespace{
   
   class NPLCompiler{
   public:
-    enum TypeId{
-      BoolTypeId=1,
-      CharTypeId,
-      ShortTypeId,
-      IntTypeId,
-      LongTypeId,
-      FloatTypeId,
-      DoubleTypeId,
-      VarTypeId,
-      VoidTypeId
-    };
-    
     class LocalScope{
     public:
       Value* get(const nstr& s){
@@ -133,51 +122,42 @@ namespace{
     : context_(context),
     module_(module),
     engine_(engine){
-      init();
+
     }
     
     ~NPLCompiler(){
       
     }
-
-    void init(){
-      typeIdMap_["Bool"] = BoolTypeId;
-      typeIdMap_["Char"] = CharTypeId;
-      typeIdMap_["Short"] = ShortTypeId;
-      typeIdMap_["Int"] = IntTypeId;
-      typeIdMap_["Long"] = LongTypeId;
-      typeIdMap_["Float"] = FloatTypeId;
-      typeIdMap_["Double"] = DoubleTypeId;
-      typeIdMap_["Var"] = VarTypeId;
-      typeIdMap_["Void"] = VoidTypeId;
+    
+    Type* type(const char* t){
+      return type(NPLParser::parseType(t));
     }
     
-    Type* getType(const nvar& t){
-      TypeId typeId = typeIdMap_[t];
-      
+    Type* type(const nstr& t){
+      return type(NPLParser::parseType(t));
+    }
+    
+    Type* type(const nvar& t){
       size_t len = t.get("len", 0);
       bool ptr = t.get("ptr", false);
+      size_t bits = t["size"] * 8;
       
-      switch(typeId){
-        case BoolTypeId:
-          if(len > 0){
-            if(ptr){
-              
-            }
-            else{
-              
-            }
-          }
-          else if(ptr){
-            return Type::getInt1PtrTy(context_);
-          }
-          else{
-            return Type::getInt1Ty(context_);
-          }
-          break;
+      Type* intType = Type::getIntNTy(context_, bits);
+      
+      if(len > 0){
+        Type* vecType = VectorType::get(intType, len);
+        
+        if(ptr){
+          return PointerType::get(vecType, 0);
+        }
+
+        return vecType;
       }
-      
-      return 0;
+      else if(ptr){
+        return PointerType::get(intType, 0);
+      }
+
+      return intType;
     }
     
     NPLFunc compile(const nvar& code, const nstr& className, const nstr& func){
@@ -205,14 +185,12 @@ namespace{
     }
     
   private:
-    typedef NMap<nstr, TypeId> TypeIdMap_;
     typedef NVector<LocalScope*> ScopeStack_;
     typedef NMap<pair<nstr, size_t>, Function*> FunctionMap_;
     
     LLVMContext& context_;
     Module& module_;
     ExecutionEngine* engine_;
-    TypeIdMap_ typeIdMap_;
 
     ScopeStack_ scopeStack_;
     FunctionMap_ functionMap_;

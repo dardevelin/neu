@@ -80,7 +80,7 @@ namespace{
     }
     
     const nvar& getType(const nstr& t){
-      return typeMap_[t];
+      return typeMap_.get(t, none);
     }
     
     nvar nameMap_;
@@ -121,4 +121,47 @@ void NPLParser::setErrorStream(ostream& estr){
 
 void NPLParser::setMetadata(bool flag){
   x_->setMetadata(flag);
+}
+
+nvar NPLParser::parseType(const nstr& t){
+  nstr tn = t;
+  
+  bool ptr;
+  
+  if(t.endsWith("*")){
+    ptr = true;
+    tn = t.substr(0, t.length() - 1);
+  }
+  else{
+    ptr = false;
+  }
+  
+  size_t len = 0;
+  for(size_t i = 0; i < tn.length(); ++i){
+    if(nstr::isDigit(tn[i])){
+      len = atoi(tn.substr(i, tn.length() - i).c_str());
+      tn = tn.substr(0, i);
+      break;
+    }
+  }
+  
+  nvar ti = _global.getType(tn);
+  
+  if(ti == none){
+    return none;
+  }
+  
+  nvar ret = nfunc(tn.uppercase());
+
+  ret.merge(ti);
+  
+  if(ptr){
+    ret("ptr") = true;
+  }
+  
+  if(len > 0){
+    ret("len") = len;
+  }
+  
+  return ret;
 }

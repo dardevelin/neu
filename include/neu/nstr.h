@@ -253,7 +253,7 @@ namespace neu{
       str_.insert(p, n, c);
     }
     
-    bool beginsWith(const nstr& str){
+    bool beginsWith(const nstr& str) const{
       size_t length = str.length();
       
       if(str_.length() < length){
@@ -263,7 +263,7 @@ namespace neu{
       return str_.substr(0, length) == str.str_;
     }
     
-    bool endsWith(const nstr& str){
+    bool endsWith(const nstr& str) const{
       size_t length = str.length();
       
       if(str_.length() < length){

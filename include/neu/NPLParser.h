@@ -49,6 +49,8 @@ namespace neu{
     
     nvar parseFile(const nstr& path, nvar* tags=0);
     
+    static nvar parseType(const nstr& typeSpec);
+    
     void setErrorStream(std::ostream& estr);
     
     static bool isReservedName(const nstr& name);
