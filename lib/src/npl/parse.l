@@ -299,7 +299,7 @@ DEFINE "#define"
   t = t.substr(0, i);
   t.uppercase();
   
-  yylval->v = PS->func(t) << nvar(i);
+  yylval->v = PS->func(t).add("length", n);
   
   return TYPE;
 }

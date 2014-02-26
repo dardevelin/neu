@@ -42,6 +42,7 @@
 #include <cmath>
 #include <limits>
 #include <functional>
+#include <cstdarg>
 
 #include <neu/nstr.h>
 #include <neu/nrat.h>
@@ -2322,6 +2323,23 @@ namespace neu{
           return h_.ref->v->isFunction(f, arity);
         case Pointer:
           return h_.vp->isFunction(f, arity);
+        default:
+          return false;
+      }
+    }
+
+    bool isFunction(size_t minArity, size_t maxArity) const{
+      switch(t_){
+        case Function:{
+          size_t s = h_.f->v.size();
+          return s >= minArity && s <= maxArity;
+        }
+        case HeadMap:
+          return h_.hm->h->isFunction(minArity, maxArity);
+        case Reference:
+          return h_.ref->v->isFunction(minArity, maxArity);
+        case Pointer:
+          return h_.vp->isFunction(minArity, maxArity);
         default:
           return false;
       }
@@ -5452,7 +5470,7 @@ namespace neu{
           NERROR("invalid operand");
       }
     }
-
+    
     nvar& operator()(const nvar& key){
       switch(t_){
         case None:
@@ -5524,6 +5542,27 @@ namespace neu{
       }
       
       return (*this)(nvar(k));
+    }
+    
+    nvar& operator()(std::initializer_list<nvar> il){
+      assert(il.size() % 2 == 0);
+      
+      auto itr = il.begin();
+      while(itr != il.end()){
+        const nvar& k = *itr;
+        ++itr;
+        const nvar& v = *itr;
+        ++itr;
+        
+        if(k.isString()){
+          (*this)(k.str()) = v;
+        }
+        else{
+          (*this)(k) = v;
+        }
+      }
+      
+      return *this;
     }
     
     void erase(const nvar& key){

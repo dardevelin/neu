@@ -34,33 +34,255 @@
 
 #include <neu/NPLModule.h>
 
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/Analysis/Verifier.h"
+#include "llvm/Analysis/Passes.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/PassManager.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/IntrinsicInst.h"
+
+#include <neu/NBasicMutex.h>
+
 using namespace std;
+using namespace llvm;
 using namespace neu;
 
-namespace neu{
+namespace{
 
+  enum FunctionKey{
+    FKEY_Add_2 = 1,
+    FKEY_Sub_2,
+    FKEY_Mul_2,
+    FKEY_Div_2
+  };
+  
+  typedef NMap<pair<nstr, int>, FunctionKey> FunctionMap;
+  
+  static FunctionMap _functionMap;
+  
+  enum SymbolKey{
+    SKEY_true = 1,
+    SKEY_false,
+    SKEY_this,
+    SKEY_that
+  };
+  
+  typedef NMap<nstr, SymbolKey> SymbolMap;
+  
+  static SymbolMap _symbolMap;
+  
+  static void _initFunctionMap(){
+    _functionMap[make_pair("Add", 2)] = FKEY_Add_2;
+    _functionMap[make_pair("Sub", 2)] = FKEY_Sub_2;
+    _functionMap[make_pair("Mul", 2)] = FKEY_Mul_2;
+    _functionMap[make_pair("Div", 2)] = FKEY_Div_2;
+  }
+  
+  static void _initSymbolMap(){
+    _symbolMap["true"] = SKEY_true;
+    _symbolMap["false"] = SKEY_false;
+    _symbolMap["this"] = SKEY_this;
+    _symbolMap["that"] = SKEY_that;
+  }
+  
+  class NPLCompiler{
+  public:
+    enum TypeId{
+      BoolTypeId=1,
+      CharTypeId,
+      ShortTypeId,
+      IntTypeId,
+      LongTypeId,
+      FloatTypeId,
+      DoubleTypeId,
+      VarTypeId,
+      VoidTypeId
+    };
+    
+    class LocalScope{
+    public:
+      Value* get(const nstr& s){
+        auto itr = scopeMap_.find(s);
+        
+        if(itr == scopeMap_.end()){
+          return 0;
+        }
+        
+        return itr->second;
+      }
+      
+      void put(const nstr& s, Value* vp){
+        scopeMap_[s] = vp;
+      }
+    
+    private:
+      typedef NMap<nstr, Value*> ScopeMap_;
+      
+      ScopeMap_ scopeMap_;
+    };
+    
+    NPLCompiler(LLVMContext& context, Module& module, ExecutionEngine* engine)
+    : context_(context),
+    module_(module),
+    engine_(engine){
+      init();
+    }
+    
+    ~NPLCompiler(){
+      
+    }
+
+    void init(){
+      typeIdMap_["Bool"] = BoolTypeId;
+      typeIdMap_["Char"] = CharTypeId;
+      typeIdMap_["Short"] = ShortTypeId;
+      typeIdMap_["Int"] = IntTypeId;
+      typeIdMap_["Long"] = LongTypeId;
+      typeIdMap_["Float"] = FloatTypeId;
+      typeIdMap_["Double"] = DoubleTypeId;
+      typeIdMap_["Var"] = VarTypeId;
+      typeIdMap_["Void"] = VoidTypeId;
+    }
+    
+    Type* getType(const nvar& t){
+      TypeId typeId = typeIdMap_[t];
+      
+      size_t len = t.get("len", 0);
+      bool ptr = t.get("ptr", false);
+      
+      switch(typeId){
+        case BoolTypeId:
+          if(len > 0){
+            if(ptr){
+              
+            }
+            else{
+              
+            }
+          }
+          else if(ptr){
+            return Type::getInt1PtrTy(context_);
+          }
+          else{
+            return Type::getInt1Ty(context_);
+          }
+          break;
+      }
+      
+      return 0;
+    }
+    
+    NPLFunc compile(const nvar& code, const nstr& className, const nstr& func){
+      const nvar& c = code[className];
+      const nvar& f = c[{func, 0}];
+      
+      pushScope();
+      
+      return 0;
+    }
+    
+    LocalScope* pushScope(){
+      LocalScope* scope = new LocalScope;
+      scopeStack_.push_back(scope);
+      
+      return scope;
+    }
+    
+    void popScope(){
+      assert(!scopeStack_.empty());
+      
+      LocalScope* scope = scopeStack_.back();
+      delete scope;
+      scopeStack_.pop_back();
+    }
+    
+  private:
+    typedef NMap<nstr, TypeId> TypeIdMap_;
+    typedef NVector<LocalScope*> ScopeStack_;
+    typedef NMap<pair<nstr, size_t>, Function*> FunctionMap_;
+    
+    LLVMContext& context_;
+    Module& module_;
+    ExecutionEngine* engine_;
+    TypeIdMap_ typeIdMap_;
+
+    ScopeStack_ scopeStack_;
+    FunctionMap_ functionMap_;
+  };
+  
+  class Global{
+  public:
+    Global()
+    : context_(getGlobalContext()),
+    module_("global", context_){
+      
+      InitializeNativeTarget();
+      
+      _initFunctionMap();
+      _initSymbolMap();
+    }
+    
+  private:
+    LLVMContext& context_;
+    Module module_;
+  };
+  
+  NBasicMutex _mutex;
+  Global* _global;
+  
+} // end namespace
+
+namespace neu{
+  
   class NPLModule_{
   public:
     NPLModule_(NPLModule* o)
-    : o_(o){
+    : o_(o),
+    context_(getGlobalContext()),
+    module_("module", context_){
       
+      initGlobal();
+      
+      engine_ = EngineBuilder(&module_).create();
     }
     
     ~NPLModule_(){
-      
+      // ndm - do we need to delete engine_?
     }
     
     NPLFunc compile(const nvar& code,
                     const nstr& className,
                     const nstr& func){
     
-      return 0;
+      NPLCompiler compiler(context_, module_, engine_);
+      
+      return compiler.compile(code, className, func);
+    }
+    
+    void initGlobal(){
+      _mutex.lock();
+      if(!_global){
+        _global = new Global;
+      }
+      _mutex.unlock();
     }
     
   private:
     NPLModule* o_;
+    
+    LLVMContext& context_;
+    Module module_;
+    ExecutionEngine* engine_;
   };
-
+  
 } // end namespace neu
 
 NPLModule::NPLModule(){
