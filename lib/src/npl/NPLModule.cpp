@@ -65,7 +65,63 @@ namespace{
     FKEY_Add_2 = 1,
     FKEY_Sub_2,
     FKEY_Mul_2,
-    FKEY_Div_2
+    FKEY_Div_2,
+    FKEY_Mod_2,
+    FKEY_And_2,
+    FKEY_Or_2,
+    FKEY_XOr_2,
+    FKEY_ShL_2,
+    FKEY_ShR_2,
+    FKEY_BitAnd_2,
+    FKEY_BitOr_2,
+    FKEY_BitXOr_2,
+    FKEY_BitComplement_1,
+    FKEY_Not_1,
+    FKEY_EQ_2,
+    FKEY_NE_2,
+    FKEY_GT_2,
+    FKEY_GE_2,
+    FKEY_LT_2,
+    FKEY_LE_2,
+    FKEY_If_2,
+    FKEY_If_3,
+    FKEY_While_2,
+    FKEY_For_4,
+    FKEY_AddBy_2,
+    FKEY_SubBy_2,
+    FKEY_MulBy_2,
+    FKEY_DivBy_2,
+    FKEY_ModBy_2,
+    FKEY_Block_n,
+    FKEY_Set_2,
+    FKEY_Inc_1,
+    FKEY_PostInc_1,
+    FKEY_Dec_1,
+    FKEY_PostDec_1,
+    FKEY_Idx_2,
+    FKEY_Len_1,
+    FKEY_Size_1,
+    FKEY_Neg_1,
+    FKEY_Inv_1,
+    FKEY_Sqrt_1,
+    FKEY_Pow_2,
+    FKEY_Exp_1,
+    FKEY_Vec_n,
+    FKEY_Abs_1,
+    FKEY_Log_1,
+    FKEY_Log10_1,
+    FKEY_Floor_1,
+    FKEY_Ceil_1,
+    FKEY_Break_0,
+    FKEY_Continue_0,
+    FKEY_Ret_1,
+    FKEY_Ret_0,
+    FKEY_O2_1,
+    FKEY_Normalize_1,
+    FKEY_Magnitude_1,
+    FKEY_DotProduct_2,
+    FKEY_CrossProduct_2,
+    FKEY_Call_1
   };
   
   typedef NMap<pair<nstr, int>, FunctionKey> FuncMap;
@@ -88,6 +144,62 @@ namespace{
     _funcMap[make_pair("Sub", 2)] = FKEY_Sub_2;
     _funcMap[make_pair("Mul", 2)] = FKEY_Mul_2;
     _funcMap[make_pair("Div", 2)] = FKEY_Div_2;
+    _funcMap[make_pair("Mod", 2)] = FKEY_Mod_2;
+    _funcMap[make_pair("And", 2)] = FKEY_And_2;
+    _funcMap[make_pair("Or", 2)] = FKEY_Or_2;
+    _funcMap[make_pair("XOr", 2)] = FKEY_XOr_2;
+    _funcMap[make_pair("ShR", 2)] = FKEY_ShR_2;
+    _funcMap[make_pair("ShL", 2)] = FKEY_ShL_2;
+    _funcMap[make_pair("BitAnd", 2)] = FKEY_BitAnd_2;
+    _funcMap[make_pair("BitOr", 2)] = FKEY_BitOr_2;
+    _funcMap[make_pair("BitXOr", 2)] = FKEY_BitXOr_2;
+    _funcMap[make_pair("BitComplement", 1)] = FKEY_BitComplement_1;
+    _funcMap[make_pair("Not", 1)] = FKEY_Not_1;
+    _funcMap[make_pair("EQ", 2)] = FKEY_EQ_2;
+    _funcMap[make_pair("NE", 2)] = FKEY_NE_2;
+    _funcMap[make_pair("LT", 2)] = FKEY_LT_2;
+    _funcMap[make_pair("LE", 2)] = FKEY_LE_2;
+    _funcMap[make_pair("GT", 2)] = FKEY_GT_2;
+    _funcMap[make_pair("GE", 2)] = FKEY_GE_2;
+    _funcMap[make_pair("If", 2)] = FKEY_If_2;
+    _funcMap[make_pair("If", 3)] = FKEY_If_3;
+    _funcMap[make_pair("Set", 2)] = FKEY_Set_2;
+    _funcMap[make_pair("AddBy", 2)] = FKEY_AddBy_2;
+    _funcMap[make_pair("SubBy", 2)] = FKEY_SubBy_2;
+    _funcMap[make_pair("MulBY", 2)] = FKEY_MulBy_2;
+    _funcMap[make_pair("DivBy", 2)] = FKEY_DivBy_2;
+    _funcMap[make_pair("ModBy", 2)] = FKEY_ModBy_2;
+    _funcMap[make_pair("Block", -1)] = FKEY_Block_n;
+    _funcMap[make_pair("Inc", 1)] = FKEY_Inc_1;
+    _funcMap[make_pair("PostInc", 1)] = FKEY_PostInc_1;
+    _funcMap[make_pair("Dec", 1)] = FKEY_Dec_1;
+    _funcMap[make_pair("PostDec", 1)] = FKEY_PostDec_1;
+    _funcMap[make_pair("While", 2)] = FKEY_While_2;
+    _funcMap[make_pair("For", 4)] = FKEY_For_4;
+    _funcMap[make_pair("Idx", 2)] = FKEY_Idx_2;
+    _funcMap[make_pair("Len", 1)] = FKEY_Len_1;
+    _funcMap[make_pair("Size", 1)] = FKEY_Size_1;
+    _funcMap[make_pair("Neg", 1)] = FKEY_Neg_1;
+    _funcMap[make_pair("Inv", 1)] = FKEY_Inv_1;
+    _funcMap[make_pair("Sqrt", 1)] = FKEY_Sqrt_1;
+    _funcMap[make_pair("Pow", 2)] = FKEY_Pow_2;
+    _funcMap[make_pair("Exp", 1)] = FKEY_Exp_1;
+    _funcMap[make_pair("Vec", -1)] = FKEY_Vec_n;
+    _funcMap[make_pair("Abs", 1)] = FKEY_Abs_1;
+    _funcMap[make_pair("Log", 1)] = FKEY_Log_1;
+    _funcMap[make_pair("Log10", 1)] = FKEY_Log10_1;
+    _funcMap[make_pair("Floor", 1)] = FKEY_Floor_1;
+    _funcMap[make_pair("Ceil", 1)] = FKEY_Ceil_1;
+    _funcMap[make_pair("Break", 0)] = FKEY_Break_0;
+    _funcMap[make_pair("Continue", 0)] = FKEY_Continue_0;
+    _funcMap[make_pair("Ret", 1)] = FKEY_Ret_1;
+    _funcMap[make_pair("Ret", 0)] = FKEY_Ret_0;
+    _funcMap[make_pair("O2", 1)] = FKEY_O2_1;
+    _funcMap[make_pair("Normalize", 1)] = FKEY_Normalize_1;
+    _funcMap[make_pair("Magnitude", 1)] = FKEY_Magnitude_1;
+    _funcMap[make_pair("DotProduct", 2)] = FKEY_DotProduct_2;
+    _funcMap[make_pair("CrossProduct", 2)] = FKEY_CrossProduct_2;
+    _funcMap[make_pair("Call", 1)] = FKEY_Call_1;
   }
   
   static void _initSymbolMap(){
@@ -125,7 +237,9 @@ namespace{
     NPLCompiler(LLVMContext& context, Module& module, FunctionMap& functionMap)
     : context_(context),
     module_(module),
-    functionMap_(functionMap){
+    functionMap_(functionMap),
+    builder_(context_),
+    estr_(&cerr){
 
     }
     
@@ -151,7 +265,7 @@ namespace{
     }
     
     Type* type(const nvar& t){
-      size_t bits = t["bits"];
+      size_t bits = t.get("bits", 0);
       bool ptr = t.get("ptr", false);
       
       if(bits == 0){
@@ -197,7 +311,7 @@ namespace{
 
       return baseType;
     }
-
+    
     Function* createFunction(const nstr& name,
                              const nstr& returnType,
                              const nvec& argTypes,
@@ -216,6 +330,118 @@ namespace{
       return f;
     }
     
+    Value* error(const nstr& msg, const nvar& n, int arg=-1){
+      nstr as;
+      if(arg != -1){
+        as = "[" + nvar(arg) + "]";
+      }
+      
+      *estr_ << "NPL compiler error: " << msg << as << ": " <<
+      n.toStr() << endl;
+      
+      foundError_ = true;
+      
+      return 0;
+    }
+
+    Value* getDouble(double v){
+      return ConstantFP::get(context_, APFloat(v));
+    }
+    
+    Value* getFloat(float v){
+      return ConstantFP::get(context_, APFloat(v));
+    }
+    
+    Value* getInt1(bool v){
+      return ConstantInt::get(context_, APInt(1, v));
+    }
+    
+    Value* getInt8(int8_t v){
+      return ConstantInt::get(context_, APInt(8, v, true));
+    }
+    
+    Value* getUInt8(uint8_t v){
+      Value* vi = ConstantInt::get(context_, APInt(8, v, false));
+      
+      setUnsigned(vi);
+      
+      return vi;
+    }
+    
+    Value* getInt16(int16_t v){
+      return ConstantInt::get(context_, APInt(16, v, true));
+    }
+    
+    Value* getUInt16(uint16_t v){
+      Value* vi = ConstantInt::get(context_, APInt(16, v, false));
+      
+      setUnsigned(vi);
+      
+      return vi;
+    }
+    
+    Value* getInt32(int32_t v){
+      return ConstantInt::get(context_, APInt(32, v, true));
+    }
+    
+    Value* getUInt32(int32_t v){
+      Value* vi = ConstantInt::get(context_, APInt(32, v, false));
+      
+      setUnsigned(vi);
+      
+      return vi;
+    }
+    
+    Value* getInt64(int64_t v){
+      return ConstantInt::get(context_, APInt(64, v, true));
+    }
+    
+    Value* getUInt64(uint64_t v){
+      Value* vi = ConstantInt::get(context_, APInt(64, v, false));
+      
+      setUnsigned(vi);
+      
+      return vi;
+    }
+
+    Value* compile(const nvar& n){
+      FuncMap::const_iterator itr =
+      _funcMap.find(make_pair(n.str(), n.size()));
+      
+      if(itr == _funcMap.end()){
+        itr = _funcMap.find(make_pair(n.str(), -1));
+      }
+      
+      if(itr == _funcMap.end()){
+        return error("unrecognized function", n);
+      }
+      
+      FunctionKey key = itr->second;
+      
+      switch(key){
+        case FKEY_Block_n:{
+          if(n.empty()){
+            return getInt32(0);
+          }
+          
+          Value* rv;
+          for(size_t i = 0; i < n.size(); ++i){
+            rv = compile(n[i]);
+            if(!rv){
+              return 0;
+            }
+          }
+          
+          return rv;
+        }
+        default:
+          func_->dump();
+          NERROR("unimplemented function: " + n);
+      }
+      
+      return 0;
+    }
+    
     Function* compile(const nvar& code, const nstr& className, const nstr& func){
       c_ = code[className];
       f_ = c_[{func, 0}];
@@ -223,16 +449,37 @@ namespace{
       pushScope();
 
       func_ = createFunction(className + "_" + func, "void", {"void*", "void*"});
-      
-      entry_ =
-      BasicBlock::Create(context_, "entry", func_);
-      
+
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("op");
       op_ = aitr;
       ++aitr;
       aitr->setName("op2");
       op2_ = aitr;
+      
+      entry_ =
+      BasicBlock::Create(context_, "entry", func_);
+      
+      begin_ =
+      BasicBlock::Create(context_, "begin", func_);
+
+      foundReturn_ = false;
+      foundError_ = false;
+      
+      Value* b = compile(f_[2]);
+      
+      popScope();
+      
+      if(!b){
+        func_->eraseFromParent();
+        return 0;
+      }
+      
+      builder_.CreateRetVoid();
+      builder_.SetInsertPoint(begin_);
+      
+      builder_.SetInsertPoint(entry_);
+      builder_.CreateBr(begin_);
       
       func_->dump();
       
@@ -253,9 +500,35 @@ namespace{
       delete scope;
       scopeStack_.pop_back();
     }
+
+    nvar& putInfo(Value* v, const nvar& info=undef){
+      auto itr = infoMap_.insert({v, info});
+      return itr.first->second;
+    }
+
+    nvar& getInfo(Value* v){
+      auto itr = infoMap_.find(v);
+      
+      if(itr == infoMap_.end()){
+        return putInfo(v);
+      }
+      
+      return itr->second;
+    }
+    
+    bool isSigned(Value* v){
+      const nvar& info = getInfo(v);
+      return info.get("signed", true);
+    }
+    
+    void setUnsigned(Value* v){
+      nvar& info = getInfo(v);
+      info("signed") = false;
+    }
     
   private:
     typedef NVector<LocalScope*> ScopeStack_;
+    typedef NMap<Value*, nvar> InfoMap_;
     
     LLVMContext& context_;
     Module& module_;
@@ -263,11 +536,19 @@ namespace{
     ScopeStack_ scopeStack_;
     FunctionMap functionMap_;
     Function* func_;
+    BasicBlock* loopContinue_;
+    BasicBlock* loopMerge_;
     BasicBlock* entry_;
+    BasicBlock* begin_;
     Value* op_;
     Value* op2_;
     nvar c_;
     nvar f_;
+    bool foundReturn_;
+    bool foundError_;
+    IRBuilder<> builder_;
+    ostream* estr_;
+    InfoMap_ infoMap_;
   };
   
   class Global{
