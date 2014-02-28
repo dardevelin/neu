@@ -501,16 +501,12 @@ namespace{
       scopeStack_.pop_back();
     }
 
-    nvar& putInfo(Value* v, const nvar& info=undef){
-      auto itr = infoMap_.insert({v, info});
-      return itr.first->second;
-    }
-
     nvar& getInfo(Value* v){
       auto itr = infoMap_.find(v);
       
       if(itr == infoMap_.end()){
-        return putInfo(v);
+        auto itr = infoMap_.insert({v, undef});
+        return itr.first->second;
       }
       
       return itr->second;
