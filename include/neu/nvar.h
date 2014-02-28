@@ -6533,6 +6533,69 @@ namespace neu{
       }
     }
     
+    static nvar parseFuncSpec(const char* fs){
+      nstr name;
+      bool done = false;
+      char c;
+      
+      size_t i = 0;
+      for(;;){
+        c = fs[i];
+        
+        switch(c){
+          case '(':
+            done = true;
+            break;
+          case ' ':
+            name = "";
+            break;
+          case '\0':
+            NERROR("invalid func spec" + nstr(fs));
+            break;
+          default:
+            name += c;
+            break;
+        }
+
+        ++i;
+        
+        if(done){
+          break;
+        }
+      }
+      
+      size_t n = 0;
+      bool first = true;
+      
+      for(;;){
+        c = fs[i];
+        
+        switch(c){
+          case ',':
+            ++n;
+            break;
+          case ')':
+            break;
+          case '\0':
+            NERROR("invalid func spec" + nstr(fs));
+            break;
+          default:
+            if(first){
+              ++n;
+              first = false;
+            }
+            else{
+              first = false;
+            }
+            break;
+        }
+        
+        ++i;
+      }
+      
+      return {name, n};
+    }
+  
   private:
     char* pack_(char* buf, size_t& size, size_t& pos) const;
     void unpack_(char* buf, size_t& pos);
