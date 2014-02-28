@@ -51,11 +51,11 @@ namespace neu{
     }
     
     void add(const nstr& func, NFunc fp){
-      functorMap_.insert(std::make_pair(std::make_pair(func, -1), fp));
+      functorMap_.insert({{func, -1}, fp});
     }
     
     void add(const nstr& func, size_t arity, NFunc fp){
-      functorMap_.insert(std::make_pair(std::make_pair(func, arity), fp));
+      functorMap_.insert({{func, arity}, fp});
     }
     
     // assumes that it has already been determined that f is a function

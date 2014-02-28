@@ -67,17 +67,10 @@ namespace{
   }
   
   static void _initFunctionMap(){
-    _functionMap[make_pair("Add", 2)] =
-    make_pair(FKEY_Add_2, NMGenerator::Supported);
-    
-    _functionMap[make_pair("Sub", 2)] =
-    make_pair(FKEY_Sub_2, NMGenerator::Supported);
-    
-    _functionMap[make_pair("Mul", 2)] =
-    make_pair(FKEY_Mul_2, NMGenerator::Supported);
-    
-    _functionMap[make_pair("Div", 2)] =
-    make_pair(FKEY_Div_2, NMGenerator::Supported);
+    _functionMap[{"Add", 2}] = {FKEY_Add_2, NMGenerator::Supported};
+    _functionMap[{"Sub", 2}] = {FKEY_Sub_2, NMGenerator::Supported};
+    _functionMap[{"Mul", 2}] = {FKEY_Mul_2, NMGenerator::Supported};
+    _functionMap[{"Div", 2}] = {FKEY_Div_2, NMGenerator::Supported};
   };
   
   class _FunctionMapLoader{

@@ -140,66 +140,66 @@ namespace{
   static SymbolMap _symMap;
   
   static void _initFunctionMap(){
-    _funcMap[make_pair("Add", 2)] = FKEY_Add_2;
-    _funcMap[make_pair("Sub", 2)] = FKEY_Sub_2;
-    _funcMap[make_pair("Mul", 2)] = FKEY_Mul_2;
-    _funcMap[make_pair("Div", 2)] = FKEY_Div_2;
-    _funcMap[make_pair("Mod", 2)] = FKEY_Mod_2;
-    _funcMap[make_pair("And", 2)] = FKEY_And_2;
-    _funcMap[make_pair("Or", 2)] = FKEY_Or_2;
-    _funcMap[make_pair("XOr", 2)] = FKEY_XOr_2;
-    _funcMap[make_pair("ShR", 2)] = FKEY_ShR_2;
-    _funcMap[make_pair("ShL", 2)] = FKEY_ShL_2;
-    _funcMap[make_pair("BitAnd", 2)] = FKEY_BitAnd_2;
-    _funcMap[make_pair("BitOr", 2)] = FKEY_BitOr_2;
-    _funcMap[make_pair("BitXOr", 2)] = FKEY_BitXOr_2;
-    _funcMap[make_pair("BitComplement", 1)] = FKEY_BitComplement_1;
-    _funcMap[make_pair("Not", 1)] = FKEY_Not_1;
-    _funcMap[make_pair("EQ", 2)] = FKEY_EQ_2;
-    _funcMap[make_pair("NE", 2)] = FKEY_NE_2;
-    _funcMap[make_pair("LT", 2)] = FKEY_LT_2;
-    _funcMap[make_pair("LE", 2)] = FKEY_LE_2;
-    _funcMap[make_pair("GT", 2)] = FKEY_GT_2;
-    _funcMap[make_pair("GE", 2)] = FKEY_GE_2;
-    _funcMap[make_pair("If", 2)] = FKEY_If_2;
-    _funcMap[make_pair("If", 3)] = FKEY_If_3;
-    _funcMap[make_pair("Set", 2)] = FKEY_Set_2;
-    _funcMap[make_pair("AddBy", 2)] = FKEY_AddBy_2;
-    _funcMap[make_pair("SubBy", 2)] = FKEY_SubBy_2;
-    _funcMap[make_pair("MulBY", 2)] = FKEY_MulBy_2;
-    _funcMap[make_pair("DivBy", 2)] = FKEY_DivBy_2;
-    _funcMap[make_pair("ModBy", 2)] = FKEY_ModBy_2;
-    _funcMap[make_pair("Block", -1)] = FKEY_Block_n;
-    _funcMap[make_pair("Inc", 1)] = FKEY_Inc_1;
-    _funcMap[make_pair("PostInc", 1)] = FKEY_PostInc_1;
-    _funcMap[make_pair("Dec", 1)] = FKEY_Dec_1;
-    _funcMap[make_pair("PostDec", 1)] = FKEY_PostDec_1;
-    _funcMap[make_pair("While", 2)] = FKEY_While_2;
-    _funcMap[make_pair("For", 4)] = FKEY_For_4;
-    _funcMap[make_pair("Idx", 2)] = FKEY_Idx_2;
-    _funcMap[make_pair("Len", 1)] = FKEY_Len_1;
-    _funcMap[make_pair("Size", 1)] = FKEY_Size_1;
-    _funcMap[make_pair("Neg", 1)] = FKEY_Neg_1;
-    _funcMap[make_pair("Inv", 1)] = FKEY_Inv_1;
-    _funcMap[make_pair("Sqrt", 1)] = FKEY_Sqrt_1;
-    _funcMap[make_pair("Pow", 2)] = FKEY_Pow_2;
-    _funcMap[make_pair("Exp", 1)] = FKEY_Exp_1;
-    _funcMap[make_pair("Vec", -1)] = FKEY_Vec_n;
-    _funcMap[make_pair("Abs", 1)] = FKEY_Abs_1;
-    _funcMap[make_pair("Log", 1)] = FKEY_Log_1;
-    _funcMap[make_pair("Log10", 1)] = FKEY_Log10_1;
-    _funcMap[make_pair("Floor", 1)] = FKEY_Floor_1;
-    _funcMap[make_pair("Ceil", 1)] = FKEY_Ceil_1;
-    _funcMap[make_pair("Break", 0)] = FKEY_Break_0;
-    _funcMap[make_pair("Continue", 0)] = FKEY_Continue_0;
-    _funcMap[make_pair("Ret", 1)] = FKEY_Ret_1;
-    _funcMap[make_pair("Ret", 0)] = FKEY_Ret_0;
-    _funcMap[make_pair("O2", 1)] = FKEY_O2_1;
-    _funcMap[make_pair("Normalize", 1)] = FKEY_Normalize_1;
-    _funcMap[make_pair("Magnitude", 1)] = FKEY_Magnitude_1;
-    _funcMap[make_pair("DotProduct", 2)] = FKEY_DotProduct_2;
-    _funcMap[make_pair("CrossProduct", 2)] = FKEY_CrossProduct_2;
-    _funcMap[make_pair("Call", 1)] = FKEY_Call_1;
+    _funcMap[{"Add", 2}] = FKEY_Add_2;
+    _funcMap[{"Sub", 2}] = FKEY_Sub_2;
+    _funcMap[{"Mul", 2}] = FKEY_Mul_2;
+    _funcMap[{"Div", 2}] = FKEY_Div_2;
+    _funcMap[{"Mod", 2}] = FKEY_Mod_2;
+    _funcMap[{"And", 2}] = FKEY_And_2;
+    _funcMap[{"Or", 2}] = FKEY_Or_2;
+    _funcMap[{"XOr", 2}] = FKEY_XOr_2;
+    _funcMap[{"ShR", 2}] = FKEY_ShR_2;
+    _funcMap[{"ShL", 2}] = FKEY_ShL_2;
+    _funcMap[{"BitAnd", 2}] = FKEY_BitAnd_2;
+    _funcMap[{"BitOr", 2}] = FKEY_BitOr_2;
+    _funcMap[{"BitXOr", 2}] = FKEY_BitXOr_2;
+    _funcMap[{"BitComplement", 1}] = FKEY_BitComplement_1;
+    _funcMap[{"Not", 1}] = FKEY_Not_1;
+    _funcMap[{"EQ", 2}] = FKEY_EQ_2;
+    _funcMap[{"NE", 2}] = FKEY_NE_2;
+    _funcMap[{"LT", 2}] = FKEY_LT_2;
+    _funcMap[{"LE", 2}] = FKEY_LE_2;
+    _funcMap[{"GT", 2}] = FKEY_GT_2;
+    _funcMap[{"GE", 2}] = FKEY_GE_2;
+    _funcMap[{"If", 2}] = FKEY_If_2;
+    _funcMap[{"If", 3}] = FKEY_If_3;
+    _funcMap[{"Set", 2}] = FKEY_Set_2;
+    _funcMap[{"AddBy", 2}] = FKEY_AddBy_2;
+    _funcMap[{"SubBy", 2}] = FKEY_SubBy_2;
+    _funcMap[{"MulBY", 2}] = FKEY_MulBy_2;
+    _funcMap[{"DivBy", 2}] = FKEY_DivBy_2;
+    _funcMap[{"ModBy", 2}] = FKEY_ModBy_2;
+    _funcMap[{"Block", -1}] = FKEY_Block_n;
+    _funcMap[{"Inc", 1}] = FKEY_Inc_1;
+    _funcMap[{"PostInc", 1}] = FKEY_PostInc_1;
+    _funcMap[{"Dec", 1}] = FKEY_Dec_1;
+    _funcMap[{"PostDec", 1}] = FKEY_PostDec_1;
+    _funcMap[{"While", 2}] = FKEY_While_2;
+    _funcMap[{"For", 4}] = FKEY_For_4;
+    _funcMap[{"Idx", 2}] = FKEY_Idx_2;
+    _funcMap[{"Len", 1}] = FKEY_Len_1;
+    _funcMap[{"Size", 1}] = FKEY_Size_1;
+    _funcMap[{"Neg", 1}] = FKEY_Neg_1;
+    _funcMap[{"Inv", 1}] = FKEY_Inv_1;
+    _funcMap[{"Sqrt", 1}] = FKEY_Sqrt_1;
+    _funcMap[{"Pow", 2}] = FKEY_Pow_2;
+    _funcMap[{"Exp", 1}] = FKEY_Exp_1;
+    _funcMap[{"Vec", -1}] = FKEY_Vec_n;
+    _funcMap[{"Abs", 1}] = FKEY_Abs_1;
+    _funcMap[{"Log", 1}] = FKEY_Log_1;
+    _funcMap[{"Log10", 1}] = FKEY_Log10_1;
+    _funcMap[{"Floor", 1}] = FKEY_Floor_1;
+    _funcMap[{"Ceil", 1}] = FKEY_Ceil_1;
+    _funcMap[{"Break", 0}] = FKEY_Break_0;
+    _funcMap[{"Continue", 0}] = FKEY_Continue_0;
+    _funcMap[{"Ret", 1}] = FKEY_Ret_1;
+    _funcMap[{"Ret", 0}] = FKEY_Ret_0;
+    _funcMap[{"O2", 1}] = FKEY_O2_1;
+    _funcMap[{"Normalize", 1}] = FKEY_Normalize_1;
+    _funcMap[{"Magnitude", 1}] = FKEY_Magnitude_1;
+    _funcMap[{"DotProduct", 2}] = FKEY_DotProduct_2;
+    _funcMap[{"CrossProduct", 2}] = FKEY_CrossProduct_2;
+    _funcMap[{"Call", 1}] = FKEY_Call_1;
   }
   
   static void _initSymbolMap(){
@@ -406,10 +406,10 @@ namespace{
 
     Value* compile(const nvar& n){
       FuncMap::const_iterator itr =
-      _funcMap.find(make_pair(n.str(), n.size()));
+      _funcMap.find({n.str(), n.size()});
       
       if(itr == _funcMap.end()){
-        itr = _funcMap.find(make_pair(n.str(), -1));
+        itr = _funcMap.find({n.str(), -1});
       }
       
       if(itr == _funcMap.end()){

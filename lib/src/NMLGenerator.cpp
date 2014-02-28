@@ -91,35 +91,35 @@ namespace{
   }
   
   static void _initFunctionMap(){
-    _functionMap[make_pair("Var", 1)] = FKEY_Var_1;
-    _functionMap[make_pair("Var", 2)] = FKEY_Var_2;
-    _functionMap[make_pair("Throw", 2)] = FKEY_Throw_2;
-    _functionMap[make_pair("Add", 2)] = FKEY_Add_2;
-    _functionMap[make_pair("Sub", 2)] = FKEY_Sub_2;
-    _functionMap[make_pair("Mul", 2)] = FKEY_Mul_2;
-    _functionMap[make_pair("Div", 2)] = FKEY_Div_2;
-    _functionMap[make_pair("Pow", 2)] = FKEY_Pow_2;
-    _functionMap[make_pair("Mod", 2)] = FKEY_Mod_2;
-    _functionMap[make_pair("Set", 2)] = FKEY_Set_2;
-    _functionMap[make_pair("LT", 2)] = FKEY_LT_2;
-    _functionMap[make_pair("GT", 2)] = FKEY_GT_2;
-    _functionMap[make_pair("LE", 2)] = FKEY_LE_2;
-    _functionMap[make_pair("GE", 2)] = FKEY_GE_2;
-    _functionMap[make_pair("EQ", 2)] = FKEY_EQ_2;
-    _functionMap[make_pair("NE", 2)] = FKEY_NE_2;
-    _functionMap[make_pair("Not", 1)] = FKEY_Not_1;
-    _functionMap[make_pair("And", 2)] = FKEY_And_2;
-    _functionMap[make_pair("Or", 2)] = FKEY_Or_2;
-    _functionMap[make_pair("Inc", 1)] = FKEY_Inc_1;
-    _functionMap[make_pair("PostInc", 1)] = FKEY_PostInc_1;
-    _functionMap[make_pair("Dec", 1)] = FKEY_Dec_1;
-    _functionMap[make_pair("PostDec", 1)] = FKEY_PostDec_1;
-    _functionMap[make_pair("AddBy", 2)] = FKEY_AddBy_2;
-    _functionMap[make_pair("SubBy", 2)] = FKEY_SubBy_2;
-    _functionMap[make_pair("MulBy", 2)] = FKEY_MulBy_2;
-    _functionMap[make_pair("DivBy", 2)] = FKEY_DivBy_2;
-    _functionMap[make_pair("ModBy", 2)] = FKEY_ModBy_2;
-    _functionMap[make_pair("Neg", 1)] = FKEY_Neg_1;
+    _functionMap[{"Var", 1}] = FKEY_Var_1;
+    _functionMap[{"Var", 2}] = FKEY_Var_2;
+    _functionMap[{"Throw", 2}] = FKEY_Throw_2;
+    _functionMap[{"Add", 2}] = FKEY_Add_2;
+    _functionMap[{"Sub", 2}] = FKEY_Sub_2;
+    _functionMap[{"Mul", 2}] = FKEY_Mul_2;
+    _functionMap[{"Div", 2}] = FKEY_Div_2;
+    _functionMap[{"Pow", 2}] = FKEY_Pow_2;
+    _functionMap[{"Mod", 2}] = FKEY_Mod_2;
+    _functionMap[{"Set", 2}] = FKEY_Set_2;
+    _functionMap[{"LT", 2}] = FKEY_LT_2;
+    _functionMap[{"GT", 2}] = FKEY_GT_2;
+    _functionMap[{"LE", 2}] = FKEY_LE_2;
+    _functionMap[{"GE", 2}] = FKEY_GE_2;
+    _functionMap[{"EQ", 2}] = FKEY_EQ_2;
+    _functionMap[{"NE", 2}] = FKEY_NE_2;
+    _functionMap[{"Not", 1}] = FKEY_Not_1;
+    _functionMap[{"And", 2}] = FKEY_And_2;
+    _functionMap[{"Or", 2}] = FKEY_Or_2;
+    _functionMap[{"Inc", 1}] = FKEY_Inc_1;
+    _functionMap[{"PostInc", 1}] = FKEY_PostInc_1;
+    _functionMap[{"Dec", 1}] = FKEY_Dec_1;
+    _functionMap[{"PostDec", 1}] = FKEY_PostDec_1;
+    _functionMap[{"AddBy", 2}] = FKEY_AddBy_2;
+    _functionMap[{"SubBy", 2}] = FKEY_SubBy_2;
+    _functionMap[{"MulBy", 2}] = FKEY_MulBy_2;
+    _functionMap[{"DivBy", 2}] = FKEY_DivBy_2;
+    _functionMap[{"ModBy", 2}] = FKEY_ModBy_2;
+    _functionMap[{"Neg", 1}] = FKEY_Neg_1;
   };
   
   class _FunctionMapLoader{
