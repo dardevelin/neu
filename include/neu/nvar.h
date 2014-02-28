@@ -1193,24 +1193,21 @@ namespace neu{
       }
     }
     
-    void* ptr() const{
+    template<typename T>
+    T* ptr() const{
       switch(t_){
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:
-          return h_.o;
         case RawPointer:
-          return h_.p;
+          return static_cast<T*>(h_.p);
         case HeadSequence:
-          return h_.hs->h->ptr();
+          return h_.hs->h->ptr<T>();
         case HeadMap:
-          return h_.hm->h->ptr();
+          return h_.hm->h->ptr<T>();
         case HeadSequenceMap:
-          return h_.hsm->h->ptr();
+          return h_.hsm->h->ptr<T>();
         case Reference:
-          return h_.ref->v->ptr();
+          return h_.ref->v->ptr<T>();
         case Pointer:
-          return h_.vp->ptr();
+          return h_.vp->ptr<T>();
         default:
           NERROR("var does not hold a pointer");
       }
