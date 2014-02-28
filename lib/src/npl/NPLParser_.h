@@ -219,19 +219,21 @@ namespace neu{
       }
       else{
         size_t bits = a["bits"];
-        bytes = (bits + 8 + 1)/8;
+        bytes = bits/8 + (bits % 8 > 0 ? 1 : 0);
       }
 
       size_t len = a.get("len", 0);
       if(len > 0){
+        bytes *= len;
         while(offset % 16 != 0){
           ++offset;
         }
-        bytes *= len;
       }
       
       a("offset") = offset;
 
+      cout << "bytes is: " << bytes << endl;
+      
       offset += bytes;
       
       c["__offset"] = offset;

@@ -216,27 +216,27 @@ namespace{
       return f;
     }
     
-    NPLFunc compile(const nvar& code, const nstr& className, const nstr& func){
-      const nvar& c = code[className];
-      const nvar& f = c[{func, 0}];
+    Function* compile(const nvar& code, const nstr& className, const nstr& func){
+      c_ = code[className];
+      f_ = c_[{func, 0}];
       
       pushScope();
 
-      f_ = createFunction(className + "_" + func, "void", {"void*", "void*"});
+      func_ = createFunction(className + "_" + func, "void", {"void*", "void*"});
       
       entry_ =
-      BasicBlock::Create(context_, "entry", f_);
+      BasicBlock::Create(context_, "entry", func_);
       
-      Function::arg_iterator aitr = f_->arg_begin();
+      Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("op");
       op_ = aitr;
       ++aitr;
       aitr->setName("op2");
       op2_ = aitr;
       
-      f_->dump();
+      func_->dump();
       
-      return 0;
+      return func_;
     }
     
     LocalScope* pushScope(){
@@ -262,10 +262,12 @@ namespace{
 
     ScopeStack_ scopeStack_;
     FunctionMap functionMap_;
-    Function* f_;
+    Function* func_;
     BasicBlock* entry_;
     Value* op_;
     Value* op2_;
+    nvar c_;
+    nvar f_;
   };
   
   class Global{
@@ -326,7 +328,9 @@ namespace neu{
     
       NPLCompiler compiler(context_, module_, functionMap_);
       
-      return compiler.compile(code, className, func);
+      compiler.compile(code, className, func);
+      
+      return 0;
     }
     
     void initGlobal(){
