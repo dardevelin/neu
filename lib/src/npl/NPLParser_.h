@@ -204,22 +204,41 @@ namespace neu{
     }
     
     void addAttribute(nvar& c, nvar& a){
-      const nstr& k = a.back();
+      cout << "a is: " << a << endl;
+      
+      const nstr& k = a.str();
       
       if(c.hasKey(k)){
         error("attribute exists: " + k);
         return;
       }
-      
-      const nvar& t = getType(a);
-      
-      nvar av;
-      av("offset") = c["__offset"];
-      av("type") = nvar(a.str().lowercase(), nvar::Sym);
 
-      c["__offset"] += t["size"];
+      size_t offset = c["__offset"];
       
-      c(k) = move(av);
+      size_t bytes;
+      if(a.get("ptr", false)){
+        bytes = 8;
+      }
+      else{
+        size_t bits = a["bits"];
+        bytes = (bits + 8 + 1)/8;
+      }
+
+      size_t len = a.get("len", 0);
+      if(len > 0){
+        while(offset % 16 != 0){
+          ++offset;
+        }
+        bytes *= len;
+      }
+      
+      a("offset") = offset;
+
+      offset += bytes;
+      
+      c["__offset"] = offset;
+      
+      c(k) = move(a);
     }
     
     void define(const nstr& sym, const nvar& expr){
@@ -251,10 +270,10 @@ namespace neu{
     
     nvar func(const nstr& f){
       nvar v = nfunc(f);
-      v("_line") = line_;
+      v("__line") = line_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;
@@ -262,10 +281,10 @@ namespace neu{
     
     nvar func(const char* f){
       nvar v = nfunc(f);
-      v("_line") = line_;
+      v("__line") = line_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;
@@ -285,10 +304,10 @@ namespace neu{
         v = nsym(s);
       }
 
-      v("_line") = line_;
+      v("__line") = line_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;
@@ -308,10 +327,10 @@ namespace neu{
         v = nsym(s);
       }
       
-      v("_line") = line_;
+      v("__line") = line_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;

@@ -2842,7 +2842,7 @@ namespace neu{
         if(k.t_ == Symbol){
           const nstr& s = *k.h_.s;
           
-          if(!s.empty() && s[0] == '_'){
+          if(s.beginsWith("__")){
             visible = false;
           }
           else{
@@ -2884,7 +2884,7 @@ namespace neu{
         if(k.t_ == Symbol){
           const nstr& s = *k.h_.s;
           
-          if(!s.empty() && s[0] == '_'){
+          if(s.beginsWith("__")){
             visible = false;
           }
           else{
@@ -5435,39 +5435,43 @@ namespace neu{
     
     const nvar& get(const nvar& key, const nvar& def) const{
       switch(t_){
+        case Function:
+          return h_.f->m ? h_.f->m->get(key, def) : def;
         case Map:
           return h_.m->get(key, def);
         case HeadMap:
-          return (*h_.hm->m)[key];
+          return h_.hm->m->get(key, def);
         case SequenceMap:
-          return (*h_.sm->m)[key];
+          return h_.sm->m->get(key, def);
         case HeadSequenceMap:
-          return (*h_.hsm->m)[key];
+          return h_.hsm->m->get(key, def);
         case Reference:
           return h_.ref->v->get(key, def);
         case Pointer:
           return h_.vp->get(key, def);
         default:
-          NERROR("invalid operand");
+          return def;
       }
     }
     
     nvar& get(const nvar& key, nvar& def){
       switch(t_){
+        case Function:
+          return h_.f->m ? h_.f->m->get(key, def) : def;
         case Map:
           return h_.m->get(key, def);
         case HeadMap:
-          return (*h_.hm->m)[key];
+          return h_.hm->m->get(key, def);
         case SequenceMap:
-          return (*h_.sm->m)[key];
+          return h_.sm->m->get(key, def);
         case HeadSequenceMap:
-          return (*h_.hsm->m)[key];
+          return h_.hsm->m->get(key, def);
         case Reference:
           return h_.ref->v->get(key, def);
         case Pointer:
           return h_.vp->get(key, def);
         default:
-          NERROR("invalid operand");
+          return def;
       }
     }
     
@@ -6301,6 +6305,7 @@ namespace neu{
             default:
               break;
           }
+          break;
         case Multimap:
           switch(x.t_){
             case Map:
@@ -6329,6 +6334,7 @@ namespace neu{
             default:
               break;
           }
+          break;
         case Function:
           switch(x.t_){
             case Map:
@@ -6364,6 +6370,7 @@ namespace neu{
             default:
               break;
           }
+          break;
         case HeadMap:
           h_.hm->m->merge(x);
           break;
@@ -6429,6 +6436,7 @@ namespace neu{
             default:
               break;
           }
+          break;
         case Multimap:
           switch(x.t_){
             case Map:
@@ -6457,6 +6465,7 @@ namespace neu{
             default:
               break;
           }
+          break;
         case Function:
           switch(x.t_){
             case Map:
@@ -6492,6 +6501,7 @@ namespace neu{
             default:
               break;
           }
+          break;
         case HeadMap:
           h_.hm->m->outerMerge(x);
           break;
@@ -6528,7 +6538,6 @@ namespace neu{
     
   private:
     char* pack_(char* buf, size_t& size, size_t& pos) const;
-    
     void unpack_(char* buf, size_t& pos);
     
     Type t_;

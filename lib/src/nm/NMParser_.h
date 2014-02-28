@@ -193,11 +193,11 @@ namespace neu{
     
     nvar func(const nstr& f){
       nvar v = nfunc(f);
-      v("_line") = line_;
+      v("__line") = line_;
       v("_token") = token_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;
@@ -205,11 +205,11 @@ namespace neu{
     
     nvar func(const char* f){
       nvar v = nfunc(f);
-      v("_line") = line_;
+      v("__line") = line_;
       v("_token") = token_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;
@@ -221,11 +221,11 @@ namespace neu{
     
     nvar sym(const nstr& s){
       nvar v = nsym(s);
-      v("_line") = line_;
+      v("__line") = line_;
       v("_token") = token_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;
@@ -237,11 +237,11 @@ namespace neu{
     
     nvar sym(const char* s){
       nvar v = nsym(s);
-      v("_line") = line_;
+      v("__line") = line_;
       v("_token") = token_;
       
       if(!file_.empty()){
-        v("_file") = file_;
+        v("__file") = file_;
       }
       
       return v;

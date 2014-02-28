@@ -61,18 +61,19 @@ namespace{
       nameMap_("try") = true;
       nameMap_("catch") = true;
       
-      typeMap_("bool") = nml("[size:1]");
-      typeMap_("char") = nml("[size:1]");
-      typeMap_("uchar") = nml("[size:1]");
-      typeMap_("short") = nml("[size:2]");
-      typeMap_("ushort") = nml("[size:2]");
-      typeMap_("int") = nml("[size:4]");
-      typeMap_("uint") = nml("[size:4]");
-      typeMap_("long") = nml("[size:8]");
-      typeMap_("ulong") = nml("[size:8]");
-      typeMap_("float") = nml("[size:4]");
-      typeMap_("double") = nml("[size:8]");
-      typeMap_("var") = nml("[size:9]");
+      typeMap_("void") = nml("[bits:0]");
+      typeMap_("bool") = nml("[bits:1]");
+      typeMap_("char") = nml("[bits:8]");
+      typeMap_("uchar") = nml("[bits:8, signed:false]");
+      typeMap_("short") = nml("[bits:16]");
+      typeMap_("ushort") = nml("[bits:16, signed:false]");
+      typeMap_("int") = nml("[bits:32]");
+      typeMap_("uint") = nml("[bits:32, signed:false]");
+      typeMap_("long") = nml("[bits:32]");
+      typeMap_("ulong") = nml("[bits:64, signed:false]");
+      typeMap_("float") = nml("[bits:32, float:true]");
+      typeMap_("double") = nml("[bits:64, float:true]");
+      typeMap_("var") = nml("[bits:72]");
     }
     
     bool isReservedName(const nstr& name) const{
@@ -148,12 +149,10 @@ nvar NPLParser::parseType(const nstr& t){
   nvar ti = _global.getType(tn);
   
   if(ti == none){
-    return none;
+    NERROR("invalid type: " + t);
   }
   
-  nvar ret = nfunc(tn.uppercase());
-
-  ret.merge(ti);
+  nvar ret = ti;
   
   if(ptr){
     ret("ptr") = true;

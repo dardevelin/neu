@@ -58,6 +58,9 @@ using namespace neu;
 
 namespace{
 
+  typedef NVector<Type*> TypeVec;
+  typedef NMap<pair<nstr, size_t>, Function*> FunctionMap;
+  
   enum FunctionKey{
     FKEY_Add_2 = 1,
     FKEY_Sub_2,
@@ -65,9 +68,9 @@ namespace{
     FKEY_Div_2
   };
   
-  typedef NMap<pair<nstr, int>, FunctionKey> FunctionMap;
+  typedef NMap<pair<nstr, int>, FunctionKey> FuncMap;
   
-  static FunctionMap _functionMap;
+  static FuncMap _funcMap;
   
   enum SymbolKey{
     SKEY_true = 1,
@@ -78,24 +81,25 @@ namespace{
   
   typedef NMap<nstr, SymbolKey> SymbolMap;
   
-  static SymbolMap _symbolMap;
+  static SymbolMap _symMap;
   
   static void _initFunctionMap(){
-    _functionMap[make_pair("Add", 2)] = FKEY_Add_2;
-    _functionMap[make_pair("Sub", 2)] = FKEY_Sub_2;
-    _functionMap[make_pair("Mul", 2)] = FKEY_Mul_2;
-    _functionMap[make_pair("Div", 2)] = FKEY_Div_2;
+    _funcMap[make_pair("Add", 2)] = FKEY_Add_2;
+    _funcMap[make_pair("Sub", 2)] = FKEY_Sub_2;
+    _funcMap[make_pair("Mul", 2)] = FKEY_Mul_2;
+    _funcMap[make_pair("Div", 2)] = FKEY_Div_2;
   }
   
   static void _initSymbolMap(){
-    _symbolMap["true"] = SKEY_true;
-    _symbolMap["false"] = SKEY_false;
-    _symbolMap["this"] = SKEY_this;
-    _symbolMap["that"] = SKEY_that;
+    _symMap["true"] = SKEY_true;
+    _symMap["false"] = SKEY_false;
+    _symMap["this"] = SKEY_this;
+    _symMap["that"] = SKEY_that;
   }
   
   class NPLCompiler{
   public:
+    
     class LocalScope{
     public:
       Value* get(const nstr& s){
@@ -118,15 +122,24 @@ namespace{
       ScopeMap_ scopeMap_;
     };
     
-    NPLCompiler(LLVMContext& context, Module& module, ExecutionEngine* engine)
+    NPLCompiler(LLVMContext& context, Module& module, FunctionMap& functionMap)
     : context_(context),
     module_(module),
-    engine_(engine){
+    functionMap_(functionMap){
 
     }
     
     ~NPLCompiler(){
       
+    }
+    
+    TypeVec typeVec(const nvec& v){
+      TypeVec tv;
+      for(const nstr& vi : v){
+        tv.push_back(type(vi));
+      }
+      
+      return tv;
     }
     
     Type* type(const char* t){
@@ -138,14 +151,39 @@ namespace{
     }
     
     Type* type(const nvar& t){
-      size_t len = t.get("len", 0);
+      size_t bits = t["bits"];
       bool ptr = t.get("ptr", false);
-      size_t bits = t["size"] * 8;
       
-      Type* intType = Type::getIntNTy(context_, bits);
+      if(bits == 0){
+        if(ptr){
+          return llvm::PointerType::get(Type::getIntNTy(context_, 8), 0);
+        }
+        
+        return Type::getVoidTy(context_);
+      }
+      
+      size_t len = t.get("len", 0);
+      bool isFloat = t.get("float", false);
+      
+      Type* baseType;
+      
+      if(isFloat){
+        if(bits == 64){
+          baseType = Type::getDoubleTy(context_);
+        }
+        else if(bits == 32){
+          baseType = Type::getFloatTy(context_);
+        }
+        else{
+          NERROR("invalid float type: " + t);
+        }
+      }
+      else{
+        baseType = Type::getIntNTy(context_, bits);
+      }
       
       if(len > 0){
-        Type* vecType = VectorType::get(intType, len);
+        Type* vecType = VectorType::get(baseType, len);
         
         if(ptr){
           return PointerType::get(vecType, 0);
@@ -154,10 +192,28 @@ namespace{
         return vecType;
       }
       else if(ptr){
-        return PointerType::get(intType, 0);
+        return PointerType::get(baseType, 0);
       }
 
-      return intType;
+      return baseType;
+    }
+
+    Function* createFunction(const nstr& name,
+                             const nstr& returnType,
+                             const nvec& argTypes,
+                             bool external=true){
+      FunctionType* ft =
+      FunctionType::get(type(returnType), typeVec(argTypes).vector(), false);
+      
+      Function* f =
+      Function::Create(ft,
+                       external ?
+                       Function::ExternalLinkage : Function::InternalLinkage,
+                       name.c_str(), &module_);
+      
+      functionMap_[{name, argTypes.size()}] = f;
+      
+      return f;
     }
     
     NPLFunc compile(const nvar& code, const nstr& className, const nstr& func){
@@ -165,6 +221,20 @@ namespace{
       const nvar& f = c[{func, 0}];
       
       pushScope();
+
+      f_ = createFunction(className + "_" + func, "void", {"void*", "void*"});
+      
+      entry_ =
+      BasicBlock::Create(context_, "entry", f_);
+      
+      Function::arg_iterator aitr = f_->arg_begin();
+      aitr->setName("op");
+      op_ = aitr;
+      ++aitr;
+      aitr->setName("op2");
+      op2_ = aitr;
+      
+      f_->dump();
       
       return 0;
     }
@@ -186,14 +256,16 @@ namespace{
     
   private:
     typedef NVector<LocalScope*> ScopeStack_;
-    typedef NMap<pair<nstr, size_t>, Function*> FunctionMap_;
     
     LLVMContext& context_;
     Module& module_;
-    ExecutionEngine* engine_;
 
     ScopeStack_ scopeStack_;
-    FunctionMap_ functionMap_;
+    FunctionMap functionMap_;
+    Function* f_;
+    BasicBlock* entry_;
+    Value* op_;
+    Value* op2_;
   };
   
   class Global{
@@ -206,11 +278,23 @@ namespace{
       
       _initFunctionMap();
       _initSymbolMap();
+      
+      NPLCompiler compiler(context_, module_, functionMap_);
+      
+      compiler.createFunction("llvm.sqrt.f64", "double", {"double"});
+      compiler.createFunction("llvm.sqrt.f32", "float", {"float"});
+      compiler.createFunction("llvm.pow.f64", "double", {"double", "double"});
+      compiler.createFunction("llvm.pow.f32", "float", {"float", "float"});
+      compiler.createFunction("llvm.log.f64", "double", {"double"});
+      compiler.createFunction("llvm.log.f32", "float", {"float"});
+      compiler.createFunction("llvm.exp.f64", "double", {"double"});
+      compiler.createFunction("llvm.exp.f32", "float", {"float"});
     }
     
   private:
     LLVMContext& context_;
     Module module_;
+    FunctionMap functionMap_;
   };
   
   NBasicMutex _mutex;
@@ -240,7 +324,7 @@ namespace neu{
                     const nstr& className,
                     const nstr& func){
     
-      NPLCompiler compiler(context_, module_, engine_);
+      NPLCompiler compiler(context_, module_, functionMap_);
       
       return compiler.compile(code, className, func);
     }
@@ -259,6 +343,7 @@ namespace neu{
     LLVMContext& context_;
     Module module_;
     ExecutionEngine* engine_;
+    FunctionMap functionMap_;
   };
   
 } // end namespace neu

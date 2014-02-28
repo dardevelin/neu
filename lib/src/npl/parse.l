@@ -109,7 +109,6 @@ AND "&&"
 OR  "||"
 KW_TRUE true
 KW_FALSE false
-KW_VOID void
 KW_FOR for
 KW_IF if
 KW_ELSE else
@@ -118,7 +117,8 @@ KW_RETURN return
 KW_BREAK break
 KW_CONTINUE continue
 KW_CLASS class
-TYPE ((bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(var))([0-9]+)?\*?
+TYPE (void)|(bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(var)\*?
+VEC_TYPE ((bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double))[0-9]+\*?
 DEFINE "#define"
 
 %%
@@ -208,11 +208,6 @@ DEFINE "#define"
   return KW_FALSE;
 }
 
-{KW_VOID} {
-  PS->advance(yytext, "keyword");
-  return KW_VOID;
-}
-
 {KW_FOR} {
   PS->advance(yytext, "keyword");
   return KW_FOR;
@@ -284,6 +279,19 @@ DEFINE "#define"
     npl_error(PS, yyscanner, msg.c_str());
   }
 
+  return TYPE;
+}
+
+{VEC_TYPE} {
+  PS->advance(yytext, "type");
+  yylval->v = NPLParser::parseType(yytext);
+  
+  if(yylval->v == none){
+    nstr msg = "invalid type: ";
+    msg += yytext;
+    npl_error(PS, yyscanner, msg.c_str());
+  }
+  
   return TYPE;
 }
 

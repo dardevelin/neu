@@ -51,7 +51,7 @@
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_VOID KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS DEFINE DOUBLE INTEGER TYPE
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS DEFINE DOUBLE INTEGER TYPE
 
 %type<v> stmt expr expr_num func_def func_def_vec block stmts if_stmt expr_vec class_vec
 
@@ -77,25 +77,23 @@ input: /* empty */
 }
 ;
 
-class_vec: KW_VOID func_def block {
+class_vec: TYPE func_def block {
   $$ = PS->newClass();
-  PS->addMethod($$, PS->func("TypedFunc") << PS->sym("Void") << move($2) << move($3));
+  PS->addMethod($$, PS->func("TypedFunc") << move($1) << move($2) << move($3));
 }
 | TYPE IDENTIFIER ';' {
-  nvar t = move($1);
-  t << PS->sym($2);
   $$ = PS->newClass();
-  PS->addAttribute($$, t);
+  $1.setHead(PS->sym($2));
+  PS->addAttribute($$, $1);
 }
-| class_vec KW_VOID func_def block {
+| class_vec TYPE func_def block {
   $$ = move($1);
-  PS->addMethod($$, PS->func("TypedFunc") << PS->sym("Void") << move($3) << move($4));
+  PS->addMethod($$, PS->func("TypedFunc") << move($2) << move($3) << move($4));
 }
 | class_vec TYPE IDENTIFIER ';' {
-  nvar t = move($2);
-  t << PS->sym($3);
   $$ = move($1);
-  PS->addAttribute($$, t);
+  $2.setHead(PS->sym($3));
+  PS->addAttribute($$, $2);
 }
 
 expr_num: DOUBLE {
@@ -228,11 +226,12 @@ func_def_vec: /* empty */ {
 }
 | func_def_vec ',' TYPE IDENTIFIER {
   $$ = move($1);
-  $$ << move($3 << move($4));
+  $1.setHead(PS->sym($4));
+  $$ << move($1);
 }
 | TYPE IDENTIFIER {
   $$ = move($1);
-  $$ << move($2);
+  $$.setHead(PS->sym($2));
 }
 ;
 
