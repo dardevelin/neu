@@ -232,8 +232,6 @@ namespace neu{
       
       a("offset") = offset;
 
-      cout << "bytes is: " << bytes << endl;
-      
       offset += bytes;
       
       c["__offset"] = offset;
