@@ -204,8 +204,6 @@ namespace neu{
     }
     
     void addAttribute(nvar& c, nvar& a){
-      cout << "a is: " << a << endl;
-      
       const nstr& k = a.str();
       
       if(c.hasKey(k)){

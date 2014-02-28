@@ -61,7 +61,7 @@ namespace{
       nameMap_("try") = true;
       nameMap_("catch") = true;
       
-      typeMap_("void") = nml("[bits:0]");
+      typeMap_("void") = nml("[]");
       typeMap_("bool") = nml("[bits:1]");
       typeMap_("char") = nml("[bits:8]");
       typeMap_("uchar") = nml("[bits:8, signed:false]");
