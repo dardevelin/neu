@@ -1,36 +1,52 @@
-/*================================= Neu =================================
+/*
  
- Copyright (c) 2013-2014, Andrometa LLC
- All rights reserved.
+      ___           ___           ___     
+     /\__\         /\  \         /\__\    
+    /::|  |       /::\  \       /:/  /    
+   /:|:|  |      /:/\:\  \     /:/  /     
+  /:/|:|  |__   /::\~\:\  \   /:/  /  ___ 
+ /:/ |:| /\__\ /:/\:\ \:\__\ /:/__/  /\__\
+ \/__|:|/:/  / \:\~\:\ \/__/ \:\  \ /:/  /
+     |:/:/  /   \:\ \:\__\    \:\  /:/  / 
+     |::/  /     \:\ \/__/     \:\/:/  /  
+     /:/  /       \:\__\        \::/  /   
+     \/__/         \/__/         \/__/    
  
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are
- met:
  
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
+Neu, Copyright (c) 2013-2014, Andrometa LLC
+All rights reserved.
+
+neu@andrometa.net
+http://neu.andrometa.net
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
  
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
  
- 3. Neither the name of the copyright holder nor the names of its
- contributors may be used to endorse or promote products derived from
- this software without specific prior written permission.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
  
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+3. Neither the name of the copyright holder nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
  
- =======================================================================*/
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+*/
 
 #include <neu/NPLModule.h>
 
@@ -267,11 +283,16 @@ namespace{
     
     Type* type(const nvar& t){
       size_t bits = t.get("bits", 0);
-      bool ptr = t.get("ptr", false);
+      size_t ptr = t.get("ptr", 0);
       
       if(bits == 0){
-        if(ptr){
-          return PointerType::get(Type::getIntNTy(context_, 8), 0);
+        if(ptr > 0){
+          Type* pt = PointerType::get(Type::getIntNTy(context_, 8), 0);
+          for(size_t i = 1; i < ptr; ++i){
+            pt = PointerType::get(pt, 0);
+          }
+          
+          return pt;
         }
         
         return Type::getVoidTy(context_);
@@ -300,14 +321,26 @@ namespace{
       if(len > 0){
         Type* vecType = VectorType::get(baseType, len);
         
-        if(ptr){
-          return PointerType::get(vecType, 0);
+        if(ptr > 0){
+          Type* pt = PointerType::get(vecType, 0);
+
+          for(size_t i = 1; i < ptr; ++i){
+            pt = PointerType::get(pt, 0);
+          }
+          
+          return pt;
         }
 
         return vecType;
       }
       else if(ptr){
-        return PointerType::get(baseType, 0);
+        Type* pt = PointerType::get(baseType, 0);
+        
+        for(size_t i = 1; i < ptr; ++i){
+          pt = PointerType::get(pt, 0);
+        }
+        
+        return pt;
       }
 
       return baseType;
@@ -529,8 +562,8 @@ namespace{
 
           BasicBlock* cb = builder_.GetInsertBlock();
           builder_.SetInsertPoint(entry_);
-          
-          Value* ep = builder_.CreateGEP(args_, getInt32(a["offset"]));
+          Value* ap = createLoad(createGEP(args_, getInt32(8)));
+          Value* ep = createGEP(ap, getInt32(a["offset"]));
           nstr name = a.str() + ".ptr";
           Value* vp = builder_.CreateBitCast(ep, t, name.c_str());
           
@@ -545,6 +578,10 @@ namespace{
       return itr->second;
     }
    
+    Value* createGEP(Value* a, Value* b){
+      return builder_.CreateGEP(a, b);
+    }
+    
     Value* createLoad(Value* v){
       nstr name = v->getName().str();
       name.findReplace(".ptr", "");
@@ -659,7 +696,7 @@ namespace{
       
       nstr name = className + "_" + function[0] + "_" + function[1];
 
-      func_ = createFunction(name, "void", {"void*"});
+      func_ = createFunction(name, "void", {"void**"});
       
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("args");
@@ -742,7 +779,7 @@ namespace{
 
     ScopeStack_ scopeStack_;
     AttributeMap_ attributeMap_;
-    FunctionMap functionMap_;
+    FunctionMap& functionMap_;
     Function* func_;
     BasicBlock* loopContinue_;
     BasicBlock* loopMerge_;
@@ -850,7 +887,7 @@ namespace neu{
       auto itr = functionPtrMap_.find(f->fp);
       
       if(itr == functionPtrMap_.end()){
-        NERROR("unknown function");
+        NERROR("invalid function");
       }
       
       engine_->freeMachineCodeForFunction(itr->second);
