@@ -45,9 +45,9 @@ namespace neu{
     
     ~NPLQueue();
     
-    void add(NPLFunc fp, NPLObject* o, NPLObject* o2=0);
+    void add(NPLFunc* func);
     
-    void clear();
+    void clear(bool free=true);
     
     bool run();
     

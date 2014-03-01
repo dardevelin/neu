@@ -73,20 +73,6 @@ namespace{
     NBasicMutex mutex_;
   };
   
-  class Node{
-  public:
-    Node(NPLFunc fp, NPLObject* o, NPLObject* o2)
-    : fp(fp),
-    o(o),
-    o2(o2){
-      
-    }
-    
-    NPLFunc fp;
-    NPLObject* o;
-    NPLObject* o2;
-  };
-  
 } // end namespace
 
 namespace neu{
@@ -100,7 +86,7 @@ public:
     chunk_(-1){
 
     for(size_t i = 0; i < threads_; ++i){
-      Thread_* thread = new Thread_(nodeVec_, queue_, chunk_);
+      Thread_* thread = new Thread_(funcVec_, queue_, chunk_);
       threadVec_.push_back(thread);
       thread->start();
     }
@@ -115,21 +101,23 @@ public:
     }
   }
   
-  void add(NPLFunc f, NPLObject* o, NPLObject* o2){
+  void add(NPLFunc* func){
     chunk_ = -1;
-    nodeVec_.push_back(new Node(f, o, o2));
+    funcVec_.push_back(func);
   }
 
-  void clear(){
-    for(auto& n : nodeVec_){
-      delete n;
+  void clear(bool free){
+    if(free){
+      for(auto& n : funcVec_){
+        delete n;
+      }
     }
     
-    nodeVec_.clear();
+    funcVec_.clear();
   }
   
   void start(){
-    size_t end = nodeVec_.size();
+    size_t end = funcVec_.size();
 
     if(chunk_ < 0){
       resetChunk();
@@ -151,7 +139,7 @@ public:
   }
 
   void resetChunk(){
-    chunk_ = nodeVec_.size() / (threads_ * 2) + 1;
+    chunk_ = funcVec_.size() / (threads_ * 2) + 1;
     
     while(chunk_ % 32 != 0){
       ++chunk_;
@@ -159,11 +147,11 @@ public:
   }
 
   bool run(){
-    if(nodeVec_.empty()){
+    if(funcVec_.empty()){
       return false;
     }
 
-    size_t end = nodeVec_.size();
+    size_t end = funcVec_.size();
 
     if(chunk_ < 0){
       resetChunk();
@@ -187,18 +175,18 @@ public:
   }
   
 private:
-  typedef NVector<Node*> NodeVec_;
+  typedef NVector<NPLFunc*> FuncVec_;
 
   NPLQueue* o_;
   size_t threads_;
-  NodeVec_ nodeVec_;
+  FuncVec_ funcVec_;
   Queue queue_;
   int chunk_;
 
   class Thread_ : public NThread{
   public:
-    Thread_(NodeVec_& nodeVec, Queue& queue, int& chunk)
-      : nodeVec_(nodeVec),
+    Thread_(FuncVec_& funcVec, Queue& queue, int& chunk)
+      : funcVec_(funcVec),
         queue_(queue),
         beginSem_(0),
         finishSem_(0),
@@ -222,7 +210,7 @@ private:
     
     void run(){
       size_t i;
-      Node* n;
+      NPLFunc* n;
 
       for(;;){
         beginSem_.acquire();
@@ -237,113 +225,113 @@ private:
           }
 
           size_t end = i + chunk_;
-          size_t size = nodeVec_.size();
+          size_t size = funcVec_.size();
 
           if(end > size){
             end = size;
 
             while(i < end){
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
             }
           }
           else{
             while(i < end){
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
               
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
 
-              n = nodeVec_[i++];
-              n->fp(n->o, n->o2);
+              n = funcVec_[i++];
+              n->fp(n);
             }
           }
         }
@@ -353,7 +341,7 @@ private:
     }
     
   private:
-    NodeVec_& nodeVec_;
+    FuncVec_& funcVec_;
     Queue& queue_;
     NVSemaphore beginSem_;
     NVSemaphore finishSem_;
@@ -376,12 +364,12 @@ NPLQueue::~NPLQueue(){
   delete x_; 
 }
 
-void NPLQueue::add(NPLFunc f, NPLObject* o, NPLObject* o2){
-  x_->add(f, o, o2);
+void NPLQueue::add(NPLFunc* func){
+  x_->add(func);
 }
 
-void NPLQueue::clear(){
-  x_->clear();
+void NPLQueue::clear(bool free){
+  x_->clear(free);
 }
 
 void NPLQueue::start(){

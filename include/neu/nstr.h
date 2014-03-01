@@ -84,6 +84,11 @@ namespace neu{
       
     }
     
+    nstr(std::string&& s)
+    : str_(move(s)){
+      
+    }
+    
     template<class InputIterator>
     nstr(InputIterator begin, InputIterator end) : str_(begin, end){
       
@@ -134,7 +139,15 @@ namespace neu{
     }
     
     nstr operator+(const nstr& str) const{
-      return str_ + str.str_;
+      return move(str_ + str.str_);
+    }
+
+    nstr operator+(const nvar& v) const{
+      return move(str_ + toStr(v).str_);
+    }
+    
+    nstr operator+(const char* s) const{
+      return move(str_ + std::string(s));
     }
     
     nstr& operator+=(const nstr& str){

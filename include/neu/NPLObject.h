@@ -40,10 +40,14 @@
 namespace neu{
   
   class NPLObject{
-    
+
   };
   
-  typedef void (*NPLFunc)(NPLObject*, NPLObject*);
+  class NPLFunc{
+  public:
+    void (*fp)(NPLFunc*);
+    NPLObject* o;
+  };
   
 } // end namespace neu
 

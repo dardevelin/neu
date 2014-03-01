@@ -59,7 +59,7 @@ using namespace neu;
 namespace{
 
   typedef NVector<Type*> TypeVec;
-  typedef NMap<pair<nstr, size_t>, Function*> FunctionMap;
+  typedef NMap<nvar, Function*> FunctionMap;
   
   enum FunctionKey{
     FKEY_NO_KEY,
@@ -412,7 +412,7 @@ namespace{
           return v;
         }
         
-        v = getAttribute(n, c_, op_);
+        //v = getAttribute(n, c_, op_);
         
         if(v){
           return v;
@@ -523,6 +523,7 @@ namespace{
       auto itr = attributeMap_.find(s);
       
       if(itr == attributeMap_.end()){
+        /*
         if(c_.hasKey(s)){
           const nvar& a = c[s];
           Type* t = getPointerType(type(a));
@@ -538,6 +539,7 @@ namespace{
           
           return vp;
         }
+         */
         NERROR("invalid attribute: " + s);
       }
       
@@ -603,18 +605,65 @@ namespace{
       return 0;
     }
     
-    Function* compile(const nvar& code,
-                      const nstr& className,
-                      const nstr& func,
-                      const nstr& className2){
-      c_ = code[className];
-      c2_ = code[className2.empty() ? className : className2];
-      
-      f_ = c_[{func, 0}];
+    const nvar& code(){
+      return *code_;
+    }
+    
+    const nvar& currentClass(){
+      return *currentClass_;
+    }
+    
+    const nvar& currentFunc(){
+      return *currentFunc_;
+    }
+    
+    void compileTop(const nvar& code){
+      code_ = &code;
       
       pushScope();
 
-      func_ = createFunction(className + "_" + func, "void", {"void*", "void*"});
+      nvec cs;
+      code.keys(cs);
+      for(size_t i = 0; i < cs.size(); ++i){
+        const nstr& ck = cs[i];
+        
+        const nvar& ci = code[ck];
+        currentClass_ = &ci;
+        
+        nvec ms;
+        ci.keys(ms);
+        
+        for(size_t j = 0; j < ms.size(); ++j){
+          const nvar& mk = ms[j];
+          if(mk.size() == 2){
+            
+            if(functionMap_.hasKey({ck, mk[0], mk[1]})){
+              continue;
+            }
+            
+            const nvar& mj = ci[mk];
+            currentFunc_ = &mj;
+            
+            compileFunction(ck, mk, mj);
+          }
+        }
+      }
+    }
+    
+    void compileFunction(const nstr& className,
+                         const nvar& function,
+                         const nvar& f){
+      
+      nstr name = className + "_" + function[0] + "_" + function[1];
+      
+      cout << "name is: " << name << endl;
+      
+      func_ = createFunction(name, "void", {"void*"});
+    }
+    
+      /*
+      func_ =
+      createFunction(className + "_" + functionName, "void", {"void*"});
 
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("op");
@@ -651,7 +700,8 @@ namespace{
       func_->dump();
       
       return func_;
-    }
+      */
+    //}
     
     LocalScope* pushScope(){
       LocalScope* scope = new LocalScope;
@@ -707,14 +757,14 @@ namespace{
     BasicBlock* begin_;
     Value* op_;
     Value* op2_;
-    nvar c_;
-    nvar c2_;
-    nvar f_;
     bool foundReturn_;
     bool foundError_;
     IRBuilder<> builder_;
     ostream* estr_;
     InfoMap_ infoMap_;
+    const nvar* code_;
+    const nvar* currentClass_;
+    const nvar* currentFunc_;
   };
   
   class Global{
@@ -769,16 +819,16 @@ namespace neu{
       // ndm - do we need to delete engine_?
     }
     
-    NPLFunc compile(const nvar& code,
-                    const nstr& className,
-                    const nstr& func,
-                    const nstr& className2){
-    
+    bool compile(const nvar& code){
       NPLCompiler compiler(context_, module_, functionMap_);
       
-      compiler.compile(code, className, func, className2);
+      compiler.compileTop(code);
       
-      return 0;
+      return true;
+    }
+    
+    void getFunc(const nvar& func, NPLFunc* f){
+      
     }
     
     void initGlobal(){
@@ -808,9 +858,10 @@ NPLModule::~NPLModule(){
   delete x_;
 }
 
-NPLFunc NPLModule::compile(const nvar& code,
-                           const nstr& className,
-                           const nstr& func,
-                           const nstr& className2){
-  return x_->compile(code, className, func, className2);
+bool NPLModule::compile(const nvar& code){
+  return x_->compile(code);
+}
+
+void NPLModule::getFunc(const nvar& func, NPLFunc* f){
+  x_->getFunc(func, f);
 }
