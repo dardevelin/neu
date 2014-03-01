@@ -46,7 +46,10 @@ namespace neu{
     
     ~NPLModule();
     
-    NPLFunc compile(const nvar& code, const nstr& className, const nstr& func);
+    NPLFunc compile(const nvar& code,
+                    const nstr& className,
+                    const nstr& func,
+                    const nstr& className2="");
     
   private:
     class NPLModule_* x_;

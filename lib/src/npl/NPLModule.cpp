@@ -62,7 +62,8 @@ namespace{
   typedef NMap<pair<nstr, size_t>, Function*> FunctionMap;
   
   enum FunctionKey{
-    FKEY_Add_2 = 1,
+    FKEY_NO_KEY,
+    FKEY_Add_2,
     FKEY_Sub_2,
     FKEY_Mul_2,
     FKEY_Div_2,
@@ -270,7 +271,7 @@ namespace{
       
       if(bits == 0){
         if(ptr){
-          return llvm::PointerType::get(Type::getIntNTy(context_, 8), 0);
+          return PointerType::get(Type::getIntNTy(context_, 8), 0);
         }
         
         return Type::getVoidTy(context_);
@@ -404,19 +405,171 @@ namespace{
       return vi;
     }
 
-    Value* compile(const nvar& n){
-      FuncMap::const_iterator itr =
-      _funcMap.find({n.str(), n.size()});
+    Value* getLValue(const nvar& n){
+      if(n.isSymbol()){
+        Value* v = getLocal(n);
+        if(v){
+          return v;
+        }
+        
+        v = getAttribute(n, c_, op_);
+        
+        if(v){
+          return v;
+        }
+      }
+      
+      if(!n.isFunction()){
+        error("expected an l-value", n);
+        return 0;
+      }
+      
+      FunctionKey key = getFunctionKey(n);
+      
+      switch(key){
+        // ndm - implement
+      }
+      
+      return 0;
+    }
+
+    Type* elementType(Value* v){
+      return elementType(v->getType());
+    }
+    
+    Type* elementType(Type* t){
+      if(PointerType* pt = dyn_cast<PointerType>(t)){
+        return pt->getElementType();
+      }
+      
+      return t;
+    }
+    
+    Value* getNumeric(const nvar& x, Value* l=0){
+      if(l){
+        Type* t = elementType(l);
+        if(IntegerType* it = dyn_cast<IntegerType>(t)){
+          ConstantInt::get(it, x.toLong());
+        }
+        else if(t->isFloatingPointTy()){
+          return ConstantFP::get(t, x.toDouble());
+        }
+        else{
+          NERROR("not a numeric type");
+        }
+      }
+      
+      switch(x.type()){
+        case nvar::False:
+          return getInt1(false);
+        case nvar::True:
+          return getInt1(true);
+        case nvar::Integer:
+          return getInt64(x.asLong());
+        case nvar::Float:
+          return getDouble(x.asDouble());
+        default:
+          NERROR("invalid numeric type");
+      }
+      
+      return 0;
+    }
+    
+    Value* getRValue(const nvar& n, Value* l=0){
+      if(n.isNumeric()){
+        return getNumeric(n, l);
+      }
+      else if(n.isSymbol()){
+        Value* v = getLocal(n);
+        if(v){
+          return createLoad(v);
+        }
+      }
+
+      if(!n.isFunction()){
+        error("expected an r-value", n);
+        return 0;
+      }
+      
+      FunctionKey key = getFunctionKey(n);
+      
+      switch(key){
+        // ndm - implement
+      }
+      
+      return 0;
+    }
+    
+    Value* getLocal(const nstr& s){
+      for(LocalScope* localScope : scopeStack_){
+        Value* v = localScope->get(s);
+        if(v){
+          return v;
+        }
+      }
+      
+      return 0;
+    }
+
+    Type* getPointerType(Value* v){
+      return getPointerType(v->getType());
+    }
+    
+    Type* getPointerType(Type* t){
+      return PointerType::get(t, 0);
+    }
+    
+    Value* getAttribute(const nstr& s, const nvar& c, Value* op){
+      auto itr = attributeMap_.find(s);
+      
+      if(itr == attributeMap_.end()){
+        if(c_.hasKey(s)){
+          const nvar& a = c[s];
+          Type* t = getPointerType(type(a));
+
+          BasicBlock* cb = builder_.GetInsertBlock();
+          builder_.SetInsertPoint(entry_);
+          
+          Value* ep = builder_.CreateGEP(op, getInt32(a["offset"]));
+          nstr name = a.str() + ".ptr";
+          Value* vp = builder_.CreateBitCast(ep, t, name.c_str());
+          
+          builder_.SetInsertPoint(cb);
+          
+          return vp;
+        }
+        NERROR("invalid attribute: " + s);
+      }
+      
+      return itr->second;
+    }
+   
+    Value* createLoad(Value* v){
+      nstr name = v->getName().str();
+      name.findReplace(".ptr", "");
+      return builder_.CreateLoad(v, name.c_str());
+    }
+    
+    void createStore(Value* from, Value* to){
+      builder_.CreateStore(from, to);
+    }
+    
+    FunctionKey getFunctionKey(const nvar& n){
+      FuncMap::const_iterator itr = _funcMap.find({n.str(), n.size()});
       
       if(itr == _funcMap.end()){
         itr = _funcMap.find({n.str(), -1});
       }
       
       if(itr == _funcMap.end()){
-        return error("unrecognized function", n);
+        return FKEY_NO_KEY;
       }
       
-      FunctionKey key = itr->second;
+      return itr->second;
+    }
+    
+    Value* compile(const nvar& n){
+      FunctionKey key = getFunctionKey(n);
       
       switch(key){
         case FKEY_Block_n:{
@@ -434,6 +587,14 @@ namespace{
           
           return rv;
         }
+        case FKEY_Set_2:{
+          Value* l = getLValue(n[0]);
+          Value* r = getRValue(n[1], l);
+          
+          createStore(r, l);
+          
+          return getInt64(0);
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
@@ -442,8 +603,13 @@ namespace{
       return 0;
     }
     
-    Function* compile(const nvar& code, const nstr& className, const nstr& func){
+    Function* compile(const nvar& code,
+                      const nstr& className,
+                      const nstr& func,
+                      const nstr& className2){
       c_ = code[className];
+      c2_ = code[className2.empty() ? className : className2];
+      
       f_ = c_[{func, 0}];
       
       pushScope();
@@ -463,6 +629,8 @@ namespace{
       begin_ =
       BasicBlock::Create(context_, "begin", func_);
 
+      builder_.SetInsertPoint(begin_);
+      
       foundReturn_ = false;
       foundError_ = false;
       
@@ -476,7 +644,6 @@ namespace{
       }
       
       builder_.CreateRetVoid();
-      builder_.SetInsertPoint(begin_);
       
       builder_.SetInsertPoint(entry_);
       builder_.CreateBr(begin_);
@@ -525,11 +692,13 @@ namespace{
   private:
     typedef NVector<LocalScope*> ScopeStack_;
     typedef NMap<Value*, nvar> InfoMap_;
+    typedef NMap<nstr, Value*> AttributeMap_;
     
     LLVMContext& context_;
     Module& module_;
 
     ScopeStack_ scopeStack_;
+    AttributeMap_ attributeMap_;
     FunctionMap functionMap_;
     Function* func_;
     BasicBlock* loopContinue_;
@@ -539,6 +708,7 @@ namespace{
     Value* op_;
     Value* op2_;
     nvar c_;
+    nvar c2_;
     nvar f_;
     bool foundReturn_;
     bool foundError_;
@@ -601,11 +771,12 @@ namespace neu{
     
     NPLFunc compile(const nvar& code,
                     const nstr& className,
-                    const nstr& func){
+                    const nstr& func,
+                    const nstr& className2){
     
       NPLCompiler compiler(context_, module_, functionMap_);
       
-      compiler.compile(code, className, func);
+      compiler.compile(code, className, func, className2);
       
       return 0;
     }
@@ -639,6 +810,7 @@ NPLModule::~NPLModule(){
 
 NPLFunc NPLModule::compile(const nvar& code,
                            const nstr& className,
-                           const nstr& func){
-  return x_->compile(code, className, func);
+                           const nstr& func,
+                           const nstr& className2){
+  return x_->compile(code, className, func, className2);
 }
