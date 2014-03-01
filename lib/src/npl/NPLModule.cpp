@@ -758,12 +758,10 @@ namespace{
       module_.dump();
     }
     
-    Function* compileFunction(const nstr& className,
-                              const nvar& f){
-      
+    Function* compileFunction(const nstr& className, const nvar& f){
       const nvar& fs = f[1];
       
-      nstr name = className + "_" + fs.str() + "_" + fs.size();
+      nstr n = className + "_" + fs.str() + "_" + fs.size();
 
       TypeVec args;
       args.push_back(type("void*"));
@@ -773,12 +771,12 @@ namespace{
         args.push_back(type(a));
       }
       
-      nstr n = name + "_args";
+      nstr an = n + "_args";
       
       argsStruct_ =
-      StructType::create(context_, args.vector(), n.c_str());
+      StructType::create(context_, args.vector(), an.c_str());
       
-      func_ = createFunction(name, type("void"), {pointerType(argsStruct_)});
+      func_ = createFunction(n, type("void"), {pointerType(argsStruct_)});
       
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("args");
@@ -821,8 +819,6 @@ namespace{
       
       builder_.SetInsertPoint(entry_);
       builder_.CreateBr(begin_);
-      
-      //func_->dump();
       
       return func_;
     }
@@ -939,7 +935,7 @@ namespace{
       functionMap_["llvm.exp.f32"] =
       compiler.createFunction("llvm.exp.f32", "float", {"float"});
     }
-    
+
   private:
     LLVMContext& context_;
     Module module_;
