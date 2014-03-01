@@ -59,7 +59,6 @@ using namespace neu;
 namespace{
 
   typedef NVector<Type*> TypeVec;
-  typedef NMap<nvar, Function*> FunctionMap;
   
   enum FunctionKey{
     FKEY_NO_KEY,
@@ -125,9 +124,9 @@ namespace{
     FKEY_Call_1
   };
   
-  typedef NMap<pair<nstr, int>, FunctionKey> FuncMap;
+  typedef NMap<pair<nstr, int>, FunctionKey> FunctionMap;
   
-  static FuncMap _funcMap;
+  static FunctionMap _functionMap;
   
   enum SymbolKey{
     SKEY_true = 1,
@@ -138,76 +137,76 @@ namespace{
   
   typedef NMap<nstr, SymbolKey> SymbolMap;
   
-  static SymbolMap _symMap;
+  static SymbolMap _symbolMap;
   
   static void _initFunctionMap(){
-    _funcMap[{"Add", 2}] = FKEY_Add_2;
-    _funcMap[{"Sub", 2}] = FKEY_Sub_2;
-    _funcMap[{"Mul", 2}] = FKEY_Mul_2;
-    _funcMap[{"Div", 2}] = FKEY_Div_2;
-    _funcMap[{"Mod", 2}] = FKEY_Mod_2;
-    _funcMap[{"And", 2}] = FKEY_And_2;
-    _funcMap[{"Or", 2}] = FKEY_Or_2;
-    _funcMap[{"XOr", 2}] = FKEY_XOr_2;
-    _funcMap[{"ShR", 2}] = FKEY_ShR_2;
-    _funcMap[{"ShL", 2}] = FKEY_ShL_2;
-    _funcMap[{"BitAnd", 2}] = FKEY_BitAnd_2;
-    _funcMap[{"BitOr", 2}] = FKEY_BitOr_2;
-    _funcMap[{"BitXOr", 2}] = FKEY_BitXOr_2;
-    _funcMap[{"BitComplement", 1}] = FKEY_BitComplement_1;
-    _funcMap[{"Not", 1}] = FKEY_Not_1;
-    _funcMap[{"EQ", 2}] = FKEY_EQ_2;
-    _funcMap[{"NE", 2}] = FKEY_NE_2;
-    _funcMap[{"LT", 2}] = FKEY_LT_2;
-    _funcMap[{"LE", 2}] = FKEY_LE_2;
-    _funcMap[{"GT", 2}] = FKEY_GT_2;
-    _funcMap[{"GE", 2}] = FKEY_GE_2;
-    _funcMap[{"If", 2}] = FKEY_If_2;
-    _funcMap[{"If", 3}] = FKEY_If_3;
-    _funcMap[{"Set", 2}] = FKEY_Set_2;
-    _funcMap[{"AddBy", 2}] = FKEY_AddBy_2;
-    _funcMap[{"SubBy", 2}] = FKEY_SubBy_2;
-    _funcMap[{"MulBY", 2}] = FKEY_MulBy_2;
-    _funcMap[{"DivBy", 2}] = FKEY_DivBy_2;
-    _funcMap[{"ModBy", 2}] = FKEY_ModBy_2;
-    _funcMap[{"Block", -1}] = FKEY_Block_n;
-    _funcMap[{"Inc", 1}] = FKEY_Inc_1;
-    _funcMap[{"PostInc", 1}] = FKEY_PostInc_1;
-    _funcMap[{"Dec", 1}] = FKEY_Dec_1;
-    _funcMap[{"PostDec", 1}] = FKEY_PostDec_1;
-    _funcMap[{"While", 2}] = FKEY_While_2;
-    _funcMap[{"For", 4}] = FKEY_For_4;
-    _funcMap[{"Idx", 2}] = FKEY_Idx_2;
-    _funcMap[{"Len", 1}] = FKEY_Len_1;
-    _funcMap[{"Size", 1}] = FKEY_Size_1;
-    _funcMap[{"Neg", 1}] = FKEY_Neg_1;
-    _funcMap[{"Inv", 1}] = FKEY_Inv_1;
-    _funcMap[{"Sqrt", 1}] = FKEY_Sqrt_1;
-    _funcMap[{"Pow", 2}] = FKEY_Pow_2;
-    _funcMap[{"Exp", 1}] = FKEY_Exp_1;
-    _funcMap[{"Vec", -1}] = FKEY_Vec_n;
-    _funcMap[{"Abs", 1}] = FKEY_Abs_1;
-    _funcMap[{"Log", 1}] = FKEY_Log_1;
-    _funcMap[{"Log10", 1}] = FKEY_Log10_1;
-    _funcMap[{"Floor", 1}] = FKEY_Floor_1;
-    _funcMap[{"Ceil", 1}] = FKEY_Ceil_1;
-    _funcMap[{"Break", 0}] = FKEY_Break_0;
-    _funcMap[{"Continue", 0}] = FKEY_Continue_0;
-    _funcMap[{"Ret", 1}] = FKEY_Ret_1;
-    _funcMap[{"Ret", 0}] = FKEY_Ret_0;
-    _funcMap[{"O2", 1}] = FKEY_O2_1;
-    _funcMap[{"Normalize", 1}] = FKEY_Normalize_1;
-    _funcMap[{"Magnitude", 1}] = FKEY_Magnitude_1;
-    _funcMap[{"DotProduct", 2}] = FKEY_DotProduct_2;
-    _funcMap[{"CrossProduct", 2}] = FKEY_CrossProduct_2;
-    _funcMap[{"Call", 1}] = FKEY_Call_1;
+    _functionMap[{"Add", 2}] = FKEY_Add_2;
+    _functionMap[{"Sub", 2}] = FKEY_Sub_2;
+    _functionMap[{"Mul", 2}] = FKEY_Mul_2;
+    _functionMap[{"Div", 2}] = FKEY_Div_2;
+    _functionMap[{"Mod", 2}] = FKEY_Mod_2;
+    _functionMap[{"And", 2}] = FKEY_And_2;
+    _functionMap[{"Or", 2}] = FKEY_Or_2;
+    _functionMap[{"XOr", 2}] = FKEY_XOr_2;
+    _functionMap[{"ShR", 2}] = FKEY_ShR_2;
+    _functionMap[{"ShL", 2}] = FKEY_ShL_2;
+    _functionMap[{"BitAnd", 2}] = FKEY_BitAnd_2;
+    _functionMap[{"BitOr", 2}] = FKEY_BitOr_2;
+    _functionMap[{"BitXOr", 2}] = FKEY_BitXOr_2;
+    _functionMap[{"BitComplement", 1}] = FKEY_BitComplement_1;
+    _functionMap[{"Not", 1}] = FKEY_Not_1;
+    _functionMap[{"EQ", 2}] = FKEY_EQ_2;
+    _functionMap[{"NE", 2}] = FKEY_NE_2;
+    _functionMap[{"LT", 2}] = FKEY_LT_2;
+    _functionMap[{"LE", 2}] = FKEY_LE_2;
+    _functionMap[{"GT", 2}] = FKEY_GT_2;
+    _functionMap[{"GE", 2}] = FKEY_GE_2;
+    _functionMap[{"If", 2}] = FKEY_If_2;
+    _functionMap[{"If", 3}] = FKEY_If_3;
+    _functionMap[{"Set", 2}] = FKEY_Set_2;
+    _functionMap[{"AddBy", 2}] = FKEY_AddBy_2;
+    _functionMap[{"SubBy", 2}] = FKEY_SubBy_2;
+    _functionMap[{"MulBY", 2}] = FKEY_MulBy_2;
+    _functionMap[{"DivBy", 2}] = FKEY_DivBy_2;
+    _functionMap[{"ModBy", 2}] = FKEY_ModBy_2;
+    _functionMap[{"Block", -1}] = FKEY_Block_n;
+    _functionMap[{"Inc", 1}] = FKEY_Inc_1;
+    _functionMap[{"PostInc", 1}] = FKEY_PostInc_1;
+    _functionMap[{"Dec", 1}] = FKEY_Dec_1;
+    _functionMap[{"PostDec", 1}] = FKEY_PostDec_1;
+    _functionMap[{"While", 2}] = FKEY_While_2;
+    _functionMap[{"For", 4}] = FKEY_For_4;
+    _functionMap[{"Idx", 2}] = FKEY_Idx_2;
+    _functionMap[{"Len", 1}] = FKEY_Len_1;
+    _functionMap[{"Size", 1}] = FKEY_Size_1;
+    _functionMap[{"Neg", 1}] = FKEY_Neg_1;
+    _functionMap[{"Inv", 1}] = FKEY_Inv_1;
+    _functionMap[{"Sqrt", 1}] = FKEY_Sqrt_1;
+    _functionMap[{"Pow", 2}] = FKEY_Pow_2;
+    _functionMap[{"Exp", 1}] = FKEY_Exp_1;
+    _functionMap[{"Vec", -1}] = FKEY_Vec_n;
+    _functionMap[{"Abs", 1}] = FKEY_Abs_1;
+    _functionMap[{"Log", 1}] = FKEY_Log_1;
+    _functionMap[{"Log10", 1}] = FKEY_Log10_1;
+    _functionMap[{"Floor", 1}] = FKEY_Floor_1;
+    _functionMap[{"Ceil", 1}] = FKEY_Ceil_1;
+    _functionMap[{"Break", 0}] = FKEY_Break_0;
+    _functionMap[{"Continue", 0}] = FKEY_Continue_0;
+    _functionMap[{"Ret", 1}] = FKEY_Ret_1;
+    _functionMap[{"Ret", 0}] = FKEY_Ret_0;
+    _functionMap[{"O2", 1}] = FKEY_O2_1;
+    _functionMap[{"Normalize", 1}] = FKEY_Normalize_1;
+    _functionMap[{"Magnitude", 1}] = FKEY_Magnitude_1;
+    _functionMap[{"DotProduct", 2}] = FKEY_DotProduct_2;
+    _functionMap[{"CrossProduct", 2}] = FKEY_CrossProduct_2;
+    _functionMap[{"Call", 1}] = FKEY_Call_1;
   }
   
   static void _initSymbolMap(){
-    _symMap["true"] = SKEY_true;
-    _symMap["false"] = SKEY_false;
-    _symMap["this"] = SKEY_this;
-    _symMap["that"] = SKEY_that;
+    _symbolMap["true"] = SKEY_true;
+    _symbolMap["false"] = SKEY_false;
+    _symbolMap["this"] = SKEY_this;
+    _symbolMap["that"] = SKEY_that;
   }
   
   class NPLCompiler{
@@ -235,10 +234,9 @@ namespace{
       ScopeMap_ scopeMap_;
     };
     
-    NPLCompiler(LLVMContext& context, Module& module, FunctionMap& functionMap)
-    : context_(context),
-    module_(module),
-    functionMap_(functionMap),
+    NPLCompiler(Module& module)
+    : module_(module),
+    context_(module.getContext()),
     builder_(context_),
     estr_(&cerr){
 
@@ -326,8 +324,6 @@ namespace{
                        Function::ExternalLinkage : Function::InternalLinkage,
                        name.c_str(), &module_);
       
-      functionMap_[{name, argTypes.size()}] = f;
-      
       return f;
     }
     
@@ -412,7 +408,7 @@ namespace{
           return v;
         }
         
-        //v = getAttribute(n, c_, op_);
+        v = getAttribute(n);
         
         if(v){
           return v;
@@ -519,19 +515,20 @@ namespace{
       return PointerType::get(t, 0);
     }
     
-    Value* getAttribute(const nstr& s, const nvar& c, Value* op){
+    Value* getAttribute(const nstr& s){
       auto itr = attributeMap_.find(s);
       
       if(itr == attributeMap_.end()){
-        /*
-        if(c_.hasKey(s)){
+        const nvar& c = currentClass();
+        
+        if(c.hasKey(s)){
           const nvar& a = c[s];
           Type* t = getPointerType(type(a));
 
           BasicBlock* cb = builder_.GetInsertBlock();
           builder_.SetInsertPoint(entry_);
           
-          Value* ep = builder_.CreateGEP(op, getInt32(a["offset"]));
+          Value* ep = builder_.CreateGEP(args_, getInt32(a["offset"]));
           nstr name = a.str() + ".ptr";
           Value* vp = builder_.CreateBitCast(ep, t, name.c_str());
           
@@ -539,7 +536,7 @@ namespace{
           
           return vp;
         }
-         */
+
         NERROR("invalid attribute: " + s);
       }
       
@@ -557,13 +554,13 @@ namespace{
     }
     
     FunctionKey getFunctionKey(const nvar& n){
-      FuncMap::const_iterator itr = _funcMap.find({n.str(), n.size()});
+      FunctionMap::const_iterator itr = _functionMap.find({n.str(), n.size()});
       
-      if(itr == _funcMap.end()){
-        itr = _funcMap.find({n.str(), -1});
+      if(itr == _functionMap.end()){
+        itr = _functionMap.find({n.str(), -1});
       }
       
-      if(itr == _funcMap.end()){
+      if(itr == _functionMap.end()){
         return FKEY_NO_KEY;
       }
       
@@ -637,59 +634,54 @@ namespace{
           const nvar& mk = ms[j];
           if(mk.size() == 2){
             
-            if(functionMap_.hasKey({ck, mk[0], mk[1]})){
+            nvar fk = {ck, mk[0], mk[1]};
+            
+            if(functionMap_.hasKey(fk)){
               continue;
             }
             
             const nvar& mj = ci[mk];
             currentFunc_ = &mj;
             
-            compileFunction(ck, mk, mj);
+            Function* f = compileFunction(ck, mk, mj);
+            
+            functionMap_[fk] = f;
           }
         }
       }
     }
     
-    void compileFunction(const nstr& className,
-                         const nvar& function,
-                         const nvar& f){
+    Function* compileFunction(const nstr& className,
+                              const nvar& function,
+                              const nvar& f){
       
       nstr name = className + "_" + function[0] + "_" + function[1];
-      
-      cout << "name is: " << name << endl;
-      
-      func_ = createFunction(name, "void", {"void*"});
-    }
-    
-      /*
-      func_ =
-      createFunction(className + "_" + functionName, "void", {"void*"});
 
+      func_ = createFunction(name, "void", {"void*"});
+      
       Function::arg_iterator aitr = func_->arg_begin();
-      aitr->setName("op");
-      op_ = aitr;
-      ++aitr;
-      aitr->setName("op2");
-      op2_ = aitr;
+      aitr->setName("args");
+      args_ = aitr;
       
       entry_ =
       BasicBlock::Create(context_, "entry", func_);
       
       begin_ =
       BasicBlock::Create(context_, "begin", func_);
-
+      
       builder_.SetInsertPoint(begin_);
       
       foundReturn_ = false;
       foundError_ = false;
       
-      Value* b = compile(f_[2]);
+      pushScope();
+      
+      Value* b = compile(f[2]);
       
       popScope();
       
       if(!b){
         func_->eraseFromParent();
-        return 0;
       }
       
       builder_.CreateRetVoid();
@@ -700,8 +692,7 @@ namespace{
       func_->dump();
       
       return func_;
-      */
-    //}
+    }
     
     LocalScope* pushScope(){
       LocalScope* scope = new LocalScope;
@@ -743,20 +734,20 @@ namespace{
     typedef NVector<LocalScope*> ScopeStack_;
     typedef NMap<Value*, nvar> InfoMap_;
     typedef NMap<nstr, Value*> AttributeMap_;
+    typedef NMap<nvar, Value*> FunctionMap_;
     
     LLVMContext& context_;
     Module& module_;
 
     ScopeStack_ scopeStack_;
     AttributeMap_ attributeMap_;
-    FunctionMap functionMap_;
+    FunctionMap_ functionMap_;
     Function* func_;
     BasicBlock* loopContinue_;
     BasicBlock* loopMerge_;
     BasicBlock* entry_;
     BasicBlock* begin_;
-    Value* op_;
-    Value* op2_;
+    Value* args_;
     bool foundReturn_;
     bool foundError_;
     IRBuilder<> builder_;
@@ -778,22 +769,39 @@ namespace{
       _initFunctionMap();
       _initSymbolMap();
       
-      NPLCompiler compiler(context_, module_, functionMap_);
+      NPLCompiler compiler(module_);
       
+      functionMap_["llvm.sqrt.f64"] =
       compiler.createFunction("llvm.sqrt.f64", "double", {"double"});
+      
+      functionMap_["llvm.sqrt.f32"] =
       compiler.createFunction("llvm.sqrt.f32", "float", {"float"});
+      
+      functionMap_["llvm.pow.f64"] =
       compiler.createFunction("llvm.pow.f64", "double", {"double", "double"});
+      
+      functionMap_["llvm.pow.f32"] =
       compiler.createFunction("llvm.pow.f32", "float", {"float", "float"});
+      
+      functionMap_["llvm.log.f64"] =
       compiler.createFunction("llvm.log.f64", "double", {"double"});
+      
+      functionMap_["llvm.log.f32"] =
       compiler.createFunction("llvm.log.f32", "float", {"float"});
+      
+      functionMap_["llvm.exp.f64"] =
       compiler.createFunction("llvm.exp.f64", "double", {"double"});
+      
+      functionMap_["llvm.exp.f32"] =
       compiler.createFunction("llvm.exp.f32", "float", {"float"});
     }
     
   private:
+    typedef NMap<nstr, Function*> FunctionMap_;
+    
     LLVMContext& context_;
     Module module_;
-    FunctionMap functionMap_;
+    FunctionMap_ functionMap_;
   };
   
   NBasicMutex _mutex;
@@ -820,7 +828,7 @@ namespace neu{
     }
     
     bool compile(const nvar& code){
-      NPLCompiler compiler(context_, module_, functionMap_);
+      NPLCompiler compiler(module_);
       
       compiler.compileTop(code);
       
@@ -840,12 +848,14 @@ namespace neu{
     }
     
   private:
+    typedef NMap<nvar, Function*> FunctionMap_;
+    
     NPLModule* o_;
     
     LLVMContext& context_;
     Module module_;
     ExecutionEngine* engine_;
-    FunctionMap functionMap_;
+    FunctionMap_ functionMap_;
   };
   
 } // end namespace neu
