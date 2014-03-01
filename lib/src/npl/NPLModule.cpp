@@ -523,6 +523,12 @@ namespace{
         if(v){
           return createLoad(v);
         }
+        
+        v = getAttribute(n);
+        
+        if(v){
+          return createLoad(v);
+        }
       }
 
       if(!n.isFunction()){
@@ -559,13 +565,13 @@ namespace{
     }
     
     void dump(Value* v){
-      cerr << "---------------" << endl;
+      cerr << "value ---------------" << endl;
       v->dump();
       cerr << endl;
     }
     
     void dump(Type* t){
-      cerr << "---------------" << endl;
+      cerr << "type ---------------" << endl;
       t->dump();
       cerr << endl;
     }
@@ -595,22 +601,26 @@ namespace{
       return itr->second;
     }
    
-    Value* createGEP(Value* a, Value* b){
-      return builder_.CreateGEP(a, b);
+    Value* createGEP(Value* ptr, Value* index){
+      return builder_.CreateGEP(ptr, index);
     }
     
-    Value* createStructGEP(Value* a, size_t index, const nstr& name){
-      return builder_.CreateStructGEP(a, index, name.c_str());
+    Value* createStructGEP(Value* structPtr, size_t index, const nstr& name){
+      return builder_.CreateStructGEP(structPtr, index, name.c_str());
     }
     
-    Value* createLoad(Value* v){
-      nstr name = v->getName().str();
-      name.findReplace(".ptr", "");
-      return builder_.CreateLoad(v, name.c_str());
+    Value* createLoad(Value* ptr){
+      nstr name = ptr->getName().str();
+      
+      if(name.endsWith(".ptr")){
+        name.erase(name.length() - 4, 4);
+      }
+      
+      return builder_.CreateLoad(ptr, name.c_str());
     }
     
-    void createStore(Value* from, Value* to){
-      builder_.CreateStore(from, to);
+    void createStore(Value* v, Value* ptr){
+      builder_.CreateStore(v, ptr);
     }
     
     FunctionKey getFunctionKey(const nvar& n){
@@ -677,14 +687,12 @@ namespace{
     void compileTop(const nvar& code){
       code_ = &code;
       
-      pushScope();
-
       nvec cs;
       code.keys(cs);
       for(size_t i = 0; i < cs.size(); ++i){
         const nstr& ck = cs[i];
-        
         const nvar& ci = code[ck];
+        
         currentClass_ = &ci;
         
         nvec ms;
@@ -702,14 +710,13 @@ namespace{
         }
         
         classStruct_ = StructType::create(context_, tv.vector(), ck.c_str());
-        
         structMap_[ck] = classStruct_;
         
         for(size_t j = 0; j < ms.size(); ++j){
           const nvar& mk = ms[j];
           const nvar& mj = ci[mk];
+
           if(mk.size() == 2){
-            
             nvar fk = {ck, mk[0], mk[1]};
             
             if(functionMap_.hasKey(fk)){
@@ -718,9 +725,11 @@ namespace{
 
             currentFunc_ = &mj;
             
-            Function* f = compileFunction(ck, mk, mj);
+            Function* f = compileFunction(ck, mj);
             
-            functionMap_[fk] = f;
+            if(f){
+              functionMap_[fk] = f;
+            }
           }
         }
       }
@@ -729,25 +738,26 @@ namespace{
     }
     
     Function* compileFunction(const nstr& className,
-                              const nvar& function,
                               const nvar& f){
       
-      nstr name = className + "_" + function[0] + "_" + function[1];
+      const nvar& fs = f[1];
+      
+      nstr name = className + "_" + fs.str() + "_" + fs.size();
 
       TypeVec args;
       args.push_back(type("void*"));
       args.push_back(getPointerType(classStruct_));
-      const nvar& as = f[1];
-      for(const nvar& a : as){
+      
+      for(const nvar& a : fs){
         args.push_back(type(a));
       }
       
-      nstr structName = name + "_args";
+      nstr n = name + "_args";
       
-      funcStruct_ =
-      StructType::create(context_, args.vector(), structName.c_str());
+      argsStruct_ =
+      StructType::create(context_, args.vector(), n.c_str());
       
-      func_ = createFunction(name, type("void"), {getPointerType(funcStruct_)});
+      func_ = createFunction(name, type("void"), {getPointerType(argsStruct_)});
       
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("args");
@@ -757,8 +767,17 @@ namespace{
       BasicBlock::Create(context_, "entry", func_);
       
       builder_.SetInsertPoint(entry_);
-      
+
       this_ = createLoad(createStructGEP(args_, 1, "this.ptr"));
+      
+      pushScope();
+      
+      for(size_t i = 0; i < fs.size(); ++i){
+        const nstr& s = fs[i];
+        
+        Value* v = createStructGEP(args_, i + 2, s + ".ptr");
+        putLocal(s, v);
+      }
       
       begin_ =
       BasicBlock::Create(context_, "begin", func_);
@@ -768,14 +787,13 @@ namespace{
       foundReturn_ = false;
       foundError_ = false;
       
-      pushScope();
-      
       Value* b = compile(f[2]);
       
       popScope();
       
       if(!b){
         func_->eraseFromParent();
+        return 0;
       }
       
       builder_.CreateRetVoid();
@@ -803,6 +821,13 @@ namespace{
       scopeStack_.pop_back();
     }
 
+    void putLocal(const nstr& s, Value* v){
+      assert(!scopeStack_.empty());
+      
+      LocalScope* scope = scopeStack_.back();
+      scope->put(s, v);
+    }
+    
     nvar& getInfo(Value* v){
       auto itr = infoMap_.find(v);
       
@@ -852,7 +877,7 @@ namespace{
     const nvar* currentFunc_;
     StructMap_ structMap_;
     StructType* classStruct_;
-    StructType* funcStruct_;
+    StructType* argsStruct_;
     Value* this_;
   };
   

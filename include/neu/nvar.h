@@ -5702,6 +5702,10 @@ namespace neu{
           return h_.sm->s->begin();
         case HeadSequenceMap:
           return h_.hsm->s->begin();
+        case Reference:
+          return h_.ref->v->begin();
+        case Pointer:
+          return h_.vp->begin();
         default:
           touchVector();
           return h_.v->begin();
@@ -5720,6 +5724,10 @@ namespace neu{
           return h_.sm->s->begin();
         case HeadSequenceMap:
           return h_.hsm->s->begin();
+        case Reference:
+          return h_.ref->v->begin();
+        case Pointer:
+          return h_.vp->begin();
         default:
           return _emptyVec.begin();
       }
@@ -5737,6 +5745,10 @@ namespace neu{
           return h_.sm->s->end();
         case HeadSequenceMap:
           return h_.hsm->s->end();
+        case Reference:
+          return h_.ref->v->end();
+        case Pointer:
+          return h_.vp->end();
         default:
           touchVector();
           return h_.v->end();
@@ -5755,6 +5767,10 @@ namespace neu{
           return h_.sm->s->end();
         case HeadSequenceMap:
           return h_.hsm->s->end();
+        case Reference:
+          return h_.ref->v->end();
+        case Pointer:
+          return h_.vp->end();
         default:
           return _emptyVec.end();
       }

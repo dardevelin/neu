@@ -242,12 +242,13 @@ func_def_vec: /* empty */ {
 }
 | func_def_vec ',' TYPE IDENTIFIER {
   $$ = move($1);
-  $1.setHead(PS->sym($4));
-  $$ << move($1);
+  $3.setHead(PS->sym($4));
+  $$ << move($3);
 }
 | TYPE IDENTIFIER {
-  $$ = move($1);
-  $$.setHead(PS->sym($2));
+  $$ = undef;
+  $1.setHead(PS->sym($2));
+  $$ << move($1);
 }
 ;
 
