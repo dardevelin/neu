@@ -171,6 +171,11 @@ namespace neu{
       return *this;
     }
     
+    nstr& operator+=(const char* str){
+      str_ += str;
+      return *this;
+    }
+    
     nstr& operator+=(char c){
       str_ += c;
       return *this;

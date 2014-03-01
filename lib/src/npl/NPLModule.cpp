@@ -510,6 +510,105 @@ namespace{
       
       return 0;
     }
+  
+    Value* convertNum(Value* from, Value* to, bool trunc=false){
+      return convertNum(from, to->getType(), trunc);
+    }
+    
+    Value* convertNum(Value* from, Type* toType, bool trunc=false){
+      if(toType->isPointerTy()){
+        toType = elementType(toType);
+      }
+      
+      nstr name = from->getName().str();
+      
+      Type* fromType = from->getType();
+      Type* fromElementType = elementType(fromType);
+      Type* toElementType = elementType(toType);
+      
+      if(IntegerType* toIntType = dyn_cast<IntegerType>(toElementType)){
+        if(IntegerType* fromIntType = dyn_cast<IntegerType>(fromElementType)){
+          size_t fromBits = fromIntType->getBitWidth();
+          size_t toBits = toIntType->getBitWidth();
+          name += ".i" + nvar(toBits);
+          
+          if(fromBits > toBits){
+            return trunc ? builder_.CreateTrunc(from, toType, name.c_str()) : 0;
+          }
+          else if(fromBits < toBits){
+            return builder_.CreateSExt(from, toType, name.c_str());
+          }
+          else{
+            return from;
+          }
+        }
+        else if(fromType->isDoubleTy()){
+          return trunc ? builder_.CreateFPToSI(from, toType, name.c_str()) : 0;
+        }
+        else if(fromType->isFloatTy()){
+          return trunc ? builder_.CreateFPToSI(from, toType, name.c_str()) : 0;
+        }
+      }
+      else if(toElementType->isDoubleTy()){
+        if(IntegerType* fromIntType = dyn_cast<IntegerType>(fromElementType)){
+          size_t fromBits = fromIntType->getBitWidth();
+
+          name += ".f64";
+          
+          return trunc || fromBits <= 32 ?
+          builder_.CreateSIToFP(from, toType, name.c_str()) : 0;
+        }
+        else if(fromElementType->isDoubleTy()){
+          return from;
+        }
+        else if(fromElementType->isFloatTy()){
+          return builder_.CreateFPExt(from, toType, name.c_str());
+        }
+      }
+      else if(toElementType->isFloatTy()){
+        name += ".f32";
+        
+        if(IntegerType* fromIntType = dyn_cast<IntegerType>(fromElementType)){
+          size_t fromBits = fromIntType->getBitWidth();
+          
+          return trunc || fromBits <= 32 ?
+          builder_.CreateSIToFP(from, toType, name.c_str()) : 0;
+        }
+        else if(fromElementType->isDoubleTy()){
+          return trunc ? builder_.CreateFPTrunc(from, toType, name.c_str()) : 0;
+        }
+        else if(fromElementType->isFloatTy()){
+          return from;
+        }
+      }
+      
+      return 0;
+    }
+    
+    Value* convert(Value* from, Type* toType, bool trunc=false){
+      Type* fromType = from->getType();
+      if(VectorType* fromVecType = dyn_cast<VectorType>(fromType)){
+        if(VectorType* toVecType = dyn_cast<VectorType>(toType)){
+          size_t fromN = fromVecType->getNumElements();
+          size_t toN = toVecType->getNumElements();
+          
+          if(fromN != toN){
+            return 0;
+          }
+
+          return convertNum(from, toVecType, trunc);
+        }
+        else{
+          return 0;
+        }
+      }
+      
+      return convertNum(from, toType, trunc);
+    }
+    
+    Value* convert(Value* from, Value* to, bool trunc=false){
+      return convert(from, to->getType(), trunc);
+    }
     
     Type* elementType(Value* v){
       return elementType(v->getType());
@@ -518,6 +617,9 @@ namespace{
     Type* elementType(Type* t){
       if(PointerType* pt = dyn_cast<PointerType>(t)){
         return pt->getElementType();
+      }
+      else if(SequentialType* st = dyn_cast<PointerType>(t)){
+        return st->getElementType();
       }
       
       return t;
@@ -672,7 +774,14 @@ namespace{
             return 0;
           }
           
-          createStore(r, l);
+          Value* rc = convert(r, l, false);
+          
+          if(!rc){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          createStore(rc, l);
           
           return getInt64(0);
         }

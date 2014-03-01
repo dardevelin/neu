@@ -6823,10 +6823,6 @@ namespace neu{
     return s + v.toStr();
   }
   
-  inline nstr& operator+=(nstr& s, const char* v){
-    return s += v;
-  }
-  
   inline nstr& operator+=(nstr& s, const nvar& v){
     return s += v.toStr();
   }
