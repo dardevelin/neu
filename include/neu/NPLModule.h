@@ -50,6 +50,8 @@ namespace neu{
     
     void getFunc(const nvar& func, NPLFunc* f);
     
+    void release(NPLFunc* f);
+    
   private:
     class NPLModule_* x_;
   };

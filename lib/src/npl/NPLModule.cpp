@@ -59,6 +59,7 @@ using namespace neu;
 namespace{
 
   typedef NVector<Type*> TypeVec;
+  typedef NMap<nvar, Function*> FunctionMap;
   
   enum FunctionKey{
     FKEY_NO_KEY,
@@ -124,9 +125,9 @@ namespace{
     FKEY_Call_1
   };
   
-  typedef NMap<pair<nstr, int>, FunctionKey> FunctionMap;
+  typedef NMap<pair<nstr, int>, FunctionKey> FunctionKeyMap;
   
-  static FunctionMap _functionMap;
+  static FunctionKeyMap _functionMap;
   
   enum SymbolKey{
     SKEY_true = 1,
@@ -234,11 +235,12 @@ namespace{
       ScopeMap_ scopeMap_;
     };
     
-    NPLCompiler(Module& module)
+    NPLCompiler(Module& module, FunctionMap& functionMap)
     : module_(module),
     context_(module.getContext()),
     builder_(context_),
-    estr_(&cerr){
+    estr_(&cerr),
+    functionMap_(functionMap){
 
     }
     
@@ -554,7 +556,7 @@ namespace{
     }
     
     FunctionKey getFunctionKey(const nvar& n){
-      FunctionMap::const_iterator itr = _functionMap.find({n.str(), n.size()});
+      FunctionKeyMap::const_iterator itr = _functionMap.find({n.str(), n.size()});
       
       if(itr == _functionMap.end()){
         itr = _functionMap.find({n.str(), -1});
@@ -734,14 +736,13 @@ namespace{
     typedef NVector<LocalScope*> ScopeStack_;
     typedef NMap<Value*, nvar> InfoMap_;
     typedef NMap<nstr, Value*> AttributeMap_;
-    typedef NMap<nvar, Value*> FunctionMap_;
     
     LLVMContext& context_;
     Module& module_;
 
     ScopeStack_ scopeStack_;
     AttributeMap_ attributeMap_;
-    FunctionMap_ functionMap_;
+    FunctionMap functionMap_;
     Function* func_;
     BasicBlock* loopContinue_;
     BasicBlock* loopMerge_;
@@ -769,7 +770,7 @@ namespace{
       _initFunctionMap();
       _initSymbolMap();
       
-      NPLCompiler compiler(module_);
+      NPLCompiler compiler(module_, functionMap_);
       
       functionMap_["llvm.sqrt.f64"] =
       compiler.createFunction("llvm.sqrt.f64", "double", {"double"});
@@ -797,11 +798,9 @@ namespace{
     }
     
   private:
-    typedef NMap<nstr, Function*> FunctionMap_;
-    
     LLVMContext& context_;
     Module module_;
-    FunctionMap_ functionMap_;
+    FunctionMap functionMap_;
   };
   
   NBasicMutex _mutex;
@@ -828,7 +827,7 @@ namespace neu{
     }
     
     bool compile(const nvar& code){
-      NPLCompiler compiler(module_);
+      NPLCompiler compiler(module_, functionMap_);
       
       compiler.compileTop(code);
       
@@ -836,7 +835,25 @@ namespace neu{
     }
     
     void getFunc(const nvar& func, NPLFunc* f){
+      auto itr = functionMap_.find(func);
       
+      if(itr == functionMap_.end()){
+        NERROR("invalid function: " + func);
+      }
+      
+      f->fp = (NPLFunc::FP)engine_->getPointerToFunction(itr->second);
+      
+      functionPtrMap_[f->fp] = itr->second;
+    }
+    
+    void release(NPLFunc* f){
+      auto itr = functionPtrMap_.find(f->fp);
+      
+      if(itr == functionPtrMap_.end()){
+        NERROR("unknown function");
+      }
+      
+      engine_->freeMachineCodeForFunction(itr->second);
     }
     
     void initGlobal(){
@@ -848,14 +865,15 @@ namespace neu{
     }
     
   private:
-    typedef NMap<nvar, Function*> FunctionMap_;
+    typedef NMap<NPLFunc::FP, Function*> FunctionPtrMap_;
     
     NPLModule* o_;
     
     LLVMContext& context_;
     Module module_;
     ExecutionEngine* engine_;
-    FunctionMap_ functionMap_;
+    FunctionMap functionMap_;
+    FunctionPtrMap_ functionPtrMap_;
   };
   
 } // end namespace neu
@@ -874,4 +892,8 @@ bool NPLModule::compile(const nvar& code){
 
 void NPLModule::getFunc(const nvar& func, NPLFunc* f){
   x_->getFunc(func, f);
+}
+
+void NPLModule::release(NPLFunc* f){
+  x_->release(f);
 }

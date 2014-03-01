@@ -45,7 +45,9 @@ namespace neu{
   
   class NPLFunc{
   public:
-    void (*fp)(NPLFunc*);
+    typedef void (*FP)(NPLFunc*);
+    
+    FP fp;
     NPLObject* o;
   };
   
