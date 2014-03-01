@@ -2997,12 +2997,6 @@ namespace neu{
           return h_.f->v.empty();
         case HeadSequence:
           return h_.hs->s->empty();
-        case Map:
-          return h_.m->empty();
-        case Multimap:
-          return h_.mm->empty();
-        case HeadMap:
-          return h_.hm->m->empty();
         case SequenceMap:
           return h_.sm->s->empty();
         case HeadSequenceMap:

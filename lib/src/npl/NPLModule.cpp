@@ -757,14 +757,15 @@ namespace{
           }
           
           Value* rv;
+          bool ok = true;
           for(size_t i = 0; i < n.size(); ++i){
             rv = compile(n[i]);
             if(!rv){
-              return 0;
+              ok = false;
             }
           }
           
-          return rv;
+          return ok ? rv : 0;
         }
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
