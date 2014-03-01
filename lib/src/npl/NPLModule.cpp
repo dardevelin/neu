@@ -345,13 +345,13 @@ namespace{
 
       return baseType;
     }
-    
+
     Function* createFunction(const nstr& name,
-                             const nstr& returnType,
-                             const nvec& argTypes,
+                             const Type* returnType,
+                             const TypeVec& argTypes,
                              bool external=true){
       FunctionType* ft =
-      FunctionType::get(type(returnType), typeVec(argTypes).vector(), false);
+      FunctionType::get(type(returnType), argTypes.vector(), false);
       
       Function* f =
       Function::Create(ft,
@@ -360,6 +360,14 @@ namespace{
                        name.c_str(), &module_);
       
       return f;
+    }
+    
+    Function* createFunction(const nstr& name,
+                             const nstr& returnType,
+                             const nvec& argTypes,
+                             bool external=true){
+      
+      return createFunction(name, type(returnType), typeVec(argTypes), external);
     }
     
     Value* error(const nstr& msg, const nvar& n, int arg=-1){
@@ -550,6 +558,18 @@ namespace{
       return PointerType::get(t, 0);
     }
     
+    void dump(Value* v){
+      cerr << "---------------" << endl;
+      v->dump();
+      cerr << endl;
+    }
+    
+    void dump(Type* t){
+      cerr << "---------------" << endl;
+      t->dump();
+      cerr << endl;
+    }
+    
     Value* getAttribute(const nstr& s){
       auto itr = attributeMap_.find(s);
       
@@ -558,18 +578,15 @@ namespace{
         
         if(c.hasKey(s)){
           const nvar& a = c[s];
-          Type* t = getPointerType(type(a));
 
           BasicBlock* cb = builder_.GetInsertBlock();
           builder_.SetInsertPoint(entry_);
-          Value* ap = createLoad(createGEP(args_, getInt32(8)));
-          Value* ep = createGEP(ap, getInt32(a["offset"]));
-          nstr name = a.str() + ".ptr";
-          Value* vp = builder_.CreateBitCast(ep, t, name.c_str());
           
+          Value* ap = createStructGEP(this_, a["index"], s + ".ptr");
+
           builder_.SetInsertPoint(cb);
           
-          return vp;
+          return ap;
         }
 
         NERROR("invalid attribute: " + s);
@@ -580,6 +597,10 @@ namespace{
    
     Value* createGEP(Value* a, Value* b){
       return builder_.CreateGEP(a, b);
+    }
+    
+    Value* createStructGEP(Value* a, size_t index, const nstr& name){
+      return builder_.CreateStructGEP(a, index, name.c_str());
     }
     
     Value* createLoad(Value* v){
@@ -669,8 +690,24 @@ namespace{
         nvec ms;
         ci.keys(ms);
         
+        TypeVec tv;
+        
         for(size_t j = 0; j < ms.size(); ++j){
           const nvar& mk = ms[j];
+          const nvar& mj = ci[mk];
+          
+          if(mk.size() == 0){
+            tv.push_back(type(mj));
+          }
+        }
+        
+        classStruct_ = StructType::create(context_, tv.vector(), ck.c_str());
+        
+        structMap_[ck] = classStruct_;
+        
+        for(size_t j = 0; j < ms.size(); ++j){
+          const nvar& mk = ms[j];
+          const nvar& mj = ci[mk];
           if(mk.size() == 2){
             
             nvar fk = {ck, mk[0], mk[1]};
@@ -678,8 +715,7 @@ namespace{
             if(functionMap_.hasKey(fk)){
               continue;
             }
-            
-            const nvar& mj = ci[mk];
+
             currentFunc_ = &mj;
             
             Function* f = compileFunction(ck, mk, mj);
@@ -688,6 +724,8 @@ namespace{
           }
         }
       }
+      
+      module_.dump();
     }
     
     Function* compileFunction(const nstr& className,
@@ -696,7 +734,20 @@ namespace{
       
       nstr name = className + "_" + function[0] + "_" + function[1];
 
-      func_ = createFunction(name, "void", {"void**"});
+      TypeVec args;
+      args.push_back(type("void*"));
+      args.push_back(getPointerType(classStruct_));
+      const nvar& as = f[1];
+      for(const nvar& a : as){
+        args.push_back(type(a));
+      }
+      
+      nstr structName = name + "_args";
+      
+      funcStruct_ =
+      StructType::create(context_, args.vector(), structName.c_str());
+      
+      func_ = createFunction(name, type("void"), {getPointerType(funcStruct_)});
       
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("args");
@@ -704,6 +755,10 @@ namespace{
       
       entry_ =
       BasicBlock::Create(context_, "entry", func_);
+      
+      builder_.SetInsertPoint(entry_);
+      
+      this_ = createLoad(createStructGEP(args_, 1, "this.ptr"));
       
       begin_ =
       BasicBlock::Create(context_, "begin", func_);
@@ -728,7 +783,7 @@ namespace{
       builder_.SetInsertPoint(entry_);
       builder_.CreateBr(begin_);
       
-      func_->dump();
+      //func_->dump();
       
       return func_;
     }
@@ -773,6 +828,7 @@ namespace{
     typedef NVector<LocalScope*> ScopeStack_;
     typedef NMap<Value*, nvar> InfoMap_;
     typedef NMap<nstr, Value*> AttributeMap_;
+    typedef NMap<nstr, StructType*> StructMap_;
     
     LLVMContext& context_;
     Module& module_;
@@ -794,6 +850,10 @@ namespace{
     const nvar* code_;
     const nvar* currentClass_;
     const nvar* currentFunc_;
+    StructMap_ structMap_;
+    StructType* classStruct_;
+    StructType* funcStruct_;
+    Value* this_;
   };
   
   class Global{

@@ -195,6 +195,7 @@ namespace neu{
     nvar newClass(){
       nvar c;
       c("__offset") = 0;
+      c("__index") = 0;
       
       return c;
     }
@@ -228,6 +229,7 @@ namespace neu{
       }
 
       size_t offset = c["__offset"];
+      size_t index = c["__index"];
       
       size_t bytes;
       if(a.get("ptr", false)){
@@ -247,10 +249,13 @@ namespace neu{
       }
       
       a("offset") = offset;
-
+      a("index") = index;
+      
       offset += bytes;
+      ++index;
       
       c["__offset"] = offset;
+      c["__index"] = index;
       
       c(k) = move(a);
     }

@@ -5615,6 +5615,55 @@ namespace neu{
         case Function:
           if(h_.f->m){
             for(const auto& itr : *h_.f->m){
+              const nvar& k = itr.first;
+              
+              if(k.isSymbol() && k.str().beginsWith("__")){
+                continue;
+              }
+              
+              v.push_back(k);
+            }
+          }
+          break;
+        case Map:
+          for(const auto& itr : *h_.m){
+            const nvar& k = itr.first;
+            
+            if(k.isSymbol() && k.str().beginsWith("__")){
+              continue;
+            }
+            
+            v.push_back(k);
+          }
+          break;
+        case Multimap:
+          for(const auto& itr : *h_.mm){
+            const nvar& k = itr.first;
+            
+            if(k.isSymbol() && k.str().beginsWith("__")){
+              continue;
+            }
+            
+            v.push_back(k);
+          }
+          break;
+        case HeadMap:
+          h_.hm->m->keys(v);
+          break;
+        case SequenceMap:
+          h_.sm->m->keys(v);
+          break;
+        case HeadSequenceMap:
+          h_.hsm->m->keys(v);
+          break;
+      }
+    }
+    
+    void allKeys(nvec& v) const{
+      switch(t_){
+        case Function:
+          if(h_.f->m){
+            for(const auto& itr : *h_.f->m){
               v.push_back(itr.first);
             }
           }
@@ -5630,13 +5679,13 @@ namespace neu{
           }
           break;
         case HeadMap:
-          h_.hm->m->keys(v);
+          h_.hm->m->allKeys(v);
           break;
         case SequenceMap:
-          h_.sm->m->keys(v);
+          h_.sm->m->allKeys(v);
           break;
         case HeadSequenceMap:
-          h_.hsm->m->keys(v);
+          h_.hsm->m->allKeys(v);
           break;
       }
     }
