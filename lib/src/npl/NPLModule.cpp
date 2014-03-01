@@ -456,6 +456,10 @@ namespace{
         if(v){
           return v;
         }
+        
+        error("undefined symbol", n);
+        
+        return 0;
       }
       
       if(!n.isFunction()){
@@ -472,6 +476,41 @@ namespace{
       return 0;
     }
 
+    Value* getRValue(const nvar& n, Value* l=0){
+      if(n.isNumeric()){
+        return getNumeric(n, l);
+      }
+      else if(n.isSymbol()){
+        Value* v = getLocal(n);
+        if(v){
+          return createLoad(v);
+        }
+        
+        v = getAttribute(n);
+        
+        if(v){
+          return createLoad(v);
+        }
+        
+        error("undefined symbol", n);
+        
+        return 0;
+      }
+      
+      if(!n.isFunction()){
+        error("expected an r-value", n);
+        return 0;
+      }
+      
+      FunctionKey key = getFunctionKey(n);
+      
+      switch(key){
+          // ndm - implement
+      }
+      
+      return 0;
+    }
+    
     Type* elementType(Value* v){
       return elementType(v->getType());
     }
@@ -514,37 +553,6 @@ namespace{
       return 0;
     }
     
-    Value* getRValue(const nvar& n, Value* l=0){
-      if(n.isNumeric()){
-        return getNumeric(n, l);
-      }
-      else if(n.isSymbol()){
-        Value* v = getLocal(n);
-        if(v){
-          return createLoad(v);
-        }
-        
-        v = getAttribute(n);
-        
-        if(v){
-          return createLoad(v);
-        }
-      }
-
-      if(!n.isFunction()){
-        error("expected an r-value", n);
-        return 0;
-      }
-      
-      FunctionKey key = getFunctionKey(n);
-      
-      switch(key){
-        // ndm - implement
-      }
-      
-      return 0;
-    }
-    
     Value* getLocal(const nstr& s){
       for(LocalScope* localScope : scopeStack_){
         Value* v = localScope->get(s);
@@ -556,11 +564,11 @@ namespace{
       return 0;
     }
 
-    Type* getPointerType(Value* v){
-      return getPointerType(v->getType());
+    Type* pointerType(Value* v){
+      return pointerType(v->getType());
     }
     
-    Type* getPointerType(Type* t){
+    Type* pointerType(Type* t){
       return PointerType::get(t, 0);
     }
     
@@ -594,8 +602,8 @@ namespace{
           
           return ap;
         }
-
-        NERROR("invalid attribute: " + s);
+        
+        return 0;
       }
       
       return itr->second;
@@ -659,6 +667,10 @@ namespace{
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
           Value* r = getRValue(n[1], l);
+
+          if(!l || !r){
+            return 0;
+          }
           
           createStore(r, l);
           
@@ -689,6 +701,7 @@ namespace{
       
       nvec cs;
       code.keys(cs);
+      
       for(size_t i = 0; i < cs.size(); ++i){
         const nstr& ck = cs[i];
         const nvar& ci = code[ck];
@@ -699,14 +712,22 @@ namespace{
         ci.keys(ms);
         
         TypeVec tv;
+       
+        nvar am;
         
         for(size_t j = 0; j < ms.size(); ++j){
           const nvar& mk = ms[j];
           const nvar& mj = ci[mk];
           
           if(mk.size() == 0){
-            tv.push_back(type(mj));
+            am(mj["index"]) = mj;
           }
+        }
+        
+        nvec keys;
+        am.keys(keys);
+        for(const nvar& k : keys){
+          tv.push_back(type(am[k]));
         }
         
         classStruct_ = StructType::create(context_, tv.vector(), ck.c_str());
@@ -746,7 +767,7 @@ namespace{
 
       TypeVec args;
       args.push_back(type("void*"));
-      args.push_back(getPointerType(classStruct_));
+      args.push_back(pointerType(classStruct_));
       
       for(const nvar& a : fs){
         args.push_back(type(a));
@@ -757,7 +778,7 @@ namespace{
       argsStruct_ =
       StructType::create(context_, args.vector(), n.c_str());
       
-      func_ = createFunction(name, type("void"), {getPointerType(argsStruct_)});
+      func_ = createFunction(name, type("void"), {pointerType(argsStruct_)});
       
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("args");
