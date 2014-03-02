@@ -139,7 +139,10 @@ namespace{
     FKEY_Magnitude_1,
     FKEY_DotProduct_2,
     FKEY_CrossProduct_2,
-    FKEY_Call_1
+    FKEY_Call_1,
+    FKEY_Ptr_1,
+    FKEY_DePtr_1,
+    FKEY_Float_1
   };
   
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionKeyMap;
@@ -216,6 +219,9 @@ namespace{
     _functionMap[{"DotProduct", 2}] = FKEY_DotProduct_2;
     _functionMap[{"CrossProduct", 2}] = FKEY_CrossProduct_2;
     _functionMap[{"Call", 1}] = FKEY_Call_1;
+    _functionMap[{"Ptr", 1}] = FKEY_Ptr_1;
+    _functionMap[{"DePtr", 1}] = FKEY_DePtr_1;
+    _functionMap[{"Float", 1}] = FKEY_Float_1;
   }
   
   static void _initSymbolMap(){
@@ -2074,6 +2080,15 @@ namespace{
           vr = builder_.CreateInsertElement(vr, e, getInt32(2));
           
           return vr;
+        }
+        case FKEY_Ptr_1:{
+          return getLValue(n[0]);
+        }
+        case FKEY_DePtr_1:{
+          return compile(n[0]);
+        }
+        case FKEY_Float_1:{
+          return getNumeric(n[0], type("float"));
         }
         default:
           func_->dump();
