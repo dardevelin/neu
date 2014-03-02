@@ -1129,26 +1129,30 @@ namespace{
         case FKEY_Local_1:{
           Type* t = type(n[0]);
           
+          const nstr& s = n[0];
           
+          Value* v = createAlloca(t, s);
+
+          putLocal(s, v);
+
+          return v;
+        }
+        case FKEY_Local_2:{
+          Type* t = type(n[0]);
           
+          const nstr& s = n[0];
           
-          Value* l = getLValue(n[0]);
-          Value* r = compile(n[1], l);
+          Value* v = createAlloca(t, s);
           
-          if(!l || !r){
-            return 0;
-          }
+          Value* r = compile(n[1], v);
           
-          Value* rc = convert(r, l);
+          Value* rn = convert(r, v);
           
-          if(!rc){
-            error("invalid operands", n);
-            return 0;
-          }
+          createStore(v, rn);
           
-          createStore(rc, l);
+          putLocal(s, v);
           
-          return getInt64(0);
+          return v;
         }
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
@@ -2320,14 +2324,7 @@ namespace{
     }
     
     bool isIntegral(Type* t){
-      if(PointerType* pt = dyn_cast<PointerType>(t)){
-        return isIntegral(pt->getElementType());
-      }
-      else if(IntegerType* it = dyn_cast<IntegerType>(t)){
-        return true;
-      }
-      
-      return false;
+      return dyn_cast<IntegerType>(elementType(t));
     }
     
   private:
