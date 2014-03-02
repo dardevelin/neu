@@ -652,6 +652,23 @@ namespace{
       return t;
     }
     
+    size_t vectorLength(VectorType* vt){
+      return vt->getNumElements();
+    }
+    
+    size_t vectorLength(Type* t){
+      VectorType* vt = dyn_cast<VectorType>(t);
+      if(!vt){
+        return 0;
+      }
+      
+      return vectorLength(vt);
+    }
+    
+    size_t vectorLength(Value* v){
+      return vectorLength(v->getType());
+    }
+    
     Value* getNumeric(const nvar& x, Value* l=0){
       if(l){
         Type* t = elementType(l);
@@ -1676,6 +1693,29 @@ namespace{
           createStore(o, l);
           
           return lv;
+        }
+        case FKEY_Idx_2:{
+          Value* v = compile(n[0]);
+          
+          if(vectorLength(v) == 0){
+            return error("not a vector", n[0]);
+          }
+          
+          Value* i = compile(n[1]);
+          
+          if(!i){
+            return 0;
+          }
+          
+          i = convert(i, type("int"));
+          
+          Value* vi = builder_.CreateExtractElement(v, i);
+          
+          if(isUnsigned(v)){
+            setUnsigned(vi);
+          }
+          
+          return vi;
         }
         default:
           func_->dump();
