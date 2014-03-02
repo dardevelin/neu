@@ -1499,6 +1499,108 @@ namespace{
           
           return getInt64(0);
         }
+        case FKEY_For_4:{
+          Value* iv = compile(n[0]);
+          if(!iv){
+            return 0;
+          }
+          
+          BasicBlock* lb = BasicBlock::Create(context_, "for.body", func_);
+          loopMerge_ = BasicBlock::Create(context_, "for.merge");
+          
+          builder_.CreateBr(lb);
+          builder_.SetInsertPoint(lb);
+          
+          Value* bv = compile(n[3]);
+          if(!bv){
+            return 0;
+          }
+          
+          Value* nv = compile(n[2]);
+          if(!nv){
+            return 0;
+          }
+          
+          loopContinue_ = BasicBlock::Create(context_, "for.cond");
+          func_->getBasicBlockList().push_back(loopContinue_);
+          builder_.CreateBr(loopContinue_);
+          builder_.SetInsertPoint(loopContinue_);
+          
+          Value* cv = compile(n[1]);
+          if(!cv){
+            return 0;
+          }
+          
+          if(!isIntegral(cv)){
+            cv = convert(cv, type("int"));
+          }
+          
+          if(!cv){
+            return error("not a boolean", n[0]);
+          }
+          
+          cv = builder_.CreateICmpNE(cv, getInt1(0), "for.cmp");
+          
+          func_->getBasicBlockList().push_back(loopMerge_);
+          
+          builder_.CreateCondBr(cv, lb, loopMerge_);
+          
+          builder_.SetInsertPoint(loopMerge_);
+          
+          loopContinue_ = 0;
+          loopMerge_ = 0;
+          
+          return getInt64(0);
+        }
+        case FKEY_Break_0:{
+          if(!loopMerge_){
+            return error("break not in the context of a loop", n);
+          }
+          
+          builder_.CreateBr(loopMerge_);
+          return getInt64(0);
+        }
+        case FKEY_Continue_0:{
+          if(!loopContinue_){
+            return error("continue not in the context of a loop", n);
+          }
+          
+          builder_.CreateBr(loopContinue_);
+          return getInt64(0);
+        }
+        case FKEY_Ret_0:{
+          builder_.CreateRetVoid();
+          
+          foundReturn_ = true;
+          
+          return getInt64(0);
+        }
+        case FKEY_Ret_1:{
+          if(!rt_){
+            return error("attempt to return from a non-function", n);
+          }
+          else if(rt_->isVoidTy()){
+            return error("attempt to return a value from a void function", n);
+          }
+          
+          Value* r = compile(n[0]);
+          
+          if(!r){
+            return 0;
+          }
+          
+          r = convert(r, rt_);
+          
+          if(!r){
+            return error("invalid conversion to return type", n);
+          }
+          
+          builder_.CreateRet(r);
+          
+          foundReturn_ = true;
+          
+          return getInt64(0);
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
@@ -1599,7 +1701,9 @@ namespace{
       argsStruct_ =
       StructType::create(context_, args.vector(), an.c_str());
       
-      func_ = createFunction(n, type("void"), {pointerType(argsStruct_)});
+      rt_ = type(f[0]);
+      
+      func_ = createFunction(n, rt_, {pointerType(argsStruct_)});
       
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("args");
@@ -1716,6 +1820,7 @@ namespace{
     ScopeStack_ scopeStack_;
     AttributeMap_ attributeMap_;
     FunctionMap& functionMap_;
+    Type* rt_;
     Function* func_;
     BasicBlock* loopContinue_;
     BasicBlock* loopMerge_;
