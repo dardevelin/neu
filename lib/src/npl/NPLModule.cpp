@@ -1729,7 +1729,6 @@ namespace{
           }
           
           Value* r = getUInt64(vectorLength(v));
-          setUnsigned(r);
           
           return r;
         }
