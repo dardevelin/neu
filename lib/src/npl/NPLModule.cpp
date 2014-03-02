@@ -676,7 +676,11 @@ namespace{
       return vectorLength(v->getType());
     }
     
-    Value* getNumeric(const nvar& x, Value* l=0){
+    Value* getNumeric(const nvar& x, Value* v=0){
+      return getNumeric(x, v ? v->getType() : 0);
+    }
+    
+    Value* getNumeric(const nvar& x, Type* l=0){
       if(l){
         Type* t = elementType(l);
         if(IntegerType* it = dyn_cast<IntegerType>(t)){
@@ -1882,13 +1886,13 @@ namespace{
             return 0;
           }
           
-          size_t length = vectorLength(v);
-          
-          if(length == 0){
+          VectorType* vt = dyn_cast<VectorType>(v->getType());
+          if(!vt){
             return v;
           }
           
-          VectorType* vt = dyn_cast<VectorType*>(v);
+          size_t length = vt->getNumElements();
+          
           Type* et = elementType(vt);
           Value* d;
           if(et->isDoubleTy()){
@@ -1917,11 +1921,11 @@ namespace{
           
           if(et->isDoubleTy()){
             sr = builder_.CreateCall(_globalFunc("llvm.sqrt.f64"),
-                                     args, "sqrt");
+                                     args.vector(), "sqrt");
           }
           else{
             sr = builder_.CreateCall(_globalFunc("llvm.sqrt.f32"),
-                                     args, "sqrt");
+                                     args.vector(), "sqrt");
           }
           
           for(size_t i = 0; i < length; ++i){
@@ -1929,6 +1933,147 @@ namespace{
           }
           
           return builder_.CreateFDiv(v, vd);
+        }
+        case FKEY_Magnitude_1:{
+          Value* v = compile(n[0]);
+          if(!v){
+            return 0;
+          }
+          
+          VectorType* vt = dyn_cast<VectorType>(v->getType());
+          if(!vt){
+            return v;
+          }
+          
+          size_t length = vt->getNumElements();
+          
+          Type* et = elementType(vt);
+          Value* d;
+          if(et->isDoubleTy()){
+            d = getDouble(0);
+          }
+          else if(et->isFloatTy()){
+            d = getFloat(0);
+          }
+          else{
+            return error("not a float/double vector", n[0]);
+          }
+          
+          for(size_t i = 0; i < length; ++i){
+            Value* e = builder_.CreateExtractElement(v, getInt32(i));
+            e = builder_.CreateFMul(e, e);
+            d = builder_.CreateFAdd(d, e);
+          }
+          
+          ValueVec args;
+          args.push_back(d);
+          
+          if(et->isDoubleTy()){
+            return builder_.CreateCall(_globalFunc("llvm.sqrt.f64"),
+                                       args.vector(), "sqrt");
+          }
+
+          return builder_.CreateCall(_globalFunc("llvm.sqrt.f32"),
+                                     args.vector(), "sqrt");
+        }
+        case FKEY_DotProduct_2:{
+          Value* lv = compile(n[0]);
+          if(!lv){
+            return 0;
+          }
+          
+          size_t length = vectorLength(lv);
+          if(length == 0){
+            return error("expected a vector", n[0]);
+          }
+          
+          Value* rv = compile(n[1]);
+          if(!rv){
+            return 0;
+          }
+          
+          size_t length2 = vectorLength(rv);
+          if(length == 0){
+            return error("expected a vector", n[1]);
+          }
+          
+          if(length != length2){
+            return error("vector length mismatch", n, 0);
+          }
+          
+          ValueVec v = normalize(lv, rv);
+          
+          if(v.empty()){
+            return error("type mismatch", n);
+          }
+          
+          Value* r = getNumeric(0, elementType(v[0]));
+
+          for(size_t i = 0; i < length; ++i){
+            Value* e1 = builder_.CreateExtractElement(v[i], getInt32(i));
+            Value* e2 = builder_.CreateExtractElement(v[i], getInt32(i));
+            r = createAdd(r, createMul(e1, e2));
+          }
+          
+          return r;
+        }
+          
+        case FKEY_CrossProduct_2:{
+          Value* lv = compile(n[0]);
+          if(!lv){
+            return 0;
+          }
+          
+          if(vectorLength(lv) != 3){
+            return error("expected a vector of length 3", n[0]);
+          }
+          
+          Value* rv = compile(n[1]);
+          if(!rv){
+            return 0;
+          }
+          
+          if(vectorLength(rv) != 3){
+            return error("expected a vector of length 3", n[1]);
+          }
+          
+          ValueVec v = normalize(lv, rv);
+          
+          if(v.empty()){
+            return error("type mismatch", n);
+          }
+          
+          VectorType* vt = cast<VectorType>(v[0]->getType());
+          Type* et = vt->getElementType();
+          
+          Value* vr = builder_.CreateLoad(builder_.CreateAlloca(vt));
+
+          Value* e1 = builder_.CreateExtractElement(v[0], getInt32(1));
+          Value* e2 = builder_.CreateExtractElement(v[1], getInt32(2));
+          Value* e3 = builder_.CreateExtractElement(v[0], getInt32(2));
+          Value* e4 = builder_.CreateExtractElement(v[1], getInt32(1));
+          
+          Value* e = createSub(createMul(e1, e2), createMul(e3, e4));
+          
+          vr = builder_.CreateInsertElement(vr, e, getInt32(0));
+          
+          e1 = builder_.CreateExtractElement(v[0], getInt32(2));
+          e2 = builder_.CreateExtractElement(v[1], getInt32(0));
+          e3 = builder_.CreateExtractElement(v[0], getInt32(0));
+          e4 = builder_.CreateExtractElement(v[1], getInt32(2));
+          
+          e = createSub(createMul(e1, e2), createMul(e3, e4));
+          vr = builder_.CreateInsertElement(vr, e, getInt32(1));
+          
+          e1 = builder_.CreateExtractElement(v[0], getInt32(0));
+          e2 = builder_.CreateExtractElement(v[1], getInt32(1));
+          e3 = builder_.CreateExtractElement(v[0], getInt32(1));
+          e4 = builder_.CreateExtractElement(v[1], getInt32(0));
+          
+          e = createSub(createMul(e1, e2), createMul(e3, e4));
+          vr = builder_.CreateInsertElement(vr, e, getInt32(2));
+          
+          return vr;
         }
         default:
           func_->dump();
