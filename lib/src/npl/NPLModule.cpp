@@ -75,6 +75,7 @@ using namespace neu;
 namespace{
 
   typedef NVector<Type*> TypeVec;
+  typedef NVector<Value*> ValueVec;
   typedef NMap<nvar, Function*> FunctionMap;
   
   enum FunctionKey{
@@ -146,15 +147,13 @@ namespace{
   static FunctionKeyMap _functionMap;
   
   enum SymbolKey{
-    SKEY_true = 1,
-    SKEY_false,
+    SKEY_NO_KEY,
     SKEY_this,
-    SKEY_that
   };
   
-  typedef NMap<nstr, SymbolKey> SymbolMap;
+  typedef NMap<nstr, SymbolKey> SymbolKeyMap;
   
-  static SymbolMap _symbolMap;
+  static SymbolKeyMap _symbolMap;
   
   static void _initFunctionMap(){
     _functionMap[{"Add", 2}] = FKEY_Add_2;
@@ -220,10 +219,7 @@ namespace{
   }
   
   static void _initSymbolMap(){
-    _symbolMap["true"] = SKEY_true;
-    _symbolMap["false"] = SKEY_false;
     _symbolMap["this"] = SKEY_this;
-    _symbolMap["that"] = SKEY_that;
   }
   
   class NPLCompiler{
@@ -475,41 +471,6 @@ namespace{
       
       return 0;
     }
-
-    Value* getRValue(const nvar& n, Value* l=0){
-      if(n.isNumeric()){
-        return getNumeric(n, l);
-      }
-      else if(n.isSymbol()){
-        Value* v = getLocal(n);
-        if(v){
-          return createLoad(v);
-        }
-        
-        v = getAttribute(n);
-        
-        if(v){
-          return createLoad(v);
-        }
-        
-        error("undefined symbol", n);
-        
-        return 0;
-      }
-      
-      if(!n.isFunction()){
-        error("expected an r-value", n);
-        return 0;
-      }
-      
-      FunctionKey key = getFunctionKey(n);
-      
-      switch(key){
-          // ndm - implement
-      }
-      
-      return 0;
-    }
   
     Value* convertNum(Value* from, Value* to, bool trunc=false){
       return convertNum(from, to->getType(), trunc);
@@ -604,6 +565,60 @@ namespace{
       }
       
       return convertNum(from, toType, trunc);
+    }
+    
+    ValueVec normalize(Value* v1, Value* v2, bool trunc){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      Type* e1 = elementType(t1);
+      Type* e2 = elementType(t2);
+      
+      Type* tn = 0;
+      
+      if(IntegerType* intType1 = dyn_cast<IntegerType>(e1)){
+        size_t bits1 = intType1->getBitWidth();
+
+        if(IntegerType* intType2 = dyn_cast<IntegerType>(e2)){
+          size_t bits2 = intType2->getBitWidth();
+          
+          if(bits1 >= bits2){
+            tn = t1;
+          }
+          else{
+            tn = t2;
+          }
+        }
+        else if(e2->isDoubleTy() || e2->isFloatTy()){
+          tn = trunc ? t2 : 0;
+        }
+      }
+      else if(e1->isDoubleTy()){
+        if(IntegerType* intType2 = dyn_cast<IntegerType>(e2)){
+          size_t bits2 = intType2->getBitWidth();
+          
+          tn = trunc ? t1 : 0;
+        }
+        else if(e2->isDoubleTy() || e2->isFloatTy()){
+          tn = t1;
+        }
+      }
+      else if(e1->isFloatTy()){
+        if(IntegerType* intType2 = dyn_cast<IntegerType>(e2)){
+          size_t bit2 = intType2->getBitWidth();
+          
+          tn = trunc ? t2 : 0;
+        }
+        else if(e2->isDoubleTy() || e2->isFloatTy()){
+          tn = t2;
+        }
+      }
+      
+      if(!tn){
+        return ValueVec();
+      }
+      
+      return {convert(v1, tn), convert(v2, tn)};
     }
     
     Value* convert(Value* from, Value* to, bool trunc=false){
@@ -702,6 +717,8 @@ namespace{
 
           builder_.SetInsertPoint(cb);
           
+          attributeMap_[s] = ap;
+          
           return ap;
         }
         
@@ -729,6 +746,45 @@ namespace{
       return builder_.CreateLoad(ptr, name.c_str());
     }
     
+    Value* createAdd(Value* v1, Value* v2){
+      if(isIntegral(v1)){
+        return builder_.CreateAdd(v1, v2, "add.out");
+      }
+      else{
+        return builder_.CreateFAdd(v1, v2, "fadd.out");
+      }
+    }
+    
+    Value* createSub(Value* v1, Value* v2){
+      if(isIntegral(v1)){
+        return builder_.CreateSub(v1, v2, "sub.out");
+      }
+      else{
+        return builder_.CreateFSub(v1, v2, "fsub.out");
+      }
+    }
+    
+    Value* createMul(Value* v1, Value* v2){
+      if(isIntegral(v1)){
+        return builder_.CreateMul(v1, v2, "mul.out");
+      }
+      else{
+        return builder_.CreateFMul(v1, v2, "fmul.out");
+      }
+    }
+    
+    Value* createDiv(Value* v1, Value* v2){
+      if(isIntegral(v1)){
+        if(!isSigned(v1) && !isSigned(v2)){
+          return builder_.CreateUDiv(v1, v2, "udiv.out");
+        }
+        return builder_.CreateSDiv(v1, v2, "sdiv.out");
+      }
+      else{
+        return builder_.CreateFDiv(v1, v2, "fdiv.out");
+      }
+    }
+    
     void createStore(Value* v, Value* ptr){
       builder_.CreateStore(v, ptr);
     }
@@ -747,13 +803,107 @@ namespace{
       return itr->second;
     }
     
-    Value* compile(const nvar& n){
+    SymbolKey getSymbolKey(const nstr& s){
+      SymbolKeyMap::const_iterator itr = _symbolMap.find(s);
+      
+      if(itr == _symbolMap.end()){
+        return SKEY_NO_KEY;
+      }
+
+      return itr->second;
+    }
+    
+    Value* compile(const nvar& n, Value* lhs=0){
+      if(n.isNumeric()){
+        return getNumeric(n, lhs);
+      }
+      else if(n.isSymbol()){
+        SymbolKey key = getSymbolKey(n);
+        
+        switch(key){
+          case SKEY_this:
+            return this_;
+          default:
+            break;
+        }
+        
+        Value* v = getLocal(n);
+        if(v){
+          return createLoad(v);
+        }
+        
+        v = getAttribute(n);
+        
+        if(v){
+          return createLoad(v);
+        }
+        
+        error("undefined symbol", n);
+        return 0;
+      }
+      else if(!n.isFunction()){
+        error("invalid input", n);
+        return 0;
+      }
+      
       FunctionKey key = getFunctionKey(n);
       
       switch(key){
+        case FKEY_Add_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec vs = normalize(l, r, false);
+          
+          if(vs.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createAdd(vs[0], vs[1]);
+        }
+        case FKEY_Sub_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec vs = normalize(l, r, false);
+          
+          if(vs.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createSub(vs[0], vs[1]);
+        }
+        case FKEY_Mul_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec vs = normalize(l, r, false);
+          
+          if(vs.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createMul(vs[0], vs[1]);
+        }
+        case FKEY_Div_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec vs = normalize(l, r, false);
+          
+          if(vs.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createDiv(vs[0], vs[1]);
+        }
         case FKEY_Block_n:{
           if(n.empty()){
-            return getInt32(0);
+            return getInt64(0);
           }
           
           Value* rv;
@@ -769,7 +919,7 @@ namespace{
         }
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
-          Value* r = getRValue(n[1], l);
+          Value* r = compile(n[1], l);
 
           if(!l || !r){
             return 0;
@@ -974,6 +1124,21 @@ namespace{
     void setUnsigned(Value* v){
       nvar& info = getInfo(v);
       info("signed") = false;
+    }
+    
+    bool isIntegral(Value* v){
+      return isIntegral(v->getType());
+    }
+    
+    bool isIntegral(Type* t){
+      if(PointerType* pt = dyn_cast<PointerType>(t)){
+        return isIntegral(pt->getElementType());
+      }
+      else if(IntegerType* it = dyn_cast<IntegerType>(t)){
+        return true;
+      }
+      
+      return false;
     }
     
   private:

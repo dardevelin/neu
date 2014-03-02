@@ -123,6 +123,7 @@ DIV_BY "/="
 MOD_BY "%="
 AND "&&"
 OR  "||"
+KW_THIS this
 KW_TRUE true
 KW_FALSE false
 KW_FOR for
@@ -212,6 +213,11 @@ DEFINE "#define"
 {OR} {
   PS->advance(yytext, "operator");
   return OR;
+}
+
+{KW_THIS} {
+  PS->advance(yytext, "keyword");
+  return KW_THIS;
 }
 
 {KW_TRUE} {

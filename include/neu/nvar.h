@@ -554,7 +554,6 @@ namespace neu{
     
     nvar(NObjectBase* o)
     : t_(ObjectPointer){
-      
       h_.o = o;
     }
     
