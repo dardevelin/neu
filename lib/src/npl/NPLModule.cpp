@@ -567,7 +567,7 @@ namespace{
       return convertNum(from, toType, trunc);
     }
     
-    ValueVec normalize(Value* v1, Value* v2, bool trunc){
+    ValueVec normalize(Value* v1, Value* v2, bool trunc=false){
       Type* t1 = v1->getType();
       Type* t2 = v2->getType();
       
@@ -909,7 +909,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -922,7 +922,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -935,7 +935,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -948,7 +948,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -961,7 +961,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -974,7 +974,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -987,7 +987,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -1000,7 +1000,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -1013,7 +1013,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -1026,7 +1026,7 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec v = normalize(l, r, false);
+          ValueVec v = normalize(l, r);
           
           if(v.empty()){
             error("invalid operands", n);
@@ -1059,7 +1059,7 @@ namespace{
             return 0;
           }
           
-          Value* rc = convert(r, l, false);
+          Value* rc = convert(r, l);
           
           if(!rc){
             error("invalid operands", n);
@@ -1079,7 +1079,7 @@ namespace{
           }
 
           Value* lv = createLoad(l);
-          Value* rc = convert(r, lv, false);
+          Value* rc = convert(r, lv);
 
           if(!rc){
             error("invalid operands", n);
@@ -1101,7 +1101,7 @@ namespace{
           }
           
           Value* lv = createLoad(l);
-          Value* rc = convert(r, lv, false);
+          Value* rc = convert(r, lv);
           
           if(!rc){
             error("invalid operands", n);
@@ -1123,7 +1123,7 @@ namespace{
           }
           
           Value* lv = createLoad(l);
-          Value* rc = convert(r, lv, false);
+          Value* rc = convert(r, lv);
           
           if(!rc){
             error("invalid operands", n);
@@ -1145,7 +1145,7 @@ namespace{
           }
           
           Value* lv = createLoad(l);
-          Value* rc = convert(r, lv, false);
+          Value* rc = convert(r, lv);
           
           if(!rc){
             error("invalid operands", n);
@@ -1167,7 +1167,7 @@ namespace{
           }
           
           Value* lv = createLoad(l);
-          Value* rc = convert(r, lv, false);
+          Value* rc = convert(r, lv);
           
           if(!rc){
             error("invalid operands", n);
