@@ -1396,6 +1396,109 @@ namespace{
           
           return getInt64(0);
         }
+        case FKEY_If_3:{
+          Value* cv = compile(n[0]);
+          
+          if(!cv){
+            return 0;
+          }
+          
+          if(!isIntegral(cv)){
+            cv = convert(cv, type("int"));
+          }
+          
+          if(!cv){
+            return error("not a boolean", n[0]);
+          }
+          
+          cv = builder_.CreateICmpNE(cv, getInt1(0), "if.cond");
+          
+          BasicBlock* tb = BasicBlock::Create(context_, "then", func_);
+          BasicBlock* eb = BasicBlock::Create(context_, "else");
+          BasicBlock* mb = BasicBlock::Create(context_, "if.merge");
+          
+          builder_.CreateCondBr(cv, tb, eb);
+          
+          builder_.SetInsertPoint(tb);
+          
+          Value* tv = compile(n[1]);
+          if(!tv){
+            return 0;
+          }
+          
+          if(!builder_.GetInsertBlock()->getTerminator()){
+            builder_.CreateBr(mb);
+          }
+          
+          tb = builder_.GetInsertBlock();
+          
+          func_->getBasicBlockList().push_back(eb);
+          builder_.SetInsertPoint(eb);
+          
+          Value* ev = compile(n[2]);
+          if(!ev){
+            return 0;
+          }
+          
+          ev = convert(ev, tv);
+          
+          if(!builder_.GetInsertBlock()->getTerminator()){
+            builder_.CreateBr(mb);
+          }
+          
+          eb = builder_.GetInsertBlock();
+          
+          func_->getBasicBlockList().push_back(mb);
+          
+          builder_.SetInsertPoint(mb);
+          
+          return getInt64(0);
+        }
+        case FKEY_While_2:{
+          loopContinue_ = BasicBlock::Create(context_, "while.cond", func_);
+          
+          builder_.CreateBr(loopContinue_);
+          
+          builder_.SetInsertPoint(loopContinue_);
+          
+          Value* cv = compile(n[0]);
+          if(!cv){
+            return 0;
+          }
+          
+          if(!isIntegral(cv)){
+            cv = convert(cv, type("int"));
+          }
+          
+          if(!cv){
+            return error("not a boolean", n[0]);
+          }
+          
+          cv = builder_.CreateICmpNE(cv, getInt1(0), "while.cmp");
+          
+          BasicBlock* lb = BasicBlock::Create(context_, "while.body");
+          loopMerge_ = BasicBlock::Create(context_, "while.merge");
+          
+          func_->getBasicBlockList().push_back(lb);
+          func_->getBasicBlockList().push_back(loopMerge_);
+          
+          builder_.CreateCondBr(cv, loopContinue_, loopMerge_);
+          
+          builder_.SetInsertPoint(lb);
+          Value* lv = compile(n[1]);
+          if(!lv){
+            return 0;
+          }
+          
+          builder_.CreateBr(loopContinue_);
+          
+          builder_.SetInsertPoint(loopMerge_);
+          
+          loopContinue_ = 0;
+          loopMerge_ = 0;
+          
+          return getInt64(0);
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
