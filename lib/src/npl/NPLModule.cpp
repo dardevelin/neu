@@ -1746,6 +1746,41 @@ namespace{
           
           return createSub(v[0], v[1]);
         }
+        case FKEY_Inv_1:
+        {
+          Value* vn = compile(n[0]);
+          if(!vn){
+            return 0;
+          }
+          
+          Value* one = getDouble(1);
+          ValueVec v = normalize(one, vn);
+          
+          if(v.empty()){
+            return error("type mismatch", n);
+          }
+          
+          return createDiv(v[0], v[1]);
+        }
+        case FKEY_Vec_n:{
+          size_t size = n.size();
+          
+          ValueVec v;
+          for(size_t i = 0; i < size; ++i){
+            v.push_back(getNumeric(n[i], lhs));
+          }
+                        
+          VectorType* vt = VectorType::get(v[0]->getType(), size);
+          
+          Value* vr = builder_.CreateAlloca(vt);
+          vr = createLoad(vr);
+          
+          for(size_t i = 0; i < size; ++i){
+            vr = builder_.CreateInsertElement(vr, v[i], getInt32(i));
+          }
+          
+          return vr;
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
