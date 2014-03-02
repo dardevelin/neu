@@ -111,6 +111,7 @@ namespace{
     FKEY_DivBy_2,
     FKEY_ModBy_2,
     FKEY_Block_n,
+    FKEY_ScopedBlock_n,
     FKEY_Set_2,
     FKEY_Inc_1,
     FKEY_PostInc_1,
@@ -134,7 +135,6 @@ namespace{
     FKEY_Continue_0,
     FKEY_Ret_1,
     FKEY_Ret_0,
-    FKEY_O2_1,
     FKEY_Normalize_1,
     FKEY_Magnitude_1,
     FKEY_DotProduct_2,
@@ -186,6 +186,7 @@ namespace{
     _functionMap[{"DivBy", 2}] = FKEY_DivBy_2;
     _functionMap[{"ModBy", 2}] = FKEY_ModBy_2;
     _functionMap[{"Block", -1}] = FKEY_Block_n;
+    _functionMap[{"ScopedBlock", -1}] = FKEY_ScopedBlock_n;
     _functionMap[{"Inc", 1}] = FKEY_Inc_1;
     _functionMap[{"PostInc", 1}] = FKEY_PostInc_1;
     _functionMap[{"Dec", 1}] = FKEY_Dec_1;
@@ -210,7 +211,6 @@ namespace{
     _functionMap[{"Continue", 0}] = FKEY_Continue_0;
     _functionMap[{"Ret", 1}] = FKEY_Ret_1;
     _functionMap[{"Ret", 0}] = FKEY_Ret_0;
-    _functionMap[{"O2", 1}] = FKEY_O2_1;
     _functionMap[{"Normalize", 1}] = FKEY_Normalize_1;
     _functionMap[{"Magnitude", 1}] = FKEY_Magnitude_1;
     _functionMap[{"DotProduct", 2}] = FKEY_DotProduct_2;
@@ -221,6 +221,18 @@ namespace{
   static void _initSymbolMap(){
     _symbolMap["this"] = SKEY_this;
   }
+  
+  class Global{
+  public:
+    Global();
+    
+    Function* getFunction(const nstr& f);
+    
+  private:
+    LLVMContext& context_;
+    Module module_;
+    FunctionMap functionMap_;
+  };
   
   class NPLCompiler{
   public:
@@ -1051,6 +1063,26 @@ namespace{
           
           return ok ? rv : 0;
         }
+        case FKEY_ScopedBlock_n:{
+          if(n.empty()){
+            return getInt64(0);
+          }
+         
+          pushScope();
+          
+          Value* rv;
+          bool ok = true;
+          for(size_t i = 0; i < n.size(); ++i){
+            rv = compile(n[i]);
+            if(!rv){
+              ok = false;
+            }
+          }
+          
+          popScope();
+          
+          return ok ? rv : 0;
+        }
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
           Value* r = compile(n[1], l);
@@ -1601,6 +1633,50 @@ namespace{
           
           return getInt64(0);
         }
+        case FKEY_Inc_1:{
+          Value* l = getLValue(n[0]);
+          Value* r = getNumeric(1, l);
+          
+          Value* lv = createLoad(l);
+          Value* o = createAdd(lv, r);
+          
+          createStore(o, l);
+          
+          return o;
+        }
+        case FKEY_PostInc_1:{
+          Value* l = getLValue(n[0]);
+          Value* r = getNumeric(1, l);
+          
+          Value* lv = createLoad(l);
+          Value* o = createAdd(lv, r);
+          
+          createStore(o, l);
+          
+          return lv;
+        }
+        case FKEY_Dec_1:{
+          Value* l = getLValue(n[0]);
+          Value* r = getNumeric(1, l);
+          
+          Value* lv = createLoad(l);
+          Value* o = createSub(lv, r);
+          
+          createStore(o, l);
+          
+          return o;
+        }
+        case FKEY_PostDec_1:{
+          Value* l = getLValue(n[0]);
+          Value* r = getNumeric(1, l);
+          
+          Value* lv = createLoad(l);
+          Value* o = createSub(lv, r);
+          
+          createStore(o, l);
+          
+          return lv;
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
@@ -1841,49 +1917,47 @@ namespace{
     Value* this_;
   };
   
-  class Global{
-  public:
-    Global()
-    : context_(getGlobalContext()),
-    module_("global", context_){
-      
-      InitializeNativeTarget();
-      
-      _initFunctionMap();
-      _initSymbolMap();
-      
-      NPLCompiler compiler(module_, functionMap_);
-      
-      functionMap_["llvm.sqrt.f64"] =
-      compiler.createFunction("llvm.sqrt.f64", "double", {"double"});
-      
-      functionMap_["llvm.sqrt.f32"] =
-      compiler.createFunction("llvm.sqrt.f32", "float", {"float"});
-      
-      functionMap_["llvm.pow.f64"] =
-      compiler.createFunction("llvm.pow.f64", "double", {"double", "double"});
-      
-      functionMap_["llvm.pow.f32"] =
-      compiler.createFunction("llvm.pow.f32", "float", {"float", "float"});
-      
-      functionMap_["llvm.log.f64"] =
-      compiler.createFunction("llvm.log.f64", "double", {"double"});
-      
-      functionMap_["llvm.log.f32"] =
-      compiler.createFunction("llvm.log.f32", "float", {"float"});
-      
-      functionMap_["llvm.exp.f64"] =
-      compiler.createFunction("llvm.exp.f64", "double", {"double"});
-      
-      functionMap_["llvm.exp.f32"] =
-      compiler.createFunction("llvm.exp.f32", "float", {"float"});
-    }
-
-  private:
-    LLVMContext& context_;
-    Module module_;
-    FunctionMap functionMap_;
-  };
+  Global::Global()
+  : context_(getGlobalContext()),
+  module_("global", context_){
+    
+    InitializeNativeTarget();
+    
+    _initFunctionMap();
+    _initSymbolMap();
+    
+    NPLCompiler compiler(module_, functionMap_);
+    
+    functionMap_["llvm.sqrt.f64"] =
+    compiler.createFunction("llvm.sqrt.f64", "double", {"double"});
+    
+    functionMap_["llvm.sqrt.f32"] =
+    compiler.createFunction("llvm.sqrt.f32", "float", {"float"});
+    
+    functionMap_["llvm.pow.f64"] =
+    compiler.createFunction("llvm.pow.f64", "double", {"double", "double"});
+    
+    functionMap_["llvm.pow.f32"] =
+    compiler.createFunction("llvm.pow.f32", "float", {"float", "float"});
+    
+    functionMap_["llvm.log.f64"] =
+    compiler.createFunction("llvm.log.f64", "double", {"double"});
+    
+    functionMap_["llvm.log.f32"] =
+    compiler.createFunction("llvm.log.f32", "float", {"float"});
+    
+    functionMap_["llvm.exp.f64"] =
+    compiler.createFunction("llvm.exp.f64", "double", {"double"});
+    
+    functionMap_["llvm.exp.f32"] =
+    compiler.createFunction("llvm.exp.f32", "float", {"float"});
+  }
+  
+  Function* Global::getFunction(const nstr& f){
+    auto itr = functionMap_.find(f);
+    assert(itr != functionMap_.end());
+    return itr->second;
+  }
   
   NBasicMutex _mutex;
   Global* _global;
