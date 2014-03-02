@@ -103,6 +103,8 @@ namespace{
     FKEY_LE_2,
     FKEY_If_2,
     FKEY_If_3,
+    FKEY_Local_1,
+    FKEY_Local_2,
     FKEY_While_2,
     FKEY_For_4,
     FKEY_AddBy_2,
@@ -194,6 +196,8 @@ namespace{
     _functionMap[{"PostInc", 1}] = FKEY_PostInc_1;
     _functionMap[{"Dec", 1}] = FKEY_Dec_1;
     _functionMap[{"PostDec", 1}] = FKEY_PostDec_1;
+    _functionMap[{"Local", 1}] = FKEY_Local_1;
+    _functionMap[{"Local", 2}] = FKEY_Local_2;
     _functionMap[{"While", 2}] = FKEY_While_2;
     _functionMap[{"For", 4}] = FKEY_For_4;
     _functionMap[{"Idx", 2}] = FKEY_Idx_2;
@@ -792,6 +796,11 @@ namespace{
       return builder_.CreateLoad(ptr, name.c_str());
     }
     
+    Value* createAlloca(Type* t, const nstr& name){
+      nstr n = name + ".ptr";
+      return builder_.CreateAlloca(t, 0, n.c_str());
+    }
+    
     Value* createAdd(Value* v1, Value* v2){
       if(isIntegral(v1)){
         return builder_.CreateAdd(v1, v2, "add.out");
@@ -1116,6 +1125,30 @@ namespace{
           popScope();
           
           return ok ? rv : 0;
+        }
+        case FKEY_Local_1:{
+          Type* t = type(n[0]);
+          
+          
+          
+          
+          Value* l = getLValue(n[0]);
+          Value* r = compile(n[1], l);
+          
+          if(!l || !r){
+            return 0;
+          }
+          
+          Value* rc = convert(r, l);
+          
+          if(!rc){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          createStore(rc, l);
+          
+          return getInt64(0);
         }
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
@@ -1788,7 +1821,7 @@ namespace{
                         
           VectorType* vt = VectorType::get(v[0]->getType(), size);
           
-          Value* vr = builder_.CreateAlloca(vt);
+          Value* vr = createAlloca(vt, "vec");
           vr = createLoad(vr);
           
           for(size_t i = 0; i < size; ++i){
@@ -1911,7 +1944,7 @@ namespace{
             return error("not a float/double vector", n[0]);
           }
           
-          Value* vd = builder_.CreateAlloca(vt);
+          Value* vd = createAlloca(vt, "vec");
           vd = builder_.CreateLoad(vd);
           
           for(size_t i = 0; i < length; ++i){
@@ -2052,7 +2085,7 @@ namespace{
           VectorType* vt = cast<VectorType>(v[0]->getType());
           Type* et = vt->getElementType();
           
-          Value* vr = builder_.CreateLoad(builder_.CreateAlloca(vt));
+          Value* vr = createLoad(createAlloca(vt, "vec"));
 
           Value* e1 = builder_.CreateExtractElement(v[0], getInt32(1));
           Value* e2 = builder_.CreateExtractElement(v[1], getInt32(2));
