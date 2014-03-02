@@ -1717,6 +1717,35 @@ namespace{
           
           return vi;
         }
+        case FKEY_Len_1:
+        case FKEY_Size_1:
+        {
+          Value* v = compile(n[0]);
+          if(!v){
+            return 0;
+          }
+          
+          Value* r = getUInt64(vectorLength(v));
+          setUnsigned(r);
+          
+          return r;
+        }
+        case FKEY_Neg_1:
+        {
+          Value* vn = compile(n[0]);
+          if(!vn){
+            return 0;
+          }
+          
+          Value* zero = getInt64(0);
+          ValueVec v = normalize(zero, vn);
+          
+          if(v.empty()){
+            return error("type mismatch", n[0]);
+          }
+          
+          return createSub(v[0], v[1]);
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
