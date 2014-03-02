@@ -750,39 +750,95 @@ namespace{
       if(isIntegral(v1)){
         return builder_.CreateAdd(v1, v2, "add.out");
       }
-      else{
-        return builder_.CreateFAdd(v1, v2, "fadd.out");
-      }
+
+      return builder_.CreateFAdd(v1, v2, "fadd.out");
     }
     
     Value* createSub(Value* v1, Value* v2){
       if(isIntegral(v1)){
         return builder_.CreateSub(v1, v2, "sub.out");
       }
-      else{
-        return builder_.CreateFSub(v1, v2, "fsub.out");
-      }
+
+      return builder_.CreateFSub(v1, v2, "fsub.out");
     }
     
     Value* createMul(Value* v1, Value* v2){
       if(isIntegral(v1)){
         return builder_.CreateMul(v1, v2, "mul.out");
       }
-      else{
-        return builder_.CreateFMul(v1, v2, "fmul.out");
-      }
+      
+      return builder_.CreateFMul(v1, v2, "fmul.out");
     }
     
     Value* createDiv(Value* v1, Value* v2){
       if(isIntegral(v1)){
-        if(!isSigned(v1) && !isSigned(v2)){
+        if(isUnsigned(v1) && isUnsigned(v2)){
           return builder_.CreateUDiv(v1, v2, "udiv.out");
         }
+      
         return builder_.CreateSDiv(v1, v2, "sdiv.out");
       }
-      else{
-        return builder_.CreateFDiv(v1, v2, "fdiv.out");
+
+      return builder_.CreateFDiv(v1, v2, "fdiv.out");
+    }
+    
+    Value* createRem(Value* v1, Value* v2){
+      if(isIntegral(v1)){
+        if(isUnsigned(v1) && isUnsigned(v2)){
+          Value* ret = builder_.CreateURem(v1, v2, "urem.out");
+          setUnsigned(ret);
+          return ret;
+        }
+        
+        return builder_.CreateSRem(v1, v2, "srem.out");
       }
+      
+      return builder_.CreateFRem(v1, v2, "frem.out");
+    }
+    
+    Value* createShl(Value* v1, Value* v2){
+      Value* ret = builder_.CreateShl(v1, v2, "shl.out");
+      if(isUnsigned(v1) && isUnsigned(v2)){
+        setUnsigned(ret);
+      }
+      
+      return ret;
+    }
+    
+    Value* createLShr(Value* v1, Value* v2){
+      Value* ret = builder_.CreateLShr(v1, v2, "lshr.out");
+      if(isUnsigned(v1) && isUnsigned(v2)){
+        setUnsigned(ret);
+      }
+      
+      return ret;
+    }
+    
+    Value* createAnd(Value* v1, Value* v2){
+      Value* ret = builder_.CreateAnd(v1, v2, "and.out");
+      if(isUnsigned(v1) && isUnsigned(v2)){
+        setUnsigned(ret);
+      }
+      
+      return ret;
+    }
+    
+    Value* createOr(Value* v1, Value* v2){
+      Value* ret = builder_.CreateOr(v1, v2, "or.out");
+      if(isUnsigned(v1) && isUnsigned(v2)){
+        setUnsigned(ret);
+      }
+      
+      return ret;
+    }
+    
+    Value* createXor(Value* v1, Value* v2){
+      Value* ret = builder_.CreateXor(v1, v2, "xor.out");
+      if(isUnsigned(v1) && isUnsigned(v2)){
+        setUnsigned(ret);
+      }
+      
+      return ret;
     }
     
     void createStore(Value* v, Value* ptr){
@@ -853,53 +909,131 @@ namespace{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec vs = normalize(l, r, false);
+          ValueVec v = normalize(l, r, false);
           
-          if(vs.empty()){
+          if(v.empty()){
             error("invalid operands", n);
             return 0;
           }
           
-          return createAdd(vs[0], vs[1]);
+          return createAdd(v[0], v[1]);
         }
         case FKEY_Sub_2:{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec vs = normalize(l, r, false);
+          ValueVec v = normalize(l, r, false);
           
-          if(vs.empty()){
+          if(v.empty()){
             error("invalid operands", n);
             return 0;
           }
           
-          return createSub(vs[0], vs[1]);
+          return createSub(v[0], v[1]);
         }
         case FKEY_Mul_2:{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec vs = normalize(l, r, false);
+          ValueVec v = normalize(l, r, false);
           
-          if(vs.empty()){
+          if(v.empty()){
             error("invalid operands", n);
             return 0;
           }
           
-          return createMul(vs[0], vs[1]);
+          return createMul(v[0], v[1]);
         }
         case FKEY_Div_2:{
           Value* l = compile(n[0], lhs);
           Value* r = compile(n[1], l);
           
-          ValueVec vs = normalize(l, r, false);
+          ValueVec v = normalize(l, r, false);
           
-          if(vs.empty()){
+          if(v.empty()){
             error("invalid operands", n);
             return 0;
           }
           
-          return createDiv(vs[0], vs[1]);
+          return createDiv(v[0], v[1]);
+        }
+        case FKEY_Mod_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r, false);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createRem(v[0], v[1]);
+        }
+        case FKEY_ShL_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r, false);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createShl(v[0], v[1]);
+        }
+        case FKEY_ShR_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r, false);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createLShr(v[0], v[1]);
+        }
+        case FKEY_BitAnd_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r, false);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createAnd(v[0], v[1]);
+        }
+        case FKEY_BitOr_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r, false);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createOr(v[0], v[1]);
+        }
+        case FKEY_BitXOr_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r, false);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return createXor(v[0], v[1]);
         }
         case FKEY_Block_n:{
           if(n.empty()){
@@ -1116,9 +1250,9 @@ namespace{
       return itr->second;
     }
     
-    bool isSigned(Value* v){
+    bool isUnsigned(Value* v){
       const nvar& info = getInfo(v);
-      return info.get("signed", true);
+      return !info.get("signed", true);
     }
     
     void setUnsigned(Value* v){
