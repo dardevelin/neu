@@ -1070,6 +1070,133 @@ namespace{
           
           return getInt64(0);
         }
+        case FKEY_AddBy_2:{
+          Value* l = getLValue(n[0]);
+          Value* r = compile(n[1], l);
+
+          if(!l || !r){
+            return 0;
+          }
+
+          Value* lv = createLoad(l);
+          Value* rc = convert(r, lv, false);
+
+          if(!rc){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          Value* o = createAdd(lv, rc);
+          
+          createStore(o, l);
+          
+          return l;
+        }
+        case FKEY_SubBy_2:{
+          Value* l = getLValue(n[0]);
+          Value* r = compile(n[1], l);
+          
+          if(!l || !r){
+            return 0;
+          }
+          
+          Value* lv = createLoad(l);
+          Value* rc = convert(r, lv, false);
+          
+          if(!rc){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          Value* o = createSub(lv, rc);
+          
+          createStore(o, l);
+          
+          return l;
+        }
+        case FKEY_MulBy_2:{
+          Value* l = getLValue(n[0]);
+          Value* r = compile(n[1], l);
+          
+          if(!l || !r){
+            return 0;
+          }
+          
+          Value* lv = createLoad(l);
+          Value* rc = convert(r, lv, false);
+          
+          if(!rc){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          Value* o = createMul(lv, rc);
+          
+          createStore(o, l);
+          
+          return l;
+        }
+        case FKEY_DivBy_2:{
+          Value* l = getLValue(n[0]);
+          Value* r = compile(n[1], l);
+          
+          if(!l || !r){
+            return 0;
+          }
+          
+          Value* lv = createLoad(l);
+          Value* rc = convert(r, lv, false);
+          
+          if(!rc){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          Value* o = createDiv(lv, rc);
+          
+          createStore(o, l);
+          
+          return l;
+        }
+        case FKEY_ModBy_2:{
+          Value* l = getLValue(n[0]);
+          Value* r = compile(n[1], l);
+          
+          if(!l || !r){
+            return 0;
+          }
+          
+          Value* lv = createLoad(l);
+          Value* rc = convert(r, lv, false);
+          
+          if(!rc){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          Value* o = createRem(lv, rc);
+          
+          createStore(o, l);
+          
+          return l;
+        }
+        case FKEY_Not_1:{
+          Value* r = compile(n[0]);
+          
+          if(!r){
+            return 0;
+          }
+          
+          ValueVec v = normalize(r, getInt8(0), false);
+          if(v.empty()){
+            error("invalid operand", n[0]);
+            return 0;
+          }
+          
+          Value* rc = builder_.CreateICmpNE(v[0], v[1], "cmp.out");
+          
+          return builder_.CreateSelect(rc, getInt1(0), getInt1(1), "not.out");
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
