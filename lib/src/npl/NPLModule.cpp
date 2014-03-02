@@ -237,6 +237,10 @@ namespace{
   NBasicMutex _mutex;
   Global* _global;
   
+  Function* _globalFunc(const nstr& f){
+    return _global->getFunction(f);
+  }
+  
   class NPLCompiler{
   public:
     
@@ -1809,7 +1813,7 @@ namespace{
           args.push_back(l);
           args.push_back(r);
           
-          return builder_.CreateCall(_global->getFunction("llvm.pow.f64"),
+          return builder_.CreateCall(_globalFunc("llvm.pow.f64"),
                                      args.vector(), "pow");
         }
         case FKEY_Sqrt_1:{
@@ -1826,7 +1830,7 @@ namespace{
           ValueVec args;
           args.push_back(v);
           
-          return builder_.CreateCall(_global->getFunction("llvm.sqrt.f64"),
+          return builder_.CreateCall(_globalFunc("llvm.sqrt.f64"),
                                      args.vector(), "sqrt");
         }
         case FKEY_Exp_1:{
@@ -1843,7 +1847,7 @@ namespace{
           ValueVec args;
           args.push_back(v);
           
-          return builder_.CreateCall(_global->getFunction("llvm.exp.f64"),
+          return builder_.CreateCall(_globalFunc("llvm.exp.f64"),
                                      args.vector(), "exp");
         }
         case FKEY_Log_1:{
@@ -1860,7 +1864,7 @@ namespace{
           ValueVec args;
           args.push_back(v);
           
-          return builder_.CreateCall(_global->getFunction("llvm.log.f64"),
+          return builder_.CreateCall(_globalFunc("llvm.log.f64"),
                                      args.vector(), "log");
         }
         case FKEY_Floor_1:
@@ -1871,6 +1875,60 @@ namespace{
           }
           
           return convert(v, type("int"));
+        }
+        case FKEY_Normalize_1:{
+          Value* v = compile(n[0]);
+          if(!v){
+            return 0;
+          }
+          
+          size_t length = vectorLength(v);
+          
+          if(length == 0){
+            return v;
+          }
+          
+          VectorType* vt = dyn_cast<VectorType*>(v);
+          Type* et = elementType(vt);
+          Value* d;
+          if(et->isDoubleTy()){
+            d = getDouble(0);
+          }
+          else if(et->isFloatTy()){
+            d = getFloat(0);
+          }
+          else{
+            return error("not a float/double vector", n[0]);
+          }
+          
+          Value* vd = builder_.CreateAlloca(vt);
+          vd = builder_.CreateLoad(vd);
+          
+          for(size_t i = 0; i < length; ++i){
+            Value* e = builder_.CreateExtractElement(v, getInt32(i));
+            e = builder_.CreateFMul(e, e);
+            d = builder_.CreateFAdd(d, e);
+          }
+          
+          ValueVec args;
+          args.push_back(d);
+          
+          Value* sr;
+          
+          if(et->isDoubleTy()){
+            sr = builder_.CreateCall(_globalFunc("llvm.sqrt.f64"),
+                                     args, "sqrt");
+          }
+          else{
+            sr = builder_.CreateCall(_globalFunc("llvm.sqrt.f32"),
+                                     args, "sqrt");
+          }
+          
+          for(size_t i = 0; i < length; ++i){
+            vd = builder_.CreateInsertElement(vd, sr, getInt32(i));
+          }
+          
+          return builder_.CreateFDiv(v, vd);
         }
         default:
           func_->dump();
