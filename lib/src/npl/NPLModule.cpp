@@ -234,6 +234,9 @@ namespace{
     FunctionMap functionMap_;
   };
   
+  NBasicMutex _mutex;
+  Global* _global;
+  
   class NPLCompiler{
   public:
     
@@ -1781,6 +1784,95 @@ namespace{
           
           return vr;
         }
+        case FKEY_Pow_2:
+        {
+          Value* l = compile(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          l = convert(l, type("double"));
+          if(!l){
+            return error("type mismatch", n[0]);
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
+          }
+          
+          r = convert(r, type("double"));
+          if(!r){
+            return error("type mismatch", n[1]);
+          }
+          
+          ValueVec args;
+          args.push_back(l);
+          args.push_back(r);
+          
+          return builder_.CreateCall(_global->getFunction("llvm.pow.f64"),
+                                     args.vector(), "pow");
+        }
+        case FKEY_Sqrt_1:{
+          Value* v = compile(n[0]);
+          if(!v){
+            return 0;
+          }
+          
+          v = convert(v, type("double"));
+          if(!v){
+            return error("type mismatch", n[0]);
+          }
+          
+          ValueVec args;
+          args.push_back(v);
+          
+          return builder_.CreateCall(_global->getFunction("llvm.sqrt.f64"),
+                                     args.vector(), "sqrt");
+        }
+        case FKEY_Exp_1:{
+          Value* v = compile(n[0]);
+          if(!v){
+            return 0;
+          }
+          
+          v = convert(v, type("double"));
+          if(!v){
+            return error("type mismatch", n[0]);
+          }
+          
+          ValueVec args;
+          args.push_back(v);
+          
+          return builder_.CreateCall(_global->getFunction("llvm.exp.f64"),
+                                     args.vector(), "exp");
+        }
+        case FKEY_Log_1:{
+          Value* v = compile(n[0]);
+          if(!v){
+            return 0;
+          }
+          
+          v = convert(v, type("double"));
+          if(!v){
+            return error("type mismatch", n[0]);
+          }
+          
+          ValueVec args;
+          args.push_back(v);
+          
+          return builder_.CreateCall(_global->getFunction("llvm.log.f64"),
+                                     args.vector(), "log");
+        }
+        case FKEY_Floor_1:
+        {
+          Value* v = compile(n[0]);
+          if(!v){
+            return 0;
+          }
+          
+          return convert(v, type("int"));
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
@@ -2062,9 +2154,6 @@ namespace{
     assert(itr != functionMap_.end());
     return itr->second;
   }
-  
-  NBasicMutex _mutex;
-  Global* _global;
   
 } // end namespace
 
