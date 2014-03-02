@@ -1356,6 +1356,46 @@ namespace{
           
           return builder_.CreateFCmpUGE(v[0], v[1], "fge.out");
         }
+        case FKEY_If_2:
+        {
+          Value* cv = compile(n[0]);
+          if(!cv){
+            return 0;
+          }
+          
+          if(!isIntegral(cv)){
+            cv = convert(cv, type("int"));
+          }
+          
+          if(!cv){
+            return error("not a boolean", n[0]);
+          }
+          
+          cv = builder_.CreateICmpNE(cv, getInt1(0), "if.cond");
+          
+          BasicBlock* tb = BasicBlock::Create(context_, "then", func_);
+          BasicBlock* mb = BasicBlock::Create(context_, "if.merge");
+          
+          builder_.CreateCondBr(cv, tb, mb);
+          
+          builder_.SetInsertPoint(tb);
+          
+          Value* tv = compile(n[1]);
+          
+          if(!tv){
+            return 0;
+          }
+          
+          if(!builder_.GetInsertBlock()->getTerminator()){
+            builder_.CreateBr(mb);
+          }
+          
+          func_->getBasicBlockList().push_back(mb);
+          
+          builder_.SetInsertPoint(mb);
+          
+          return getInt64(0);
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
