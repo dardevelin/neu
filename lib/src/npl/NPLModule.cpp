@@ -1197,6 +1197,165 @@ namespace{
           
           return builder_.CreateSelect(rc, getInt1(0), getInt1(1), "not.out");
         }
+        case FKEY_XOr_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return builder_.CreateXor(v[0], v[1], "xor.out");
+        }
+        case FKEY_And_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return builder_.CreateAnd(v[0], v[1], "and.out");
+        }
+        case FKEY_Or_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          return builder_.CreateOr(v[0], v[1], "or.out");
+        }
+        case FKEY_EQ_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          if(isIntegral(v[0])){
+            return builder_.CreateICmpEQ(v[0], v[1], "eq.out");
+          }
+          else{
+            return builder_.CreateFCmpUEQ(v[0], v[1], "feq.out");
+          }
+        }
+        case FKEY_NE_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          if(isIntegral(v[0])){
+            return builder_.CreateICmpNE(v[0], v[1], "ne.out");
+          }
+          else{
+            return builder_.CreateFCmpUNE(v[0], v[1], "fne.out");
+          }
+        }
+        case FKEY_LT_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          if(isIntegral(v[0])){
+            if(isUnsigned(v[0]) && isUnsigned(v[1])){
+              return builder_.CreateICmpULT(v[0], v[1], "lt.out");
+            }
+            
+            return builder_.CreateICmpSLT(v[0], v[1], "lt.out");
+          }
+          
+          return builder_.CreateFCmpULT(v[0], v[1], "flt.out");
+        }
+        case FKEY_LE_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          if(isIntegral(v[0])){
+            if(isUnsigned(v[0]) && isUnsigned(v[1])){
+              return builder_.CreateICmpULE(v[0], v[1], "le.out");
+            }
+            
+            return builder_.CreateICmpSLE(v[0], v[1], "le.out");
+          }
+          
+          return builder_.CreateFCmpULE(v[0], v[1], "fle.out");
+        }
+        case FKEY_GT_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          if(isIntegral(v[0])){
+            if(isUnsigned(v[0]) && isUnsigned(v[1])){
+              return builder_.CreateICmpUGT(v[0], v[1], "gt.out");
+            }
+            
+            return builder_.CreateICmpSGT(v[0], v[1], "gt.out");
+          }
+
+          return builder_.CreateFCmpUGT(v[0], v[1], "fgt.out");
+        }
+        case FKEY_GE_2:{
+          Value* l = compile(n[0], lhs);
+          Value* r = compile(n[1], l);
+          
+          ValueVec v = normalize(l, r);
+          
+          if(v.empty()){
+            error("invalid operands", n);
+            return 0;
+          }
+          
+          if(isIntegral(v[0])){
+            if(isUnsigned(v[0]) && isUnsigned(v[1])){
+              return builder_.CreateICmpUGE(v[0], v[1], "ge.out");
+            }
+            
+            return builder_.CreateICmpSGE(v[0], v[1], "ge.out");
+          }
+          
+          return builder_.CreateFCmpUGE(v[0], v[1], "fge.out");
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
