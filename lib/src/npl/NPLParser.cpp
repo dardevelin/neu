@@ -107,8 +107,6 @@ namespace{
       builtinMap_({"normalize", 1}) = "Normalize";
       builtinMap_({"dot", 2}) = "DotProduct";
       builtinMap_({"cross", 2}) = "CrossProduct";
-      
-      cout << "bm is: " << builtinMap_ << endl;
     }
     
     bool isReservedName(const nstr& name) const{
