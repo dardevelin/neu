@@ -2326,6 +2326,11 @@ namespace{
     }
     
     Function* compileFunction(const nstr& className, const nvar& f){
+      scopeStack_.clear();
+      attributeMap_.clear();
+      loopContinue_ = 0;
+      loopMerge_ = 0;
+      
       className_ = className;
       
       const nvar& fs = f[1];
