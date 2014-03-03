@@ -8868,6 +8868,9 @@ bool nvar::less(const nvar& x) const{
             if((*h_.v)[i].less((*x.h_.v)[i])){
               return true;
             }
+            else if((*x.h_.v)[i].less((*h_.v)[i])){
+              return false;
+            }
           }
           
           return false;
@@ -8913,6 +8916,9 @@ bool nvar::less(const nvar& x) const{
           for(size_t i = 0; i < s1; ++i){
             if((*h_.l)[i].less((*x.h_.l)[i])){
               return true;
+            }
+            else if((*x.h_.v)[i].less((*h_.v)[i])){
+              return false;
             }
           }
           

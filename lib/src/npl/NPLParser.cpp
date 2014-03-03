@@ -106,6 +106,8 @@ namespace{
       builtinMap_({"normalize", 1}) = "Normalize";
       builtinMap_({"dot", 2}) = "DotProduct";
       builtinMap_({"cross", 1}) = "CrossProduct";
+      
+      cout << "bm is: " << builtinMap_ << endl;
     }
     
     bool isReservedName(const nstr& name) const{
@@ -117,13 +119,13 @@ namespace{
     }
     
     bool handleBuiltin(nvar& f){
-      cout << "&&&&&&&&&&&&&&&&& f is: " << f << endl;
-      nvar fb = builtinMap_.get({f.str(), f.size()}, none);
-      if(fb == none){
+      nvar b = builtinMap_.get({f.str(), f.size()}, none);
+
+      if(b == none){
         return false;
       }
 
-      f.str() = fb;
+      f.str() = b;
       return true;
     }
     
