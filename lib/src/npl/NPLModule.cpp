@@ -2203,6 +2203,28 @@ namespace{
         case FKEY_Float_1:{
           return getNumeric(n[0], "float");
         }
+        case FKEY_Abs_1:{
+          nvar f = nfunc("If") << (nfunc("LT") << n[0] << 0) <<
+          (nfunc("Neg") << n[0]) << n[0];
+          
+          return compile(f);
+        }
+        case FKEY_Log10_1:{
+          nvar f = nfunc("Div") << (nfunc("Log") << n[0]) <<
+          (nfunc("Log") << 10.0);
+          
+          return compile(f);
+        }
+        case FKEY_Ceil_1:{
+          nvar f = nfunc("Floor") << (nfunc("Add") << n[0] << 1.0);
+          
+          return compile(f);
+        }
+        case FKEY_BitComplement_1:{
+          nvar f = nfunc("Sub") << (nfunc("Neg") << n[0]) << 1;
+
+          return compile(f);
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
