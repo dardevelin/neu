@@ -107,6 +107,7 @@ COMMENT "//".+\n
 MULTILINE_COMMENT "/*"[^"*/"]*"*/"
 IDENTIFIER ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)
 INTEGER [0-9]+
+FLOAT (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?[fF]
 DOUBLE (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?
 STRING_LITERAL \"([^\"]|\\\")*\"
 STRING_LITERAL_SQ	\'([^\']|\\\')*\'
@@ -288,6 +289,16 @@ DEFINE "#define"
   return INTEGER;
 }
 
+{FLOAT} {
+  nstr s = yytext;
+  s.erase(s.length() - 1, 1);
+  PS->advance(yytext, "numeric");
+  double d;
+  sscanf(yytext, "%lf", &d);
+  yylval->v = d;
+  return FLOAT;
+}
+
 {DOUBLE} {
   nstr s = yytext;
   PS->advance(yytext, "numeric");
@@ -346,7 +357,7 @@ DEFINE "#define"
   return STRING_LITERAL;
 }
 
-[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)\@] {
+[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)\@\&\~] {
   PS->advance(1, "operator");
   return *yytext;
 }

@@ -67,7 +67,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_EXTERN DEFINE DOUBLE INTEGER TYPE
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_EXTERN DEFINE DOUBLE INTEGER TYPE FLOAT
 
 %type<v> stmt expr expr_num func_def func_def_vec block stmts if_stmt expr_vec class_vec
 
@@ -75,12 +75,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
 %right OR
 %right AND
+%left '|'
+%left '&'
 %right EQ NE
 %right '<' '>' GE LE
 %left '+' '-'
 %left '*' '/' '%'
 %left '^'
-%left '!' INC DEC '@'
+%left '!' INC DEC '@' '~'
 
 %%
 
@@ -123,6 +125,9 @@ expr_num: DOUBLE {
 | INTEGER {
   $$ = PS->var($1);
 }
+| FLOAT {
+  $$ = PS->func("Float") << $1;
+}
 ;
 
 expr: expr_num {
@@ -130,6 +135,15 @@ expr: expr_num {
 }
 | IDENTIFIER {
   $$ = PS->sym($1);
+}
+| IDENTIFIER '[' expr ']' {
+  $$ = PS->func("Idx") << PS->sym($1) << move($3);
+}
+| '&' IDENTIFIER {
+  $$ = PS->func("Ptr") << PS->sym($2);
+}
+| '*' IDENTIFIER {
+  $$ = PS->func("DePtr") << PS->sym($2);
 }
 | '(' expr ')' {
   $$ = move($2);
@@ -231,6 +245,15 @@ expr: expr_num {
 }
 | expr OR expr {
   $$ = PS->func("Or") << move($1) << move($3);
+}
+| '~' expr {
+  $$ = PS->func("BitComplement") << move($2);
+}
+| expr '|' expr {
+  $$ = PS->func("BitOr") << move($1) << move($3);
+}
+| expr '&' expr {
+  $$ = PS->func("BitAnd") << move($1) << move($3);
 }
 | IDENTIFIER '(' expr_vec ')' {
   nvar c = PS->func($1);
@@ -337,7 +360,7 @@ block: '{' stmts '}' {
   $$ = $2;
 }
 | '{' '}' {
-  $$ = PS->func("Block");
+  $$ = PS->func("ScopedBlock");
 }
 
 stmts: stmts stmt {
@@ -345,7 +368,7 @@ stmts: stmts stmt {
   $$ << move($2);
 }
 | stmt {
-  $$ = PS->func("Block") << move($1);
+  $$ = PS->func("ScopedBlock") << move($1);
 }
 ;
 

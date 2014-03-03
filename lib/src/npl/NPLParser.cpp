@@ -94,6 +94,7 @@ namespace{
       builtinMap_({"shl", 2}) = "ShL";
       builtinMap_({"shr", 2}) = "ShR";
       builtinMap_({"xor", 2}) = "XOr";
+      builtinMap_({"bxor", 2}) = "BitXOr";
       builtinMap_({"len", 1}) = "Len";
       builtinMap_({"size", 1}) = "Size";
       builtinMap_({"sqrt", 1}) = "Sqrt";
@@ -105,7 +106,7 @@ namespace{
       builtinMap_({"ceil", 1}) = "Ceil";
       builtinMap_({"normalize", 1}) = "Normalize";
       builtinMap_({"dot", 2}) = "DotProduct";
-      builtinMap_({"cross", 1}) = "CrossProduct";
+      builtinMap_({"cross", 2}) = "CrossProduct";
       
       cout << "bm is: " << builtinMap_ << endl;
     }
