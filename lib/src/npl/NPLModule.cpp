@@ -372,11 +372,11 @@ namespace{
     }
 
     Function* createFunction(const nstr& name,
-                             const Type* returnType,
+                             Type* returnType,
                              const TypeVec& argTypes,
                              bool external=true){
       FunctionType* ft =
-      FunctionType::get(type(returnType), argTypes.vector(), false);
+      FunctionType::get(returnType, argTypes.vector(), false);
       
       Function* f =
       Function::Create(ft,
@@ -2129,9 +2129,7 @@ namespace{
           size_t size = fs.size();
           nstr name = fs;
           
-          nvar k = {className_, name, size};
-          
-          auto itr = functionMap_.find(k);
+          auto itr = functionMap_.find({className_, name, size});
           if(itr == functionMap_.end()){
             itr = functionMap_.find({name, size});
           
@@ -2140,40 +2138,50 @@ namespace{
             }
             
             Function* f = itr->second;
-          }
-          else{
-            Function* f = itr->second;
 
-            Function::arg_iterator aitr = f->arg_begin();
-            Value* as = aitr;
-            
-            Value* ap = createLoad(createAlloca(as->getType(), "args"));
-            ap->dump();
-            
-            Value* fp = createStructGEP(ap, 1, "this.ptr");
-            
-            createStore(this_, fp);
+            ValueVec args;
             
             for(size_t i = 0; i < size; ++i){
-              Value* vi = compile(fs[i]);
-              Value* fp = createStructGEP(ap, i + 2, "param");
-              Value* vic = convert(vi, fp);
-              if(!vic){
-                error("invalid operand", fs[i]);
-              }
+              const nvar& fi = fs[i];
               
-              createStore(vic, fp);
+              Value* vi = compile(fi);
+              args.push_back(vi);
             }
-            
-            ValueVec args;
-            args.push_back(ap);
             
             if(f->getReturnType()->isVoidTy()){
               builder_.CreateCall(f, args.vector());
               return getInt64(0);
             }
-
+            
             return builder_.CreateCall(f, args.vector(), name.c_str());
+          }
+          else{
+            Function* f = itr->second;
+
+            Value* as = f->arg_begin();
+            Value* ap = createAlloca(elementType(as->getType()), "args");
+            Value* tp = createStructGEP(ap, 1, "this.ptr");
+            createStore(this_, tp);
+            
+            for(size_t i = 0; i < size; ++i){
+              const nvar& fi = fs[i];
+              
+              Value* vi = compile(fi);
+              Value* vp = createStructGEP(ap, i + 2, fi.str() + ".ptr");
+              vi = convert(vi, vp);
+              if(!vi){
+                error("invalid operand", fi);
+              }
+              
+              createStore(vi, vp);
+            }
+            
+            if(f->getReturnType()->isVoidTy()){
+              builder_.CreateCall(f, {ap});
+              return getInt64(0);
+            }
+
+            return builder_.CreateCall(f, {ap}, name.c_str());
           }
           
           return 0;
@@ -2207,12 +2215,14 @@ namespace{
       return *currentFunc_;
     }
     
-    void compileTop(const nvar& code){
+    bool compileTop(const nvar& code){
+      foundError_ = false;
+      
       code_ = &code;
       
       nvec cs;
       code.keys(cs);
-      
+
       for(size_t i = 0; i < cs.size(); ++i){
         const nvar& ck = cs[i];
         const nvar& ci = code[ck];
@@ -2229,8 +2239,15 @@ namespace{
           }
           
           Function* e = createFunction(fs, rt, args);
-          functionMap_[{fs.str(), fs.size()}] = e;
-          
+          functionMap_[{fs.sym(), fs.size()}] = e;
+        }
+      }
+      
+      for(size_t i = 0; i < cs.size(); ++i){
+        const nvar& ck = cs[i];
+        const nvar& ci = code[ck];
+        
+        if(ck.size() == 2){
           continue;
         }
         
@@ -2283,6 +2300,8 @@ namespace{
       }
       
       module_.dump();
+      
+      return foundError_;
     }
     
     Function* createFunctionPrototype(const nstr& className, const nvar& f){
@@ -2341,7 +2360,6 @@ namespace{
       builder_.SetInsertPoint(begin_);
       
       foundReturn_ = false;
-      foundError_ = false;
       
       Value* b = compile(f[2]);
       
@@ -2509,9 +2527,7 @@ namespace neu{
     bool compile(const nvar& code){
       NPLCompiler compiler(module_, functionMap_);
       
-      compiler.compileTop(code);
-      
-      return true;
+      return compiler.compileTop(code);
     }
     
     void getFunc(const nvar& func, NPLFunc* f){
