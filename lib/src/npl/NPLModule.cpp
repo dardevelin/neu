@@ -2358,7 +2358,7 @@ namespace{
           const nvar& mj = ci[mk];
           
           if(mk.size() == 2){
-            functionMap_[{ck, mk[0], mk[1]}] = createFunctionPrototype(ck, mj);
+            functionMap_[{ck, mk[0], mk[1]}] = createPrototype(ck, mj);
           }
         }
         
@@ -2380,7 +2380,7 @@ namespace{
       return foundError_;
     }
     
-    Function* createFunctionPrototype(const nstr& className, const nvar& f){
+    Function* createPrototype(const nstr& className, const nvar& f){
       const nvar& fs = f[1];
       
       nstr n = className + "_" + fs.str() + "_" + fs.size();
