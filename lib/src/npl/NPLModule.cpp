@@ -574,6 +574,10 @@ namespace{
       
       return 0;
     }
+
+    Value* convert(Value* from, const nstr& toType, bool trunc=false){
+      return convert(from, type(toType), trunc);
+    }
     
     Value* convert(Value* from, Type* toType, bool trunc=false){
       Type* fromType = from->getType();
@@ -688,6 +692,10 @@ namespace{
     
     Value* getNumeric(const nvar& x, Value* v=0){
       return getNumeric(x, v ? v->getType() : 0);
+    }
+    
+    Value* getNumeric(const nvar& x, const nstr& t){
+      return getNumeric(x, type(t));
     }
     
     Value* getNumeric(const nvar& x, Type* l=0){
@@ -1467,7 +1475,7 @@ namespace{
           }
           
           if(!isIntegral(cv)){
-            cv = convert(cv, type("int"));
+            cv = convert(cv, "int");
           }
           
           if(!cv){
@@ -1507,7 +1515,7 @@ namespace{
           }
           
           if(!isIntegral(cv)){
-            cv = convert(cv, type("int"));
+            cv = convert(cv, "int");
           }
           
           if(!cv){
@@ -1570,7 +1578,7 @@ namespace{
           }
           
           if(!isIntegral(cv)){
-            cv = convert(cv, type("int"));
+            cv = convert(cv, "int");
           }
           
           if(!cv){
@@ -1635,7 +1643,7 @@ namespace{
           }
           
           if(!isIntegral(cv)){
-            cv = convert(cv, type("int"));
+            cv = convert(cv, "int");
           }
           
           if(!cv){
@@ -1761,7 +1769,7 @@ namespace{
             return 0;
           }
           
-          i = convert(i, type("int"));
+          i = convert(i, "int");
           
           Value* vi = builder_.CreateExtractElement(v, i);
           
@@ -1841,7 +1849,7 @@ namespace{
             return 0;
           }
           
-          l = convert(l, type("double"));
+          l = convert(l, "double");
           if(!l){
             return error("type mismatch", n[0]);
           }
@@ -1851,7 +1859,7 @@ namespace{
             return 0;
           }
           
-          r = convert(r, type("double"));
+          r = convert(r, "double");
           if(!r){
             return error("type mismatch", n[1]);
           }
@@ -1869,7 +1877,7 @@ namespace{
             return 0;
           }
           
-          v = convert(v, type("double"));
+          v = convert(v, "double");
           if(!v){
             return error("type mismatch", n[0]);
           }
@@ -1886,7 +1894,7 @@ namespace{
             return 0;
           }
           
-          v = convert(v, type("double"));
+          v = convert(v, "double");
           if(!v){
             return error("type mismatch", n[0]);
           }
@@ -1903,7 +1911,7 @@ namespace{
             return 0;
           }
           
-          v = convert(v, type("double"));
+          v = convert(v, "double");
           if(!v){
             return error("type mismatch", n[0]);
           }
@@ -1921,7 +1929,7 @@ namespace{
             return 0;
           }
           
-          return convert(v, type("int"));
+          return convert(v, "int");
         }
         case FKEY_Normalize_1:{
           Value* v = compile(n[0]);
@@ -2193,7 +2201,7 @@ namespace{
           return compile(n[0]);
         }
         case FKEY_Float_1:{
-          return getNumeric(n[0], type("float"));
+          return getNumeric(n[0], "float");
         }
         default:
           func_->dump();
