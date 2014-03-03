@@ -719,8 +719,10 @@ namespace{
           return getInt1(false);
         case nvar::True:
           return getInt1(true);
-        case nvar::Integer:
-          return getInt64(x.asLong());
+        case nvar::Integer:{
+          int64_t i = x.asLong();
+          return nvar::intBytes(i) > 32 ? getInt64(i) : getInt32(i);
+        }
         case nvar::Float:
           return getDouble(x.asDouble());
         default:
@@ -789,7 +791,7 @@ namespace{
     }
    
     Value* createGEP(Value* ptr, Value* index){
-      return builder_.CreateGEP(ptr, index);
+      return builder_.CreateGEP(ptr, index, "gep");
     }
     
     Value* createStructGEP(Value* structPtr, size_t index, const nstr& name){
@@ -960,10 +962,12 @@ namespace{
         }
         
         error("undefined symbol", n);
+        
         return 0;
       }
       else if(!n.isFunction()){
         error("invalid input", n);
+        
         return 0;
       }
       
@@ -1102,7 +1106,7 @@ namespace{
         }
         case FKEY_Block_n:{
           if(n.empty()){
-            return getInt64(0);
+            return getInt32(0);
           }
           
           Value* rv;
@@ -1118,7 +1122,7 @@ namespace{
         }
         case FKEY_ScopedBlock_n:{
           if(n.empty()){
-            return getInt64(0);
+            return getInt32(0);
           }
          
           pushScope();
@@ -1181,7 +1185,7 @@ namespace{
           
           createStore(rc, l);
           
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_AddBy_2:{
           Value* l = getLValue(n[0]);
@@ -1507,7 +1511,7 @@ namespace{
           
           builder_.SetInsertPoint(mb);
           
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_If_3:{
           Value* cv = compile(n[0]);
@@ -1565,7 +1569,7 @@ namespace{
           
           builder_.SetInsertPoint(mb);
           
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_While_2:{
           loopContinue_ = BasicBlock::Create(context_, "while.cond", func_);
@@ -1610,7 +1614,7 @@ namespace{
           loopContinue_ = 0;
           loopMerge_ = 0;
           
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_For_4:{
           Value* iv = compile(n[0]);
@@ -1663,7 +1667,7 @@ namespace{
           loopContinue_ = 0;
           loopMerge_ = 0;
           
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_Break_0:{
           if(!loopMerge_){
@@ -1671,7 +1675,7 @@ namespace{
           }
           
           builder_.CreateBr(loopMerge_);
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_Continue_0:{
           if(!loopContinue_){
@@ -1679,14 +1683,14 @@ namespace{
           }
           
           builder_.CreateBr(loopContinue_);
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_Ret_0:{
           builder_.CreateRetVoid();
           
           foundReturn_ = true;
           
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_Ret_1:{
           if(!rt_){
@@ -1712,7 +1716,7 @@ namespace{
           
           foundReturn_ = true;
           
-          return getInt64(0);
+          return getInt32(0);
         }
         case FKEY_Inc_1:{
           Value* l = getLValue(n[0]);
@@ -1800,7 +1804,7 @@ namespace{
             return 0;
           }
           
-          Value* zero = getInt64(0);
+          Value* zero = getInt32(0);
           ValueVec v = normalize(zero, vn);
           
           if(v.empty()){
@@ -2160,7 +2164,7 @@ namespace{
             
             if(f->getReturnType()->isVoidTy()){
               builder_.CreateCall(f, args.vector());
-              return getInt64(0);
+              return getInt32(0);
             }
             
             return builder_.CreateCall(f, args.vector(), name.c_str());
@@ -2188,7 +2192,7 @@ namespace{
             
             if(f->getReturnType()->isVoidTy()){
               builder_.CreateCall(f, {ap});
-              return getInt64(0);
+              return getInt32(0);
             }
 
             return builder_.CreateCall(f, {ap}, name.c_str());
