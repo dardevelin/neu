@@ -276,11 +276,11 @@ namespace{
       ScopeMap_ scopeMap_;
     };
     
-    NPLCompiler(Module& module, FunctionMap& functionMap)
+    NPLCompiler(Module& module, FunctionMap& functionMap, ostream& estr)
     : module_(module),
     context_(module.getContext()),
     builder_(context_),
-    estr_(&cerr),
+    estr_(&estr),
     functionMap_(functionMap){
 
     }
@@ -391,18 +391,20 @@ namespace{
                              const nstr& returnType,
                              const nvec& argTypes,
                              bool external=true){
-      
       return createFunction(name, type(returnType), typeVec(argTypes), external);
     }
     
-    Value* error(const nstr& msg, const nvar& n, int arg=-1){
-      nstr as;
-      if(arg != -1){
-        as = "[" + nvar(arg) + "]";
+    Value* error(const nstr& msg, const nvar& n){
+      size_t line = n.get("__line", 0);
+      nstr file = n.get("__file", "");
+      
+      *estr_ << "NPL compiler error:";
+      
+      if(line > 0){
+        *estr_ << file << ":" << line << ":";
       }
       
-      *estr_ << "NPL compiler error: " << msg << as << ": " <<
-      n.toStr() << endl;
+      *estr_ << " " << msg << ": " << n.toStr() << endl;
       
       foundError_ = true;
       
@@ -501,11 +503,11 @@ namespace{
       return 0;
     }
   
-    Value* convertNum(Value* from, Value* to, bool trunc=false){
+    Value* convertNum(Value* from, Value* to, bool trunc=true){
       return convertNum(from, to->getType(), trunc);
     }
     
-    Value* convertNum(Value* from, Type* toType, bool trunc=false){
+    Value* convertNum(Value* from, Type* toType, bool trunc=true){
       if(toType->isPointerTy()){
         toType = elementType(toType);
       }
@@ -575,11 +577,11 @@ namespace{
       return 0;
     }
 
-    Value* convert(Value* from, const nstr& toType, bool trunc=false){
+    Value* convert(Value* from, const nstr& toType, bool trunc=true){
       return convert(from, type(toType), trunc);
     }
     
-    Value* convert(Value* from, Type* toType, bool trunc=false){
+    Value* convert(Value* from, Type* toType, bool trunc=true){
       Type* fromType = from->getType();
       if(VectorType* fromVecType = dyn_cast<VectorType>(fromType)){
         if(VectorType* toVecType = dyn_cast<VectorType>(toType)){
@@ -600,7 +602,7 @@ namespace{
       return convertNum(from, toType, trunc);
     }
     
-    ValueVec normalize(Value* v1, Value* v2, bool trunc=false){
+    ValueVec normalize(Value* v1, Value* v2, bool trunc=true){
       Type* t1 = v1->getType();
       Type* t2 = v2->getType();
       
@@ -654,7 +656,7 @@ namespace{
       return {convert(v1, tn), convert(v2, tn)};
     }
     
-    Value* convert(Value* from, Value* to, bool trunc=false){
+    Value* convert(Value* from, Value* to, bool trunc=true){
       return convert(from, to->getType(), trunc);
     }
     
@@ -702,7 +704,7 @@ namespace{
       if(l){
         Type* t = elementType(l);
         if(IntegerType* it = dyn_cast<IntegerType>(t)){
-          ConstantInt::get(it, x.toLong());
+          return ConstantInt::get(it, x.toLong());
         }
         else if(t->isFloatingPointTy()){
           return ConstantFP::get(t, x.toDouble());
@@ -2049,7 +2051,7 @@ namespace{
           }
           
           if(length != length2){
-            return error("vector length mismatch", n, 0);
+            return error("vector length mismatch", n);
           }
           
           ValueVec v = normalize(lv, rv);
@@ -2506,7 +2508,7 @@ namespace{
     _initFunctionMap();
     _initSymbolMap();
     
-    NPLCompiler compiler(module_, functionMap_);
+    NPLCompiler compiler(module_, functionMap_, cerr);
     
     functionMap_["llvm.sqrt.f64"] =
     compiler.createFunction("llvm.sqrt.f64", "double", {"double"});
@@ -2548,7 +2550,8 @@ namespace neu{
     NPLModule_(NPLModule* o)
     : o_(o),
     context_(getGlobalContext()),
-    module_("module", context_){
+    module_("module", context_),
+    estr_(&cerr){
       
       initGlobal();
       
@@ -2560,7 +2563,7 @@ namespace neu{
     }
     
     bool compile(const nvar& code){
-      NPLCompiler compiler(module_, functionMap_);
+      NPLCompiler compiler(module_, functionMap_, *estr_);
       
       return compiler.compileTop(code);
     }
@@ -2595,6 +2598,10 @@ namespace neu{
       _mutex.unlock();
     }
     
+    void setErrorStream(ostream& estr){
+      estr_ = &estr;
+    }
+    
   private:
     typedef NMap<NPLFunc::FP, Function*> FunctionPtrMap_;
     
@@ -2605,6 +2612,7 @@ namespace neu{
     ExecutionEngine* engine_;
     FunctionMap functionMap_;
     FunctionPtrMap_ functionPtrMap_;
+    ostream* estr_;
   };
   
 } // end namespace neu
@@ -2627,4 +2635,8 @@ void NPLModule::getFunc(const nvar& func, NPLFunc* f){
 
 void NPLModule::release(NPLFunc* f){
   x_->release(f);
+}
+
+void NPLModule::setErrorStream(ostream& estr){
+  x_->setErrorStream(estr);
 }

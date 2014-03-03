@@ -13877,67 +13877,71 @@ char* nvar::pack_(char* buf, size_t& size, size_t& pos) const{
       buf[pos++] = True;
       break;
     case Integer:{
-      int64_t i = h_.i;
-      
-      if(i & 0xffffffff00000000){
-        buf[pos++] = Integer;
-        memcpy(buf + pos, &i, 8);
-        pos += 8;
-      }
-      else if(i & 0xffffffffffff0000){
-        buf[pos++] = PackInt32;
-        int32_t j = i;
-        memcpy(buf + pos, &j, 4);
-        pos += 4;
-      }
-      else if(i & 0xffffffffffffff00){
-        buf[pos++] = PackInt16;
-        int16_t j = i;
-        memcpy(buf + pos, &j, 2);
-        pos += 2;
-      }
-      else{
-        int8_t j = i;
-        
-        switch(j){
-          case 0:
-            buf[pos++] = Pack0;
-            break;
-          case 1:
-            buf[pos++] = Pack1;
-            break;
-          case 2:
-            buf[pos++] = Pack2;
-            break;
-          case 3:
-            buf[pos++] = Pack3;
-            break;
-          case 4:
-            buf[pos++] = Pack4;
-            break;
-          case 5:
-            buf[pos++] = Pack5;
-            break;
-          case 6:
-            buf[pos++] = Pack6;
-            break;
-          case 7:
-            buf[pos++] = Pack7;
-            break;
-          case 8:
-            buf[pos++] = Pack8;
-            break;
-          case 9:
-            buf[pos++] = Pack9;
-            break;
-          case 10:
-            buf[pos++] = Pack10;
-            break;
-          default:
-            buf[pos++] = PackInt8;
-            memcpy(buf + pos, &j, 1);
-            ++pos;
-            break;
+      size_t bytes = intBytes(h_.i);
+
+      switch(bytes){
+        case 8:
+          buf[pos++] = Integer;
+          memcpy(buf + pos, &h_.i, 8);
+          pos += 8;
+          break;
+        case 4:{
+          buf[pos++] = PackInt32;
+          int32_t j = h_.i;
+          memcpy(buf + pos, &j, 4);
+          pos += 4;
+          break;
+        }
+        case 2:{
+          buf[pos++] = PackInt16;
+          int16_t j = h_.i;
+          memcpy(buf + pos, &j, 2);
+          pos += 2;
+          break;
+        }
+        case 1:{
+          int8_t j = h_.i;
+          
+          switch(j){
+            case 0:
+              buf[pos++] = Pack0;
+              break;
+            case 1:
+              buf[pos++] = Pack1;
+              break;
+            case 2:
+              buf[pos++] = Pack2;
+              break;
+            case 3:
+              buf[pos++] = Pack3;
+              break;
+            case 4:
+              buf[pos++] = Pack4;
+              break;
+            case 5:
+              buf[pos++] = Pack5;
+              break;
+            case 6:
+              buf[pos++] = Pack6;
+              break;
+            case 7:
+              buf[pos++] = Pack7;
+              break;
+            case 8:
+              buf[pos++] = Pack8;
+              break;
+            case 9:
+              buf[pos++] = Pack9;
+              break;
+            case 10:
+              buf[pos++] = Pack10;
+              break;
+            default:
+              buf[pos++] = PackInt8;
+              memcpy(buf + pos, &j, 1);
+              ++pos;
+              break;
+          }
         }
       }
       break;

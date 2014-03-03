@@ -905,6 +905,20 @@ namespace neu{
       }
     }
     
+    static size_t intBytes(int64_t i){
+      if(i & 0xffffffff00000000){
+        return 8;
+      }
+      else if(i & 0xffffffffffff0000){
+        return 4;
+      }
+      else if(i & 0xffffffffffffff00){
+        return 2;
+      }
+      
+      return 1;
+    }
+    
     const double& asDouble() const{
       switch(t_){
         case Float:

@@ -68,6 +68,8 @@ namespace neu{
     
     void release(NPLFunc* f);
     
+    void setErrorStream(std::ostream& estr);
+    
   private:
     class NPLModule_* x_;
   };
