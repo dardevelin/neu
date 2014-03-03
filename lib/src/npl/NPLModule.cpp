@@ -2525,26 +2525,26 @@ namespace{
     
     LLVMContext& context_;
     Module& module_;
+    IRBuilder<> builder_;
 
+    ostream* estr_;
+    FunctionMap& functionMap_;
+    StructMap_ structMap_;
     ScopeStack_ scopeStack_;
     AttributeMap_ attributeMap_;
-    FunctionMap& functionMap_;
+    InfoMap_ infoMap_;
+    Value* args_;
     Type* rt_;
     Function* func_;
+    const nvar* code_;
+    const nvar* currentClass_;
+    const nvar* currentFunc_;
     BasicBlock* loopContinue_;
     BasicBlock* loopMerge_;
     BasicBlock* entry_;
     BasicBlock* begin_;
-    Value* args_;
     bool foundReturn_;
     bool foundError_;
-    IRBuilder<> builder_;
-    ostream* estr_;
-    InfoMap_ infoMap_;
-    const nvar* code_;
-    const nvar* currentClass_;
-    const nvar* currentFunc_;
-    StructMap_ structMap_;
     StructType* classStruct_;
     Value* this_;
     nstr className_;
