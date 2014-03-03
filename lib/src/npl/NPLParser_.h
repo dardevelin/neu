@@ -394,6 +394,8 @@ namespace neu{
     }
     
     const nvar& getType(const nstr& t);
+
+    bool handleBuiltin(nvar& f);
     
   private:
     NPLParser* o_;

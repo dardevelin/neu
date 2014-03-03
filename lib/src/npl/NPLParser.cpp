@@ -90,6 +90,22 @@ namespace{
       typeMap_("float") = nml("[bits:32, float:true]");
       typeMap_("double") = nml("[bits:64, float:true]");
       typeMap_("var") = nml("[bits:72]");
+
+      builtinMap_({"shl", 2}) = "ShL";
+      builtinMap_({"shr", 2}) = "ShR";
+      builtinMap_({"xor", 2}) = "XOr";
+      builtinMap_({"len", 1}) = "Len";
+      builtinMap_({"size", 1}) = "Size";
+      builtinMap_({"sqrt", 1}) = "Sqrt";
+      builtinMap_({"exp", 1}) = "Exp";
+      builtinMap_({"abs", 1}) = "Abs";
+      builtinMap_({"log", 1}) = "Log";
+      builtinMap_({"log10", 1}) = "Log10";
+      builtinMap_({"floor", 1}) = "Floor";
+      builtinMap_({"ceil", 1}) = "Ceil";
+      builtinMap_({"normalize", 1}) = "Normalize";
+      builtinMap_({"dot", 2}) = "DotProduct";
+      builtinMap_({"cross", 1}) = "CrossProduct";
     }
     
     bool isReservedName(const nstr& name) const{
@@ -100,8 +116,20 @@ namespace{
       return typeMap_.get(t, none);
     }
     
+    bool handleBuiltin(nvar& f){
+      cout << "&&&&&&&&&&&&&&&&& f is: " << f << endl;
+      nvar fb = builtinMap_.get({f.str(), f.size()}, none);
+      if(fb == none){
+        return false;
+      }
+
+      f.str() = fb;
+      return true;
+    }
+    
     nvar nameMap_;
     nvar typeMap_;
+    nvar builtinMap_;
   };
   
   Global _global;
@@ -110,6 +138,10 @@ namespace{
 
 const nvar& NPLParser_::getType(const nstr& t){
   return _global.getType(t);
+}
+
+bool NPLParser_::handleBuiltin(nvar& f){
+  return _global.handleBuiltin(f);
 }
 
 NPLParser::NPLParser(){

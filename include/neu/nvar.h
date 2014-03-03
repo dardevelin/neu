@@ -5569,7 +5569,13 @@ namespace neu{
     }
     
     nvar& operator()(std::initializer_list<nvar> il){
-      assert(il.size() % 2 == 0);
+      return (*this)(nvar(il));
+    }
+    
+    nvar& map(std::initializer_list<nvar> il){
+      if(il.size() % 2 != 0){
+        NERROR("invalid input");
+      }
       
       auto itr = il.begin();
       while(itr != il.end()){
@@ -5577,7 +5583,7 @@ namespace neu{
         ++itr;
         const nvar& v = *itr;
         ++itr;
-        
+
         if(k.isString()){
           (*this)(k.str()) = v;
         }

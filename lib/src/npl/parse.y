@@ -235,7 +235,17 @@ expr: expr_num {
 | IDENTIFIER '(' expr_vec ')' {
   nvar c = PS->func($1);
   c.append($3);
-  $$ = PS->func("Call") << move(c);
+  
+  if(PS->handleBuiltin(c)){
+    $$ = move(c);
+  }
+  else{
+    $$ = PS->func("Call") << move(c);
+  }
+}
+| '{' expr_vec '}' {
+  $$ = PS->func("Vec");
+  $$.append($2);
 }
 ;
 
