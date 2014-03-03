@@ -4734,6 +4734,10 @@ namespace neu{
     
     bool less(const nvar& x) const;
     
+    bool greater(const nvar& x) const;
+    
+    bool equal(const nvar& x) const;
+    
     nvar operator<(const nvar& x) const;
     
     nvar operator<(int x) const{

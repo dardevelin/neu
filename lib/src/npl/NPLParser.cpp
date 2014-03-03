@@ -15,10 +15,10 @@
  
 Neu, Copyright (c) 2013-2014, Andrometa LLC
 All rights reserved.
-
+ 
 neu@andrometa.net
 http://neu.andrometa.net
-
+ 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:

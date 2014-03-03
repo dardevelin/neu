@@ -9116,6 +9116,578 @@ bool nvar::less(const nvar& x) const{
   }
 }
 
+bool nvar::greater(const nvar& x) const{
+  switch(t_){
+    case None:
+      switch(x.t_){
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Undefined:
+      switch(x.t_){
+        case None:
+          return true;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case False:
+      switch(x.t_){
+        case None:
+        case Undefined:
+          return true;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case True:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+          return true;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Integer:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+          return true;
+        case Integer:
+          return h_.i > x.h_.i;
+        case Rational:
+          return h_.i > *x.h_.r;
+        case Float:
+          return h_.i > x.h_.d;
+        case Real:
+          return h_.i > x.h_.x->toLong();
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Rational:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+          return true;
+        case Integer:
+          return *h_.r > x.h_.i;
+        case Rational:
+          return *h_.r > *x.h_.r;
+        case Float:
+          return *h_.r > x.h_.d;
+        case Real:
+          return *h_.r > *x.h_.x;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Float:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+          return true;
+        case Integer:
+          return h_.d > x.h_.i;
+        case Rational:
+          return h_.d > *x.h_.r;
+        case Float:
+          return h_.d > x.h_.d;
+        case Real:
+          return h_.d > x.h_.x->toDouble();
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Real:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+          return true;
+        case Integer:
+          return *h_.x > x.h_.i;
+        case Rational:
+          return *h_.x > nreal(*x.h_.r);
+        case Float:
+          return *h_.x > x.h_.d;
+        case Real:
+          return *h_.x > *x.h_.x;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case StringPointer:
+    case String:
+    case Binary:
+    case Symbol:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+          return true;
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+          return *h_.s > *x.h_.s;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case RawPointer:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+          return true;
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return h_.p > x.h_.o;
+        case RawPointer:
+          return h_.p > x.h_.p;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case ObjectPointer:
+    case LocalObject:
+    case SharedObject:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+          return true;
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return h_.o > x.h_.o;
+        case RawPointer:
+          return h_.o > x.h_.p;
+        case HeadSequence:
+          return greater(*x.h_.hs->h);
+        case HeadMap:
+          return greater(*x.h_.hm->h);
+        case HeadSequenceMap:
+          return greater(*x.h_.hsm->h);
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Vector:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+          return true;
+        case Vector:{
+          size_t s1 = h_.v->size();
+          size_t s2 = x.h_.v->size();
+          
+          if(s1 > s2){
+            return true;
+          }
+          else if(s2 > s1){
+            return false;
+          }
+          
+          for(size_t i = 0; i < s1; ++i){
+            if((*h_.v)[i].greater((*x.h_.v)[i])){
+              return true;
+            }
+            else if((*x.h_.v)[i].greater((*h_.v)[i])){
+              return false;
+            }
+          }
+          
+          return false;
+        }
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case List:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+          return true;
+        case List:{
+          size_t s1 = h_.l->size();
+          size_t s2 = x.h_.l->size();
+          
+          if(s1 > s2){
+            return true;
+          }
+          else if(s2 > s1){
+            return false;
+          }
+          
+          for(size_t i = 0; i < s1; ++i){
+            if((*h_.l)[i].greater((*x.h_.l)[i])){
+              return true;
+            }
+            else if((*x.h_.v)[i].greater((*h_.v)[i])){
+              return false;
+            }
+          }
+          
+          return false;
+        }
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Function:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+          return true;
+        case Function:{
+          int y = h_.f->v.size() - x.h_.f->v.size();
+          
+          if(y > 0){
+            return true;
+          }
+          else if(y < 0){
+            return false;
+          }
+          
+          return h_.f->f > x.h_.f->f;
+        }
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadSequence:
+      return h_.hs->h->greater(x);
+    case Map:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Function:
+        case HeadSequence:
+          return true;
+        case Map:{
+          int y = h_.m->size() - x.h_.m->size();
+          
+          if(y > 0){
+            return true;
+          }
+          else if(y < 0){
+            return false;
+          }
+          
+          return *h_.m > *x.h_.m;
+        }
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Multimap:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Function:
+        case HeadSequence:
+        case Map:
+          return true;
+        case Multimap:{
+          int y = h_.mm->size() - x.h_.mm->size();
+          
+          if(y < 0){
+            return true;
+          }
+          else if(y > 0){
+            return false;
+          }
+          
+          return *h_.mm > *x.h_.mm;
+        }
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadMap:
+      return h_.hm->h->greater(x);
+    case SequenceMap:
+      switch(x.t_){
+        case None:
+        case Undefined:
+        case False:
+        case True:
+        case Integer:
+        case Rational:
+        case Float:
+        case Real:
+        case Symbol:
+        case Binary:
+        case String:
+        case StringPointer:
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+        case RawPointer:
+        case Vector:
+        case List:
+        case Function:
+        case HeadSequence:
+        case Map:
+        case Multimap:
+        case HeadMap:
+          return true;
+        case SequenceMap:{
+          int y = h_.sm->s->size() - x.h_.sm->s->size();
+          
+          if(y > 0){
+            return true;
+          }
+          else if(y < 0){
+            return false;
+          }
+          
+          return *h_.sm->s > *x.h_.sm->s;
+        }
+        case Reference:
+          return greater(*x.h_.ref->v);
+        case Pointer:
+          return greater(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadSequenceMap:
+      return h_.hsm->h->greater(x);
+    case Reference:
+      return h_.ref->v->greater(x);
+    case Pointer:
+      return h_.vp->greater(x);
+    default:
+      return false;
+  }
+}
+
+bool nvar::equal(const nvar& x) const{
+  // ndm - implement
+  return false;
+}
+
 nvar nvar::operator<(const nvar& x) const{
   switch(t_){
     case None:
