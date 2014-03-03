@@ -603,6 +603,10 @@ namespace{
     }
     
     ValueVec normalize(Value* v1, Value* v2, bool trunc=true){
+      if(!v1 || !v2){
+        return ValueVec();
+      }
+      
       Type* t1 = v1->getType();
       Type* t2 = v2->getType();
       
@@ -1157,10 +1161,15 @@ namespace{
           const nstr& s = n[0];
           
           Value* v = createAlloca(t, s);
-          
           Value* r = compile(n[1], v);
+          if(!r){
+            return 0;
+          }
           
           Value* rn = convert(r, v);
+          if(!rn){
+            error("invalid operands", n);
+          }
           
           createStore(rn, v);
           
@@ -1170,9 +1179,12 @@ namespace{
         }
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
           Value* r = compile(n[1], l);
-
-          if(!l || !r){
+          if(!r){
             return 0;
           }
           
@@ -1189,12 +1201,15 @@ namespace{
         }
         case FKEY_AddBy_2:{
           Value* l = getLValue(n[0]);
-          Value* r = compile(n[1], l);
-
-          if(!l || !r){
+          if(!l){
             return 0;
           }
-
+          
+          Value* r = compile(n[1], l);
+          if(!r){
+            return 0;
+          }
+          
           Value* lv = createLoad(l);
           Value* rc = convert(r, lv);
 
@@ -1211,9 +1226,12 @@ namespace{
         }
         case FKEY_SubBy_2:{
           Value* l = getLValue(n[0]);
-          Value* r = compile(n[1], l);
+          if(!l){
+            return 0;
+          }
           
-          if(!l || !r){
+          Value* r = compile(n[1], l);
+          if(!r){
             return 0;
           }
           
@@ -1233,9 +1251,12 @@ namespace{
         }
         case FKEY_MulBy_2:{
           Value* l = getLValue(n[0]);
-          Value* r = compile(n[1], l);
+          if(!l){
+            return 0;
+          }
           
-          if(!l || !r){
+          Value* r = compile(n[1], l);
+          if(!r){
             return 0;
           }
           
@@ -1255,9 +1276,12 @@ namespace{
         }
         case FKEY_DivBy_2:{
           Value* l = getLValue(n[0]);
-          Value* r = compile(n[1], l);
+          if(!l){
+            return 0;
+          }
           
-          if(!l || !r){
+          Value* r = compile(n[1], l);
+          if(!r){
             return 0;
           }
           
@@ -1277,9 +1301,12 @@ namespace{
         }
         case FKEY_ModBy_2:{
           Value* l = getLValue(n[0]);
-          Value* r = compile(n[1], l);
+          if(!l){
+            return 0;
+          }
           
-          if(!l || !r){
+          Value* r = compile(n[1], l);
+          if(!r){
             return 0;
           }
           
@@ -1720,6 +1747,10 @@ namespace{
         }
         case FKEY_Inc_1:{
           Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
           Value* r = getNumeric(1, l);
           
           Value* lv = createLoad(l);
@@ -1731,6 +1762,10 @@ namespace{
         }
         case FKEY_PostInc_1:{
           Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
           Value* r = getNumeric(1, l);
           
           Value* lv = createLoad(l);
@@ -1742,6 +1777,10 @@ namespace{
         }
         case FKEY_Dec_1:{
           Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
           Value* r = getNumeric(1, l);
           
           Value* lv = createLoad(l);
@@ -1753,6 +1792,10 @@ namespace{
         }
         case FKEY_PostDec_1:{
           Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
           Value* r = getNumeric(1, l);
           
           Value* lv = createLoad(l);
@@ -1786,8 +1829,7 @@ namespace{
           return vi;
         }
         case FKEY_Len_1:
-        case FKEY_Size_1:
-        {
+        case FKEY_Size_1:{
           Value* v = compile(n[0]);
           if(!v){
             return 0;
@@ -1797,8 +1839,7 @@ namespace{
           
           return r;
         }
-        case FKEY_Neg_1:
-        {
+        case FKEY_Neg_1:{
           Value* vn = compile(n[0]);
           if(!vn){
             return 0;
@@ -1813,8 +1854,7 @@ namespace{
           
           return createSub(v[0], v[1]);
         }
-        case FKEY_Inv_1:
-        {
+        case FKEY_Inv_1:{
           Value* vn = compile(n[0]);
           if(!vn){
             return 0;
@@ -1848,8 +1888,7 @@ namespace{
           
           return vr;
         }
-        case FKEY_Pow_2:
-        {
+        case FKEY_Pow_2:{
           Value* l = compile(n[0]);
           if(!l){
             return 0;
@@ -2335,6 +2374,7 @@ namespace{
         }
       }
       
+      // ndm - debug
       module_.dump();
       
       return foundError_;
@@ -2411,7 +2451,14 @@ namespace{
         return 0;
       }
       
-      builder_.CreateRetVoid();
+      if(rt_->isVoidTy()){
+        builder_.CreateRetVoid();
+      }
+      else if(!foundReturn_){
+        error("no return found with non-void return type", f);
+        func_->eraseFromParent();
+        return 0;
+      }
       
       builder_.SetInsertPoint(entry_);
       builder_.CreateBr(begin_);
@@ -2563,7 +2610,7 @@ namespace neu{
     }
     
     ~NPLModule_(){
-      // ndm - do we need to delete engine_?
+      
     }
     
     bool compile(const nvar& code){
