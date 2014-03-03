@@ -123,6 +123,7 @@ DIV_BY "/="
 MOD_BY "%="
 AND "&&"
 OR  "||"
+KW_EXTERN extern
 KW_THIS this
 KW_TRUE true
 KW_FALSE false
@@ -268,6 +269,11 @@ DEFINE "#define"
 {KW_CLASS} {
   PS->advance(yytext, "keyword");
   return KW_CLASS;
+}
+
+{KW_EXTERN} {
+  PS->advance(yytext, "keyword");
+  return KW_EXTERN;
 }
 
 {DEFINE} {

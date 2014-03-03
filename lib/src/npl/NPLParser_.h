@@ -200,6 +200,17 @@ namespace neu{
       return c;
     }
     
+    void addExtern(const nvar& f){
+      nvar k = {f[1].sym(), f[1].size()};
+      
+      if(out_.hasKey(k)){
+        error("extern exists: " + k);
+        return;
+      }
+      
+      out_(k) = move(f);
+    }
+    
     void addClass(const nstr& c, nvar& cv){
       if(out_.hasKey(c)){
         error("class exists: " + c);

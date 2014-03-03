@@ -76,7 +76,7 @@ namespace{
 
   typedef NVector<Type*> TypeVec;
   typedef NVector<Value*> ValueVec;
-  typedef NMap<nvar, Function*> FunctionMap;
+  typedef NMap<nvar, Function*, nvarLess<nvar>> FunctionMap;
   
   enum FunctionKey{
     FKEY_NO_KEY,
@@ -1148,7 +1148,7 @@ namespace{
           
           Value* rn = convert(r, v);
           
-          createStore(v, rn);
+          createStore(rn, v);
           
           putLocal(s, v);
           
@@ -2060,7 +2060,6 @@ namespace{
           
           return r;
         }
-          
         case FKEY_CrossProduct_2:{
           Value* lv = compile(n[0]);
           if(!lv){
@@ -2118,6 +2117,67 @@ namespace{
           
           return vr;
         }
+        case FKEY_Call_1:{
+          const nvar& fs = n[0];
+          
+          if(!fs.isFunction()){
+            return error("invalid call", fs);
+          }
+          
+          Value* ret;
+          
+          size_t size = fs.size();
+          nstr name = fs;
+          
+          nvar k = {className_, name, size};
+          
+          auto itr = functionMap_.find(k);
+          if(itr == functionMap_.end()){
+            itr = functionMap_.find({name, size});
+          
+            if(itr == functionMap_.end()){
+              return error("unknown function", n[0]);
+            }
+            
+            Function* f = itr->second;
+          }
+          else{
+            Function* f = itr->second;
+
+            Function::arg_iterator aitr = f->arg_begin();
+            Value* as = aitr;
+            
+            Value* ap = createLoad(createAlloca(as->getType(), "args"));
+            ap->dump();
+            
+            Value* fp = createStructGEP(ap, 1, "this.ptr");
+            
+            createStore(this_, fp);
+            
+            for(size_t i = 0; i < size; ++i){
+              Value* vi = compile(fs[i]);
+              Value* fp = createStructGEP(ap, i + 2, "param");
+              Value* vic = convert(vi, fp);
+              if(!vic){
+                error("invalid operand", fs[i]);
+              }
+              
+              createStore(vic, fp);
+            }
+            
+            ValueVec args;
+            args.push_back(ap);
+            
+            if(f->getReturnType()->isVoidTy()){
+              builder_.CreateCall(f, args.vector());
+              return getInt64(0);
+            }
+
+            return builder_.CreateCall(f, args.vector(), name.c_str());
+          }
+          
+          return 0;
+        }
         case FKEY_Ptr_1:{
           return getLValue(n[0]);
         }
@@ -2154,8 +2214,25 @@ namespace{
       code.keys(cs);
       
       for(size_t i = 0; i < cs.size(); ++i){
-        const nstr& ck = cs[i];
+        const nvar& ck = cs[i];
         const nvar& ci = code[ck];
+        
+        if(ck.size() == 2){
+          Type* rt = type(ci[0]);
+          
+          TypeVec args;
+          
+          const nvar& fs = ci[1];
+          
+          for(const nvar& a : fs){
+            args.push_back(type(a));
+          }
+          
+          Function* e = createFunction(fs, rt, args);
+          functionMap_[{fs.str(), fs.size()}] = e;
+          
+          continue;
+        }
         
         currentClass_ = &ci;
         
@@ -2183,25 +2260,24 @@ namespace{
         
         classStruct_ = StructType::create(context_, tv.vector(), ck.c_str());
         structMap_[ck] = classStruct_;
+
+        for(size_t j = 0; j < ms.size(); ++j){
+          const nvar& mk = ms[j];
+          const nvar& mj = ci[mk];
+          
+          if(mk.size() == 2){
+            functionMap_[{ck, mk[0], mk[1]}] = createFunctionPrototype(ck, mj);
+          }
+        }
         
         for(size_t j = 0; j < ms.size(); ++j){
           const nvar& mk = ms[j];
           const nvar& mj = ci[mk];
 
           if(mk.size() == 2){
-            nvar fk = {ck, mk[0], mk[1]};
-            
-            if(functionMap_.hasKey(fk)){
-              continue;
-            }
-
             currentFunc_ = &mj;
             
-            Function* f = compileFunction(ck, mj);
-            
-            if(f){
-              functionMap_[fk] = f;
-            }
+            compileFunction(ck, mj);
           }
         }
       }
@@ -2209,11 +2285,11 @@ namespace{
       module_.dump();
     }
     
-    Function* compileFunction(const nstr& className, const nvar& f){
+    Function* createFunctionPrototype(const nstr& className, const nvar& f){
       const nvar& fs = f[1];
       
       nstr n = className + "_" + fs.str() + "_" + fs.size();
-
+      
       TypeVec args;
       args.push_back(type("void*"));
       args.push_back(pointerType(classStruct_));
@@ -2224,12 +2300,20 @@ namespace{
       
       nstr an = n + "_args";
       
-      argsStruct_ =
+      Type* argsStruct =
       StructType::create(context_, args.vector(), an.c_str());
       
-      rt_ = type(f[0]);
+      return createFunction(n, type(f[0]), {pointerType(argsStruct)});
+    }
+    
+    Function* compileFunction(const nstr& className, const nvar& f){
+      className_ = className;
       
-      func_ = createFunction(n, rt_, {pointerType(argsStruct_)});
+      const nvar& fs = f[1];
+      
+      func_ = functionMap_[{className_, fs.str(), fs.size()}];
+
+      rt_ = func_->getReturnType();
       
       Function::arg_iterator aitr = func_->arg_begin();
       aitr->setName("args");
@@ -2356,8 +2440,8 @@ namespace{
     const nvar* currentFunc_;
     StructMap_ structMap_;
     StructType* classStruct_;
-    StructType* argsStruct_;
     Value* this_;
+    nstr className_;
   };
   
   Global::Global()

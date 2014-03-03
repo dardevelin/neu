@@ -67,7 +67,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS DEFINE DOUBLE INTEGER TYPE
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_EXTERN DEFINE DOUBLE INTEGER TYPE
 
 %type<v> stmt expr expr_num func_def func_def_vec block stmts if_stmt expr_vec class_vec
 
@@ -91,20 +91,25 @@ input: /* empty */
 | input DEFINE IDENTIFIER expr {
   PS->define($3, $4);
 }
+| input KW_EXTERN func_def ';' {
+  PS->addExtern($3);
+}
 ;
 
-class_vec: TYPE func_def block {
+class_vec: func_def block {
   $$ = PS->newClass();
-  PS->addMethod($$, PS->func("TypedFunc") << move($1) << move($2) << move($3));
+  $1 << move($2);
+  PS->addMethod($$, $1);
 }
 | TYPE IDENTIFIER ';' {
   $$ = PS->newClass();
   $1.setHead(PS->sym($2));
   PS->addAttribute($$, $1);
 }
-| class_vec TYPE func_def block {
+| class_vec func_def block {
   $$ = move($1);
-  PS->addMethod($$, PS->func("TypedFunc") << move($2) << move($3) << move($4));
+  $2 << move($3);
+  PS->addMethod($$, $2);
 }
 | class_vec TYPE IDENTIFIER ';' {
   $$ = move($1);
@@ -234,9 +239,10 @@ expr: expr_num {
 }
 ;
 
-func_def: IDENTIFIER '(' func_def_vec ')' {
-  $$ = PS->func($1);
-  $$.append($3);
+func_def: TYPE IDENTIFIER '(' func_def_vec ')' {
+  nvar f = PS->func($2);
+  f.append($4);
+  $$ = PS->func("TypedFunc") << move($1) << move(f);
 }
 ;
 
@@ -256,14 +262,14 @@ func_def_vec: /* empty */ {
 ;
 
 expr_vec: /* empty */ {
-  $$ = undef;
+  $$ = nvec();
 }
 | expr_vec ',' expr {
   $$ = move($1);
   $$ << move($3);
 }
 | expr {
-  $$ = move($1);
+  $$ = nvec() << move($1);
 }
 ;
 
@@ -272,6 +278,16 @@ stmt: expr ';' {
 }
 | ';' {
   $$ = none;
+}
+| TYPE IDENTIFIER ';' {
+  $$ = PS->func("Local");
+  $1.setHead(PS->sym($2));
+  $$ << move($1);
+}
+| TYPE IDENTIFIER '=' expr ';' {
+  $$ = PS->func("Local");
+  $1.setHead(PS->sym($2));
+  $$ << move($1) << move($4);
 }
 | KW_RETURN ';' {
   $$ = PS->func("Ret");
