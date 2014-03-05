@@ -104,6 +104,7 @@ namespace{
     FKEY_If_2,
     FKEY_If_3,
     FKEY_Select_3,
+    FKEY_Switch_2,
     FKEY_Local_1,
     FKEY_Local_2,
     FKEY_While_2,
@@ -186,6 +187,7 @@ namespace{
     _functionMap[{"If", 2}] = FKEY_If_2;
     _functionMap[{"If", 3}] = FKEY_If_3;
     _functionMap[{"Select", 3}] = FKEY_Select_3;
+    _functionMap[{"Switch", 2}] = FKEY_Switch_2;
     _functionMap[{"Set", 2}] = FKEY_Set_2;
     _functionMap[{"AddBy", 2}] = FKEY_AddBy_2;
     _functionMap[{"SubBy", 2}] = FKEY_SubBy_2;
@@ -421,52 +423,52 @@ namespace{
       return ConstantFP::get(context_, APFloat(v));
     }
     
-    Value* getInt1(bool v){
+    ConstantInt* getInt1(bool v){
       return ConstantInt::get(context_, APInt(1, v));
     }
     
-    Value* getInt8(int8_t v){
+    ConstantInt* getInt8(int8_t v){
       return ConstantInt::get(context_, APInt(8, v, true));
     }
     
-    Value* getUInt8(uint8_t v){
-      Value* vi = ConstantInt::get(context_, APInt(8, v, false));
+    ConstantInt* getUInt8(uint8_t v){
+      ConstantInt* vi = ConstantInt::get(context_, APInt(8, v, false));
       
       setUnsigned(vi);
       
       return vi;
     }
     
-    Value* getInt16(int16_t v){
+    ConstantInt* getInt16(int16_t v){
       return ConstantInt::get(context_, APInt(16, v, true));
     }
     
-    Value* getUInt16(uint16_t v){
-      Value* vi = ConstantInt::get(context_, APInt(16, v, false));
+    ConstantInt* getUInt16(uint16_t v){
+      ConstantInt* vi = ConstantInt::get(context_, APInt(16, v, false));
       
       setUnsigned(vi);
       
       return vi;
     }
     
-    Value* getInt32(int32_t v){
+    ConstantInt* getInt32(int32_t v){
       return ConstantInt::get(context_, APInt(32, v, true));
     }
     
-    Value* getUInt32(int32_t v){
-      Value* vi = ConstantInt::get(context_, APInt(32, v, false));
+    ConstantInt* getUInt32(int32_t v){
+      ConstantInt* vi = ConstantInt::get(context_, APInt(32, v, false));
       
       setUnsigned(vi);
       
       return vi;
     }
     
-    Value* getInt64(int64_t v){
+    ConstantInt* getInt64(int64_t v){
       return ConstantInt::get(context_, APInt(64, v, true));
     }
     
-    Value* getUInt64(uint64_t v){
-      Value* vi = ConstantInt::get(context_, APInt(64, v, false));
+    ConstantInt* getUInt64(uint64_t v){
+      ConstantInt* vi = ConstantInt::get(context_, APInt(64, v, false));
       
       setUnsigned(vi);
       
@@ -1618,6 +1620,70 @@ namespace{
           }
           
           return builder_.CreateSelect(cv, tv, fv, "select");
+        }
+        case FKEY_Switch_2:{
+          cout << "+++++++++++++++++++++++++++++++++++++++" << endl;
+          cout << n << endl;
+          cout << "---------------------------------------" << endl;
+          
+          Value* v = compile(n[0]);
+          
+          if(!isIntegral(v)){
+            v = convert(v, "long");
+          }
+          
+          if(!v){
+            error("invalid operand", n[0]);
+            return 0;
+          }
+          
+          loopMerge_ = BasicBlock::Create(context_, "switch.merge", func_);
+          
+          BasicBlock* db = 0;
+
+          const nvar& d = n[1];
+          
+          BasicBlock* cb = builder_.GetInsertBlock();
+          
+          if(d.some()){
+            db = BasicBlock::Create(context_, "case", func_);
+            builder_.SetInsertPoint(db);
+            if(!compile(d)){
+              return 0;
+            }
+            builder_.CreateBr(loopMerge_);
+          }
+
+          builder_.SetInsertPoint(cb);
+          
+          const nmap& m = n;
+          
+          SwitchInst* s = builder_.CreateSwitch(v, db ? db : loopMerge_, m.size());
+          
+          for(auto& itr : m){
+            const nvar& k = itr.first;
+
+            if(k.isHidden()){
+              continue;
+            }
+            
+            const nvar& b = itr.second;
+            
+            if(!k.isInteger()){
+              error("invalid case: " + k, n);
+            }
+
+            BasicBlock* cb = BasicBlock::Create(context_, "case", func_);
+            builder_.SetInsertPoint(cb);
+            Value* cv = compile(cv);
+            builder_.CreateBr(loopMerge_);
+            
+            s->addCase(getInt64(k), cb);
+          }
+
+          builder_.SetInsertPoint(loopMerge_);
+          
+          return s;
         }
         case FKEY_While_2:{
           loopContinue_ = BasicBlock::Create(context_, "while.cond", func_);

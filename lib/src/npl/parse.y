@@ -347,8 +347,15 @@ stmt: expr ';' {
 }
 | KW_SWITCH '(' expr ')' '{' case_stmt_vec '}' {
   $$ = move($6);
-  $$.pushBack($3);
-  cout << "it is: " << $$ << endl;
+  $$ << move($3);
+
+  if($$.hasKey("__default")){
+    $$ << $$["__default"];
+    $$.erase("__default");
+  }
+  else{
+    $$ << none;
+  }
 }
 ;
 
@@ -364,8 +371,14 @@ if_stmt: KW_IF '(' expr ')' block {
 ;
 
 case_stmt_vec: case_stmt_vec case_stmt {
-  $$ = move($1);
-  $$.merge($2);
+  if($$.hasKey("__default") && $2.hasKey("__default")){
+    PS->error($2, "duplicate default case in switch stmt");
+    $$ = PS->sym("Error");
+  }
+  else{
+    $$ = move($1);
+    $$.merge($2);
+  }
 }
 | case_stmt {
   $$ = PS->func("Switch");
@@ -387,10 +400,11 @@ case_stmt: case_labels '{' stmts '}' {
 }
 | KW_DEFAULT ':' '{' stmts '}' {
   $$ = undef;
-  $$(none) = $4;
+  $$("__default") = $4;
 }
 | KW_DEFAULT ':' stmts {
-  $$(none) = $3;
+  $$ = undef;
+  $$("__default") = $3;
 }
 ;
 

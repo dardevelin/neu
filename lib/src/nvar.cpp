@@ -187,7 +187,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       }
       
       if(h_.f->m){
-        streamOutputMap_(ostr, *h_.f->m, first, concise);
+        streamOutputFuncMap_(ostr, *h_.f->m, first, concise);
       }
       
       ostr << ")";

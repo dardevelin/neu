@@ -1376,6 +1376,12 @@ namespace neu{
     
     nmap& map(){
       switch(t_){
+        case Function:
+          if(h_.f->m){
+            return *h_.f->m;
+          }
+          NERROR("var does not hold a map");
+          break;
         case Map:
           return *h_.m;
         case HeadMap:
@@ -1395,6 +1401,12 @@ namespace neu{
     
     const nmap& map() const{
       switch(t_){
+        case Function:
+          if(h_.f->m){
+            return *h_.f->m;
+          }
+          NERROR("var does not hold a map");
+          break;
         case Map:
           return *h_.m;
         case HeadMap:
@@ -2826,6 +2838,25 @@ namespace neu{
       return a < b ? a : b;
     }
     
+    bool isHidden() const{
+      switch(t_){
+        case Symbol:
+          return h_.s->beginsWith("__");
+        case Reference:
+          return h_.ref->v->isHidden();
+        case HeadSequence:
+          return h_.hs->h->isHidden();
+        case HeadMap:
+          return h_.hm->h->isHidden();
+        case HeadSequenceMap:
+          return h_.hsm->h->isHidden();
+        case Pointer:
+          return h_.vp->isHidden();
+        default:
+          return false;
+      }
+    }
+    
     static void streamOutputVector_(std::ostream& ostr,
                                     const nvec& v,
                                     bool& first,
@@ -2862,37 +2893,53 @@ namespace neu{
                                  bool concise){
       bool found = false;
       for(auto& itr : m){
-        bool visible;
         const nvar& k = *itr.first;
         
-        if(k.t_ == Symbol){
-          const nstr& s = *k.h_.s;
-          
-          if(s.beginsWith("__")){
-            visible = false;
-          }
-          else{
-            visible = true;
-          }
-        }
-        else{
-          visible = true;
+        if(k.isHidden()){
+          continue;
         }
         
-        if(visible){
-          if(first){
-            first = false;
-          }
-          else{
-            ostr << ", ";
-          }
-          
-          k.streamOutput_(ostr, concise);
-          ostr << ":";
-          itr.second.streamOutput_(ostr, concise);
-          
-          found = true;
+        if(first){
+          first = false;
         }
+        else{
+          ostr << ", ";
+        }
+        
+        k.streamOutput_(ostr, concise);
+        ostr << ":";
+        itr.second.streamOutput_(ostr, concise);
+          
+        found = true;
+      }
+      
+      return found;
+    }
+    
+    static bool streamOutputFuncMap_(std::ostream& ostr,
+                                     const nmap& m,
+                                     bool& first,
+                                     bool concise){
+      bool found = false;
+      for(auto& itr : m){
+        const nvar& k = *itr.first;
+        
+        if(k.isHidden()){
+          continue;
+        }
+        
+        if(first){
+          first = false;
+        }
+        else{
+          ostr << ",";
+        }
+        
+        k.streamOutput_(ostr, concise);
+        ostr << ":";
+        itr.second.streamOutput_(ostr, concise);
+        
+        found = true;
       }
       
       return found;
@@ -2904,37 +2951,24 @@ namespace neu{
                                       bool concise){
       bool found = false;
       for(auto& itr : m){
-        bool visible;
         const nvar& k = *itr.first;
+
+        if(k.isHidden()){
+          continue;
+        }
         
-        if(k.t_ == Symbol){
-          const nstr& s = *k.h_.s;
-          
-          if(s.beginsWith("__")){
-            visible = false;
-          }
-          else{
-            visible = true;
-          }
+        if(first){
+          first = false;
         }
         else{
-          visible = true;
+          ostr << ", ";
         }
         
-        if(visible){
-          if(first){
-            first = false;
-          }
-          else{
-            ostr << ", ";
-          }
-          
-          k.streamOutput_(ostr, concise);
-          ostr << ":";
-          itr.second.streamOutput_(ostr, concise);
-          
-          found = true;
-        }
+        k.streamOutput_(ostr, concise);
+        ostr << ":";
+        itr.second.streamOutput_(ostr, concise);
+        
+        found = true;
       }
       
       return found;
@@ -5634,7 +5668,7 @@ namespace neu{
             for(const auto& itr : *h_.f->m){
               const nvar& k = itr.first;
               
-              if(k.isSymbol() && k.str().beginsWith("__")){
+              if(k.isHidden()){
                 continue;
               }
               
@@ -5645,8 +5679,8 @@ namespace neu{
         case Map:
           for(const auto& itr : *h_.m){
             const nvar& k = itr.first;
-            
-            if(k.isSymbol() && k.str().beginsWith("__")){
+
+            if(k.isHidden()){
               continue;
             }
             
@@ -5656,8 +5690,8 @@ namespace neu{
         case Multimap:
           for(const auto& itr : *h_.mm){
             const nvar& k = itr.first;
-            
-            if(k.isSymbol() && k.str().beginsWith("__")){
+
+            if(k.isHidden()){
               continue;
             }
             
