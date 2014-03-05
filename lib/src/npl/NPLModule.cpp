@@ -1825,6 +1825,9 @@ namespace{
           if(!r){
             return error("invalid conversion to return type", n);
           }
+
+          Value* rp = createStructGEP(args_, 2, "ret.ptr");
+          createStore(r, rp);
           
           builder_.CreateRet(r);
           
@@ -2476,6 +2479,12 @@ namespace{
       args.push_back(type("void*"));
       args.push_back(pointerType(classStruct_));
       
+      Type* rt = type(f[0]);
+      
+      if(!rt->isVoidTy()){
+        args.push_back(rt);
+      }
+      
       for(const nvar& a : fs){
         args.push_back(type(a));
       }
@@ -2485,7 +2494,7 @@ namespace{
       Type* argsStruct =
       StructType::create(context_, args.vector(), an.c_str());
       
-      return createFunction(n, type(f[0]), {pointerType(argsStruct)});
+      return createFunction(n, rt, {pointerType(argsStruct)});
     }
     
     Function* compileFunction(const nstr& className, const nvar& f){
@@ -2515,10 +2524,12 @@ namespace{
       
       pushScope();
       
+      size_t offset = rt_->isVoidTy() ? 2 : 3;
+      
       for(size_t i = 0; i < fs.size(); ++i){
         const nstr& s = fs[i];
         
-        Value* v = createStructGEP(args_, i + 2, s + ".ptr");
+        Value* v = createStructGEP(args_, offset + i, s + ".ptr");
         putLocal(s, v);
       }
       
