@@ -73,16 +73,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
-%right OR
-%right AND
+%right '?' ':'
+%left OR
+%left AND
 %left '|'
 %left '&'
-%right EQ NE
-%right '<' '>' GE LE
-%left '+' '-'
-%left '*' '/' '%'
+%left EQ NE
+%left '<' '>' GE LE
+%right '+' '-'
+%right '*' '/' '%'
 %left '^'
-%left '!' INC DEC '@' '~'
+%right '!' '~'
+%right INC DEC
 
 %%
 
@@ -147,9 +149,6 @@ expr: expr_num {
 }
 | '(' expr ')' {
   $$ = move($2);
-}
-| '@' IDENTIFIER {
-  $$ = PS->func("O2") << PS->sym($2);
 }
 | KW_TRUE {
   $$ = PS->var(true);
@@ -270,6 +269,9 @@ expr: expr_num {
   $$ = PS->func("Vec");
   $$.append($2);
 }
+| expr '?' expr ':' expr  {
+  $$ = PS->func("Select") << move($1) << move($3) << move($5);
+}
 ;
 
 func_def: TYPE IDENTIFIER '(' func_def_vec ')' {
@@ -311,16 +313,6 @@ stmt: expr ';' {
 }
 | ';' {
   $$ = none;
-}
-| TYPE IDENTIFIER ';' {
-  $$ = PS->func("Local");
-  $1.setHead(PS->sym($2));
-  $$ << move($1);
-}
-| TYPE IDENTIFIER '=' expr ';' {
-  $$ = PS->func("Local");
-  $1.setHead(PS->sym($2));
-  $$ << move($1) << move($4);
 }
 | KW_RETURN ';' {
   $$ = PS->func("Ret");

@@ -357,7 +357,7 @@ DEFINE "#define"
   return STRING_LITERAL;
 }
 
-[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)\@\&\~] {
+[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)\&\~\?] {
   PS->advance(1, "operator");
   return *yytext;
 }
