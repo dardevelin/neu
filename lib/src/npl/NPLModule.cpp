@@ -2339,8 +2339,8 @@ namespace{
           return getNumeric(n[0], "float");
         }
         case FKEY_Abs_1:{
-          nvar f = nfunc("If") << (nfunc("LT") << n[0] << 0) <<
-          (nfunc("Neg") << n[0]) << n[0];
+          nvar f = nfunc("Select") << (nfunc("LT") << n[0] << 0)
+          << (nfunc("Neg") << n[0]) << n[0];
           
           return compile(f);
         }
