@@ -614,6 +614,16 @@ namespace neu{
       h_.l = new nlist(std::move(l));
     }
     
+    nvar(const nmap& m)
+    : t_(Map){
+      h_.m = new nmap(m);
+    }
+    
+    nvar(const nmmap& m)
+    : t_(Multimap){
+      h_.mm = new nmmap(m);
+    }
+    
     nvar(nmap&& m)
     : t_(Map){
       h_.m = new nmap(std::move(m));

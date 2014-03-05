@@ -397,6 +397,42 @@ namespace neu{
 
     bool handleBuiltin(nvar& f);
     
+    nvar createSwitch(const nvar& v, const nvar& cs){
+      const nmmap& mm = cs;
+      
+      nvar ret = func("Switch") << v;
+      nvar d = none;
+      
+      for(auto& itr : mm){
+        const nvar& k = itr.first;
+        const nvar& v = itr.second;
+        
+        if(k.isSymbol("__default")){
+          d = v;
+          continue;
+        }
+        else if(k.isHidden()){
+          continue;
+        }
+        
+        if(ret.hasKey(k)){
+          error(k, "duplicate case in switch");
+          continue;
+        }
+        
+        if(!k.isInteger()){
+          error(k, "case is not integral");
+          continue;
+        }
+        
+        ret(k) = v;
+      }
+      
+      ret << d;
+      
+      return ret;
+    }
+    
   private:
     NPLParser* o_;
     ostream* estr_;

@@ -85,7 +85,7 @@ namespace{
       typeMap_("ushort") = nml("[bits:16, signed:false]");
       typeMap_("int") = nml("[bits:32]");
       typeMap_("uint") = nml("[bits:32, signed:false]");
-      typeMap_("long") = nml("[bits:32]");
+      typeMap_("long") = nml("[bits:64]");
       typeMap_("ulong") = nml("[bits:64, signed:false]");
       typeMap_("float") = nml("[bits:32, float:true]");
       typeMap_("double") = nml("[bits:64, float:true]");

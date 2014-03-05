@@ -69,7 +69,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE FLOAT
 
-%type<v> stmt expr expr_num func_def func_def_vec block stmts if_stmt expr_vec class_vec case_stmt_vec case_stmt case_label case_labels
+%type<v> stmt expr expr_num func_def args block stmts if_stmt exprs classes case_stmts case_stmt case_label case_labels
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -89,7 +89,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %%
 
 input: /* empty */
-| input KW_CLASS IDENTIFIER '{' class_vec '}' {
+| input KW_CLASS IDENTIFIER '{' classes '}' {
   PS->addClass($3, $5);
 }
 | input DEFINE IDENTIFIER expr {
@@ -100,7 +100,7 @@ input: /* empty */
 }
 ;
 
-class_vec: func_def block {
+classes: func_def block {
   $$ = PS->newClass();
   $1 << move($2);
   PS->addMethod($$, $1);
@@ -110,12 +110,12 @@ class_vec: func_def block {
   $1.setHead(PS->sym($2));
   PS->addAttribute($$, $1);
 }
-| class_vec func_def block {
+| classes func_def block {
   $$ = move($1);
   $2 << move($3);
   PS->addMethod($$, $2);
 }
-| class_vec TYPE IDENTIFIER ';' {
+| classes TYPE IDENTIFIER ';' {
   $$ = move($1);
   $2.setHead(PS->sym($3));
   PS->addAttribute($$, $2);
@@ -254,7 +254,7 @@ expr: expr_num {
 | expr '&' expr {
   $$ = PS->func("BitAnd") << move($1) << move($3);
 }
-| IDENTIFIER '(' expr_vec ')' {
+| IDENTIFIER '(' exprs ')' {
   nvar c = PS->func($1);
   c.append($3);
   
@@ -265,7 +265,7 @@ expr: expr_num {
     $$ = PS->func("Call") << move(c);
   }
 }
-| '{' expr_vec '}' {
+| '{' exprs '}' {
   $$ = PS->func("Vec");
   $$.append($2);
 }
@@ -274,17 +274,17 @@ expr: expr_num {
 }
 ;
 
-func_def: TYPE IDENTIFIER '(' func_def_vec ')' {
+func_def: TYPE IDENTIFIER '(' args ')' {
   nvar f = PS->func($2);
   f.append($4);
   $$ = PS->func("TypedFunc") << move($1) << move(f);
 }
 ;
 
-func_def_vec: /* empty */ {
+args: /* empty */ {
   $$ = undef;
 }
-| func_def_vec ',' TYPE IDENTIFIER {
+| args ',' TYPE IDENTIFIER {
   $$ = move($1);
   $3.setHead(PS->sym($4));
   $$ << move($3);
@@ -296,10 +296,10 @@ func_def_vec: /* empty */ {
 }
 ;
 
-expr_vec: /* empty */ {
+exprs: /* empty */ {
   $$ = nvec();
 }
-| expr_vec ',' expr {
+| exprs ',' expr {
   $$ = move($1);
   $$ << move($3);
 }
@@ -345,17 +345,8 @@ stmt: expr ';' {
 | KW_FOR '(' stmt stmt expr ')' block {
   $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
 }
-| KW_SWITCH '(' expr ')' '{' case_stmt_vec '}' {
-  $$ = move($6);
-  $$ << move($3);
-
-  if($$.hasKey("__default")){
-    $$ << $$["__default"];
-    $$.erase("__default");
-  }
-  else{
-    $$ << none;
-  }
+| KW_SWITCH '(' expr ')' '{' case_stmts '}' {
+  $$ = PS->createSwitch($3, $6);
 }
 ;
 
@@ -370,46 +361,35 @@ if_stmt: KW_IF '(' expr ')' block {
 }
 ;
 
-case_stmt_vec: case_stmt_vec case_stmt {
-  if($$.hasKey("__default") && $2.hasKey("__default")){
-    PS->error($2, "duplicate default case in switch stmt");
-    $$ = PS->sym("Error");
-  }
-  else{
-    $$ = move($1);
-    $$.merge($2);
-  }
+case_stmts: case_stmts case_stmt {
+  $$ = move($1);
+  $$.merge($2);
 }
 | case_stmt {
-  $$ = PS->func("Switch");
-  $$.merge($1);
+  $$ = move($1);
 }
 ;
 
 case_stmt: case_labels '{' stmts '}' {
-  $$ = undef;
+  $$ = nmmap();
   for(const nvar& k : $1){
+    $3.str() = "ScopedBlock";
     $$(k) = $3;
   }
 }
 | case_labels stmts {
-  $$ = undef;
+  $$ = nmmap();
   for(const nvar& k : $1){
     $$(k) = $2;
   }
-}
-| KW_DEFAULT ':' '{' stmts '}' {
-  $$ = undef;
-  $$("__default") = $4;
-}
-| KW_DEFAULT ':' stmts {
-  $$ = undef;
-  $$("__default") = $3;
 }
 ;
 
 case_label: KW_CASE expr ':' {
   $$ = move($2);
+}
+| KW_DEFAULT ':' {
+  $$ = PS->sym("__default");
 }
 ;
 

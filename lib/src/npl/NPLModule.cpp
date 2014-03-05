@@ -1628,9 +1628,11 @@ namespace{
           
           Value* v = compile(n[0]);
           
-          if(!isIntegral(v)){
-            v = convert(v, "long");
-          }
+          dump(v);
+          
+          v = convert(v, "long");
+          
+          dump(v);
           
           if(!v){
             error("invalid operand", n[0]);
@@ -1639,18 +1641,19 @@ namespace{
           
           loopMerge_ = BasicBlock::Create(context_, "switch.merge", func_);
           
-          BasicBlock* db = 0;
-
           const nvar& d = n[1];
           
+          BasicBlock* db = 0;
           BasicBlock* cb = builder_.GetInsertBlock();
           
           if(d.some()){
             db = BasicBlock::Create(context_, "case", func_);
             builder_.SetInsertPoint(db);
+            
             if(!compile(d)){
               return 0;
             }
+            
             builder_.CreateBr(loopMerge_);
           }
 
@@ -1667,18 +1670,19 @@ namespace{
               continue;
             }
             
-            const nvar& b = itr.second;
-            
             if(!k.isInteger()){
               error("invalid case: " + k, n);
+              return 0;
             }
 
-            BasicBlock* cb = BasicBlock::Create(context_, "case", func_);
-            builder_.SetInsertPoint(cb);
-            Value* cv = compile(cv);
+            const nvar& c = itr.second;
+            
+            BasicBlock* b = BasicBlock::Create(context_, "case", func_);
+            builder_.SetInsertPoint(b);
+            Value* cv = compile(c);
             builder_.CreateBr(loopMerge_);
             
-            s->addCase(getInt64(k), cb);
+            s->addCase(getInt64(k), b);
           }
 
           builder_.SetInsertPoint(loopMerge_);
