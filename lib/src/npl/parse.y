@@ -67,9 +67,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_EXTERN DEFINE DOUBLE INTEGER TYPE FLOAT
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE FLOAT
 
-%type<v> stmt expr expr_num func_def func_def_vec block stmts if_stmt expr_vec class_vec
+%type<v> stmt expr expr_num func_def func_def_vec block stmts if_stmt expr_vec class_vec case_stmt_vec case_stmt case_label case_labels
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -314,6 +314,16 @@ stmt: expr ';' {
 | ';' {
   $$ = none;
 }
+| TYPE IDENTIFIER ';' {
+  $$ = PS->func("Local");
+  $1.setHead(PS->sym($2));
+  $$ << move($1);
+}
+| TYPE IDENTIFIER '=' expr ';' {
+  $$ = PS->func("Local");
+  $1.setHead(PS->sym($2));
+  $$ << move($1) << move($4);
+}
 | KW_RETURN ';' {
   $$ = PS->func("Ret");
 }
@@ -335,6 +345,11 @@ stmt: expr ';' {
 | KW_FOR '(' stmt stmt expr ')' block {
   $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
 }
+| KW_SWITCH '(' expr ')' '{' case_stmt_vec '}' {
+  $$ = move($6);
+  $$.pushBack($3);
+  cout << "it is: " << $$ << endl;
+}
 ;
 
 if_stmt: KW_IF '(' expr ')' block {
@@ -348,19 +363,66 @@ if_stmt: KW_IF '(' expr ')' block {
 }
 ;
 
+case_stmt_vec: case_stmt_vec case_stmt {
+  $$ = move($1);
+  $$.merge($2);
+}
+| case_stmt {
+  $$ = PS->func("Switch");
+  $$.merge($1);
+}
+;
+
+case_stmt: case_labels '{' stmts '}' {
+  $$ = undef;
+  for(const nvar& k : $1){
+    $$(k) = $3;
+  }
+}
+| case_labels stmts {
+  $$ = undef;
+  for(const nvar& k : $1){
+    $$(k) = $2;
+  }
+}
+| KW_DEFAULT ':' '{' stmts '}' {
+  $$ = undef;
+  $$(none) = $4;
+}
+| KW_DEFAULT ':' stmts {
+  $$(none) = $3;
+}
+;
+
+case_label: KW_CASE expr ':' {
+  $$ = move($2);
+}
+;
+
+case_labels: case_labels case_label {
+  $$ = move($1);
+  $$ << move($2);
+}
+| case_label {
+  $$ = nvec() << move($1);
+}
+;
+
 block: '{' stmts '}' {
   $$ = $2;
+  $$.str() = "ScopedBlock";
 }
 | '{' '}' {
   $$ = PS->func("ScopedBlock");
 }
+;
 
 stmts: stmts stmt {
   $$ = move($1);
   $$ << move($2);
 }
 | stmt {
-  $$ = PS->func("ScopedBlock") << move($1);
+  $$ = PS->func("Block") << move($1);
 }
 ;
 

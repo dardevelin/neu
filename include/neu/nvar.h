@@ -6386,16 +6386,16 @@ namespace neu{
               }
               break;
             case HeadMap:
-              merge(*h_.hm->m);
+              merge(*x.h_.hm->m);
               break;
             case HeadSequenceMap:
-              merge(*h_.hsm->m);
+              merge(*x.h_.hsm->m);
               break;
             case Reference:
-              merge(*h_.ref->v);
+              merge(*x.h_.ref->v);
               break;
             case Pointer:
-              merge(*h_.vp);
+              merge(*x.h_.vp);
               break;
             default:
               break;
@@ -6415,16 +6415,16 @@ namespace neu{
               }
               break;
             case HeadMap:
-              merge(*h_.hm->m);
+              merge(*x.h_.hm->m);
               break;
             case HeadSequenceMap:
-              merge(*h_.hsm->m);
+              merge(*x.h_.hsm->m);
               break;
             case Reference:
-              merge(*h_.ref->v);
+              merge(*x.h_.ref->v);
               break;
             case Pointer:
-              merge(*h_.vp);
+              merge(*x.h_.vp);
               break;
             default:
               break;
@@ -6451,16 +6451,16 @@ namespace neu{
               }
               break;
             case HeadMap:
-              merge(*h_.hm->m);
+              merge(*x.h_.hm->m);
               break;
             case HeadSequenceMap:
-              merge(*h_.hsm->m);
+              merge(*x.h_.hsm->m);
               break;
             case Reference:
-              merge(*h_.ref->v);
+              merge(*x.h_.ref->v);
               break;
             case Pointer:
-              merge(*h_.vp);
+              merge(*x.h_.vp);
               break;
             default:
               break;
@@ -6517,16 +6517,16 @@ namespace neu{
               }
               break;
             case HeadMap:
-              outerMerge(*h_.hm->m);
+              outerMerge(*x.h_.hm->m);
               break;
             case HeadSequenceMap:
-              outerMerge(*h_.hsm->m);
+              outerMerge(*x.h_.hsm->m);
               break;
             case Reference:
-              outerMerge(*h_.ref->v);
+              outerMerge(*x.h_.ref->v);
               break;
             case Pointer:
-              outerMerge(*h_.vp);
+              outerMerge(*x.h_.vp);
               break;
             default:
               break;
@@ -6546,16 +6546,16 @@ namespace neu{
               }
               break;
             case HeadMap:
-              outerMerge(*h_.hm->m);
+              outerMerge(*x.h_.hm->m);
               break;
             case HeadSequenceMap:
-              outerMerge(*h_.hsm->m);
+              outerMerge(*x.h_.hsm->m);
               break;
             case Reference:
-              outerMerge(*h_.ref->v);
+              outerMerge(*x.h_.ref->v);
               break;
             case Pointer:
-              outerMerge(*h_.vp);
+              outerMerge(*x.h_.vp);
               break;
             default:
               break;
@@ -6582,16 +6582,16 @@ namespace neu{
               }
               break;
             case HeadMap:
-              outerMerge(*h_.hm->m);
+              outerMerge(*x.h_.hm->m);
               break;
             case HeadSequenceMap:
-              outerMerge(*h_.hsm->m);
+              outerMerge(*x.h_.hsm->m);
               break;
             case Reference:
-              outerMerge(*h_.ref->v);
+              outerMerge(*x.h_.ref->v);
               break;
             case Pointer:
-              outerMerge(*h_.vp);
+              outerMerge(*x.h_.vp);
               break;
             default:
               break;

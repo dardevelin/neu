@@ -136,6 +136,9 @@ KW_RETURN return
 KW_BREAK break
 KW_CONTINUE continue
 KW_CLASS class
+KW_SWITCH switch
+KW_CASE case
+KW_DEFAULT default
 TYPE (void)|(bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(var)\*?
 VEC_TYPE ((bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double))[0-9]+\*?
 DEFINE "#define"
@@ -270,6 +273,21 @@ DEFINE "#define"
 {KW_CLASS} {
   PS->advance(yytext, "keyword");
   return KW_CLASS;
+}
+
+{KW_SWITCH} {
+  PS->advance(yytext, "keyword");
+  return KW_SWITCH;
+}
+
+{KW_CASE} {
+  PS->advance(yytext, "keyword");
+  return KW_CASE;
+}
+
+{KW_DEFAULT} {
+  PS->advance(yytext, "keyword");
+  return KW_DEFAULT;
 }
 
 {KW_EXTERN} {
