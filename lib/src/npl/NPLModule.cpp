@@ -103,6 +103,7 @@ namespace{
     FKEY_LE_2,
     FKEY_If_2,
     FKEY_If_3,
+    FKEY_Select_3,
     FKEY_Local_1,
     FKEY_Local_2,
     FKEY_While_2,
@@ -184,6 +185,7 @@ namespace{
     _functionMap[{"GE", 2}] = FKEY_GE_2;
     _functionMap[{"If", 2}] = FKEY_If_2;
     _functionMap[{"If", 3}] = FKEY_If_3;
+    _functionMap[{"Select", 3}] = FKEY_Select_3;
     _functionMap[{"Set", 2}] = FKEY_Set_2;
     _functionMap[{"AddBy", 2}] = FKEY_AddBy_2;
     _functionMap[{"SubBy", 2}] = FKEY_SubBy_2;
@@ -1597,6 +1599,25 @@ namespace{
           builder_.SetInsertPoint(mb);
           
           return getInt32(0);
+        }
+        case FKEY_Select_3:{
+          Value* cv = compile(n[0]);
+          
+          if(!cv){
+            return 0;
+          }
+          
+          Value* tv = compile(n[1]);
+          if(!tv){
+            return 0;
+          }
+          
+          Value* fv = compile(n[2]);
+          if(!fv){
+            return 0;
+          }
+          
+          return builder_.CreateSelect(cv, tv, fv, "select");
         }
         case FKEY_While_2:{
           loopContinue_ = BasicBlock::Create(context_, "while.cond", func_);
