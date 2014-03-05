@@ -1622,17 +1622,9 @@ namespace{
           return builder_.CreateSelect(cv, tv, fv, "select");
         }
         case FKEY_Switch_2:{
-          cout << "+++++++++++++++++++++++++++++++++++++++" << endl;
-          cout << n << endl;
-          cout << "---------------------------------------" << endl;
-          
           Value* v = compile(n[0]);
           
-          dump(v);
-          
           v = convert(v, "long");
-          
-          dump(v);
           
           if(!v){
             error("invalid operand", n[0]);
@@ -1651,6 +1643,7 @@ namespace{
             builder_.SetInsertPoint(db);
             
             if(!compile(d)){
+              loopMerge_ = 0;
               return 0;
             }
             
@@ -1679,6 +1672,7 @@ namespace{
             
             BasicBlock* b = BasicBlock::Create(context_, "case", func_);
             builder_.SetInsertPoint(b);
+            
             Value* cv = compile(c);
             builder_.CreateBr(loopMerge_);
             
@@ -1686,6 +1680,8 @@ namespace{
           }
 
           builder_.SetInsertPoint(loopMerge_);
+          
+          loopMerge_ = 0;
           
           return s;
         }
