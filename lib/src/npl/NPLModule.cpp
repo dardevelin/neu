@@ -2911,6 +2911,12 @@ namespace{
     
     functionMap_["nvar* nvar::operator=(nvar*)"] =
     compiler.createFunction("_ZN3neu4nvaraSERKS0_", "nvar*", {"nvar*", "nvar*"});
+    
+    functionMap_["void nvar::operator+(nvar*, nvar*, long)"] =
+    compiler.createFunction("_ZNK3neu4nvarplEx", "void", {"nvar*", "nvar*", "long"});
+    
+    functionMap_["void nvar::operator+(nvar*, nvar*, double)"] =
+    compiler.createFunction("_ZNK3neu4nvarplEd", "void", {"nvar*", "nvar*", "double"});
   }
   
   Function* Global::getFunction(const nstr& f){
