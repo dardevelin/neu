@@ -89,7 +89,7 @@ namespace{
       typeMap_("ulong") = nml("[bits:64, signed:false]");
       typeMap_("float") = nml("[bits:32, float:true]");
       typeMap_("double") = nml("[bits:64, float:true]");
-      typeMap_("var") = nml("[bits:72]");
+      typeMap_("nvar") = nml("[bits:72, var:true]");
 
       builtinMap_({"shl", 2}) = "ShL";
       builtinMap_({"shr", 2}) = "ShR";

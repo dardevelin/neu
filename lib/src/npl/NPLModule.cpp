@@ -240,12 +240,19 @@ namespace{
   public:
     Global();
     
+    void init();
+    
     Function* getFunction(const nstr& f);
+    
+    StructType* varType(){
+      return varType_;
+    }
     
   private:
     LLVMContext& context_;
     Module module_;
     FunctionMap functionMap_;
+    StructType* varType_;
   };
   
   NBasicMutex _mutex;
@@ -274,6 +281,12 @@ namespace{
         scopeMap_[s] = vp;
       }
     
+      void dealloc(NPLCompiler* compiler){
+        for(auto& itr : scopeMap_){
+          compiler->dealloc(itr.second);
+        }
+      }
+      
     private:
       typedef NMap<nstr, Value*> ScopeMap_;
       
@@ -332,7 +345,10 @@ namespace{
       
       Type* baseType;
       
-      if(isFloat){
+      if(t.get("var", false)){
+        baseType = _global->varType();
+      }
+      else if(isFloat){
         if(bits == 64){
           baseType = Type::getDoubleTy(context_);
         }
@@ -396,6 +412,16 @@ namespace{
                              const nvec& argTypes,
                              bool external=true){
       return createFunction(name, type(returnType), typeVec(argTypes), external);
+    }
+    
+    StructType* createStructType_(const nstr& name,
+                                  const TypeVec& fieldTypes){
+      return StructType::create(context_, fieldTypes.vector(), name.c_str());
+    }
+
+    StructType* createStructType(const nstr& name,
+                                 const nvec& fieldTypes){
+      return createStructType_(name, typeVec(fieldTypes));
     }
     
     Value* error(const nstr& msg, const nvar& n){
@@ -475,6 +501,12 @@ namespace{
       return vi;
     }
 
+    void dealloc(Value* v){
+      if(isVar(elementType(v))){
+        globalCall("nvar.dtor", {v});
+      }
+    }
+            
     Value* getLValue(const nvar& n){
       if(n.isSymbol()){
         Value* v = getLocal(n);
@@ -544,6 +576,9 @@ namespace{
         else if(fromType->isFloatTy()){
           return trunc ? builder_.CreateFPToSI(from, toType, name.c_str()) : 0;
         }
+        else if(isVar(from)){
+          return from;
+        }
       }
       else if(toElementType->isDoubleTy()){
         if(IntegerType* fromIntType = dyn_cast<IntegerType>(fromElementType)){
@@ -559,6 +594,9 @@ namespace{
         }
         else if(fromElementType->isFloatTy()){
           return builder_.CreateFPExt(from, toType, name.c_str());
+        }
+        else if(isVar(from)){
+          return from;
         }
       }
       else if(toElementType->isFloatTy()){
@@ -576,11 +614,68 @@ namespace{
         else if(fromElementType->isFloatTy()){
           return from;
         }
+        else if(isVar(from)){
+          return from;
+        }
+      }
+      else if(isVar(toElementType)){
+        if(IntegerType* fromIntType = dyn_cast<IntegerType>(fromElementType)){
+          return convert(from, "long");
+        }
+        else if(fromElementType->isDoubleTy()){
+          return from;
+        }
+        else if(fromElementType->isFloatTy()){
+          return convert(from, "double");
+        }
+        else if(isVar(from)){
+          return from;
+        }
       }
       
       return 0;
     }
 
+    Value* toVar(Value* v){
+      Type* t = v->getType();
+      if(IntegerType* intType = dyn_cast<IntegerType>(t)){
+        Value* v = createAlloca("nvar", "var");
+        Value* h = builder_.CreateStructGEP(v, 0, "var.h");
+        Value* t = builder_.CreateStructGEP(v, 1, "var.t");
+        Value* vl = convert(v, "long");
+        
+        createStore(vl, h);
+        createStore(getInt8(nvar::Integer), t);
+        return v;
+      }
+      else if(t->isDoubleTy()){
+        Value* v = createAlloca("nvar", "var");
+        Value* h = builder_.CreateStructGEP(v, 0, "var.h");
+        h = builder_.CreateBitCast(h, type("double*"));
+        Value* t = builder_.CreateStructGEP(v, 1, "var.t");
+        
+        createStore(v, h);
+        createStore(getInt8(nvar::Float), t);
+        return v;
+      }
+      else if(t->isFloatTy()){
+        Value* v = createAlloca("nvar", "var");
+        Value* h = builder_.CreateStructGEP(v, 0, "var.h");
+        h = builder_.CreateBitCast(h, type("double*"));
+        Value* t = builder_.CreateStructGEP(v, 1, "var.t");
+        
+        Value* vd = convert(v, "double");
+        createStore(vd, h);
+        createStore(getInt8(nvar::Float), t);
+        return v;
+      }
+      else if(t == _global->varType()){
+        return v;
+      }
+      
+      return 0;
+    }
+    
     Value* convert(Value* from, const nstr& toType, bool trunc=true){
       return convert(from, type(toType), trunc);
     }
@@ -717,9 +812,6 @@ namespace{
         else if(t->isFloatingPointTy()){
           return ConstantFP::get(t, x.toDouble());
         }
-        else{
-          NERROR("not a numeric type");
-        }
       }
       
       switch(x.type()){
@@ -815,6 +907,10 @@ namespace{
       
       return builder_.CreateLoad(ptr, name.c_str());
     }
+
+    Value* createAlloca(const nstr& t, const nstr& name){
+      return createAlloca(type(t), name);
+    }
     
     Value* createAlloca(Type* t, const nstr& name){
       nstr n = name + ".ptr";
@@ -827,6 +923,68 @@ namespace{
       }
 
       return builder_.CreateFAdd(v1, v2, "fadd.out");
+    }
+    
+    Value* add(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        if(isVar(t2)){
+          
+        }
+        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
+          
+        }
+        else if(t2->isDoubleTy()){
+          
+        }
+        else if(t2->isFloatTy()){
+          
+        }
+      }
+      else if(IntegerType* intType1 = dyn_cast<IntegerType>(t1)){
+        if(isVar(t2)){
+          
+        }
+        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
+          
+        }
+        else if(t2->isDoubleTy()){
+          
+        }
+        else if(t2->isFloatTy()){
+          
+        }
+      }
+      else if(t1->isDoubleTy()){
+        if(isVar(t2)){
+          
+        }
+        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
+          
+        }
+        else if(t2->isDoubleTy()){
+          
+        }
+        else if(t2->isFloatTy()){
+          
+        }
+      }
+      else if(t1->isFloatTy()){
+        if(isVar(t2)){
+          
+        }
+        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
+          
+        }
+        else if(t2->isDoubleTy()){
+          
+        }
+        else if(t2->isFloatTy()){
+          
+        }
+      }
     }
     
     Value* createSub(Value* v1, Value* v2){
@@ -918,6 +1076,30 @@ namespace{
     
     void createStore(Value* v, Value* ptr){
       builder_.CreateStore(v, ptr);
+    }
+    
+    void store(Value* v, Value* ptr){
+      if(isVar(ptr)){
+        Type* t = v->getType();
+        
+        if(dyn_cast<IntegerType>(t)){
+          Value* vl = convert(v, "long");
+          globalCall("nvar.set.l", {ptr, vl});
+        }
+        else if(t->isDoubleTy()){
+          globalCall("nvar.set.d", {ptr, v});
+        }
+        else if(t->isFloatTy()){
+          Value* vd = convert(v, "double");
+          globalCall("nvar.set.d", {ptr, vd});
+        }
+        else if(isVar(t)){
+          globalCall("nvar.set.v", {ptr, v});
+        }
+      }
+      else{
+        builder_.CreateStore(v, ptr);
+      }
     }
     
     FunctionKey getFunctionKey(const nvar& n){
@@ -1155,6 +1337,10 @@ namespace{
           
           Value* v = createAlloca(t, s);
 
+          if(isVar(t)){
+            globalCall("nvar.ctor", {v});
+          }
+          
           putLocal(s, v);
 
           return v;
@@ -1175,7 +1361,7 @@ namespace{
             error("invalid operands", n);
           }
           
-          createStore(rn, v);
+          store(rn, v);
           
           putLocal(s, v);
           
@@ -1194,12 +1380,14 @@ namespace{
           
           Value* rc = convert(r, l);
           
+          dump(rc);
+          
           if(!rc){
             error("invalid operands", n);
             return 0;
           }
           
-          createStore(rc, l);
+          store(rc, l);
           
           return getInt32(0);
         }
@@ -1224,7 +1412,7 @@ namespace{
           
           Value* o = createAdd(lv, rc);
           
-          createStore(o, l);
+          store(o, l);
           
           return l;
         }
@@ -1249,7 +1437,7 @@ namespace{
           
           Value* o = createSub(lv, rc);
           
-          createStore(o, l);
+          store(o, l);
           
           return l;
         }
@@ -1274,7 +1462,7 @@ namespace{
           
           Value* o = createMul(lv, rc);
           
-          createStore(o, l);
+          store(o, l);
           
           return l;
         }
@@ -1299,7 +1487,7 @@ namespace{
           
           Value* o = createDiv(lv, rc);
           
-          createStore(o, l);
+          store(o, l);
           
           return l;
         }
@@ -1324,7 +1512,7 @@ namespace{
           
           Value* o = createRem(lv, rc);
           
-          createStore(o, l);
+          store(o, l);
           
           return l;
         }
@@ -1827,7 +2015,7 @@ namespace{
           }
 
           Value* rp = createStructGEP(args_, 2, "ret.ptr");
-          createStore(r, rp);
+          store(r, rp);
           
           builder_.CreateRet(r);
           
@@ -1846,7 +2034,7 @@ namespace{
           Value* lv = createLoad(l);
           Value* o = createAdd(lv, r);
           
-          createStore(o, l);
+          store(o, l);
           
           return o;
         }
@@ -1861,7 +2049,7 @@ namespace{
           Value* lv = createLoad(l);
           Value* o = createAdd(lv, r);
           
-          createStore(o, l);
+          store(o, l);
           
           return lv;
         }
@@ -1876,7 +2064,7 @@ namespace{
           Value* lv = createLoad(l);
           Value* o = createSub(lv, r);
           
-          createStore(o, l);
+          store(o, l);
           
           return o;
         }
@@ -1891,7 +2079,7 @@ namespace{
           Value* lv = createLoad(l);
           Value* o = createSub(lv, r);
           
-          createStore(o, l);
+          store(o, l);
           
           return lv;
         }
@@ -2575,6 +2763,7 @@ namespace{
       assert(!scopeStack_.empty());
       
       LocalScope* scope = scopeStack_.back();
+      scope->dealloc(this);
       delete scope;
       scopeStack_.pop_back();
     }
@@ -2613,6 +2802,28 @@ namespace{
     
     bool isIntegral(Type* t){
       return dyn_cast<IntegerType>(elementType(t));
+    }
+    
+    bool isVar(Type* t){
+      return elementType(t) == _global->varType();
+    }
+    
+    bool isVar(Value* v){
+      return isVar(v->getType());
+    }
+    
+    Value* globalCall(const nvar& c, const ValueVec& v){
+      Function* f = _globalFunc(c);
+      assert(f);
+
+      Type* rt = f->getReturnType();
+      
+      if(rt->isVoidTy()){
+        return builder_.CreateCall(f, v.vector());
+      }
+      else{
+        return builder_.CreateCall(f, v.vector(), c.c_str());
+      }
     }
     
   private:
@@ -2682,6 +2893,24 @@ namespace{
     
     functionMap_["llvm.exp.f32"] =
     compiler.createFunction("llvm.exp.f32", "float", {"float"});
+
+    varType_ = compiler.createStructType("nvar", {"long", "char"});
+  }
+  
+  void Global::init(){
+    NPLCompiler compiler(module_, functionMap_, cerr);
+    
+    functionMap_["void nvar::~nvar()"] =
+    compiler.createFunction("_ZN3neu4nvarD1Ev", "void", {"nvar*"});
+    
+    functionMap_["nvar* nvar::operator=(long)"] =
+    compiler.createFunction("_ZN3neu4nvaraSEx", "nvar*", {"nvar*", "long"});
+    
+    functionMap_["nvar* nvar::operator=(double)"] =
+    compiler.createFunction("_ZN3neu4nvaraSEd", "nvar*", {"nvar*", "double"});
+    
+    functionMap_["nvar* nvar::operator=(nvar*)"] =
+    compiler.createFunction("_ZN3neu4nvaraSERKS0_", "nvar*", {"nvar*", "nvar*"});
   }
   
   Function* Global::getFunction(const nstr& f){
@@ -2743,6 +2972,7 @@ namespace neu{
       _mutex.lock();
       if(!_global){
         _global = new Global;
+        _global->init();
       }
       _mutex.unlock();
     }

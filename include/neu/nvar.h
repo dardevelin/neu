@@ -3256,8 +3256,12 @@ namespace neu{
       
       return *this;
     }
-    
+
     nvar& operator=(int x){
+      return *this = int64_t(x);
+    }
+    
+    nvar& operator=(long long x){
       switch(t_){
         case None:
         case Undefined:
@@ -3628,11 +3632,7 @@ namespace neu{
     nvar& operator=(const nvar& x);
     
     nvar& operator=(unsigned long x){
-      return *this = nvar(x);
-    }
-    
-    nvar& operator=(long long x){
-      return *this = nvar(x);
+      return *this = int64_t(x);
     }
     
     nvar& set(const nvar& x);
@@ -3680,6 +3680,10 @@ namespace neu{
     nvar& operator+=(const nvar& x);
     
     nvar& operator+=(int x){
+      return *this += int64_t(x);
+    }
+    
+    nvar& operator+=(long long x){
       switch(t_){
         case None:
         case Undefined:
@@ -3799,8 +3803,12 @@ namespace neu{
     }
     
     nvar operator+(const nvar& x) const;
-    
+
     nvar operator+(int x) const{
+      return *this + int64_t(x);
+    }
+    
+    nvar operator+(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -3909,6 +3917,10 @@ namespace neu{
     nvar& operator-=(const nvar& x);
     
     nvar& operator-=(int x){
+      return *this -= int64_t(x);
+    }
+    
+    nvar& operator-=(long long x){
       switch(t_){
         case None:
         case Undefined:
@@ -4041,6 +4053,10 @@ namespace neu{
     nvar operator-(const nvar& x) const;
     
     nvar operator-(int x) const{
+      return *this - int64_t(x);
+    }
+    
+    nvar operator-(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -4135,6 +4151,10 @@ namespace neu{
     nvar& operator*=(const nvar& x);
     
     nvar& operator*=(int x){
+      return *this *= int64_t(x);
+    }
+    
+    nvar& operator*=(long long x){
       switch(t_){
         case None:
         case Undefined:
@@ -4257,6 +4277,10 @@ namespace neu{
     nvar operator*(const nvar& x) const;
     
     nvar operator*(int x) const{
+      return *this * int64_t(x);
+    }
+    
+    nvar operator*(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -4355,6 +4379,10 @@ namespace neu{
     nvar& operator/=(const nvar& x);
     
     nvar& operator/=(int x){
+      return *this /= int64_t(x);
+    }
+    
+    nvar& operator/=(long long x){
       switch(t_){
         case None:
         case Undefined:
@@ -4474,6 +4502,10 @@ namespace neu{
     nvar operator/(const nvar& x) const;
     
     nvar operator/(int x) const{
+      return *this / int64_t(x);
+    }
+    
+    nvar operator/(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -4570,8 +4602,12 @@ namespace neu{
     }
     
     nvar& operator%=(const nvar& x);
-    
+
     nvar& operator%=(int x){
+      return *this %= int64_t(x);
+    }
+    
+    nvar& operator%=(long long x){
       switch(t_){
         case None:
         case Undefined:
@@ -4689,6 +4725,10 @@ namespace neu{
     nvar operator%(const nvar& x) const;
     
     nvar operator%(int x) const{
+      return *this % int64_t(x);
+    }
+    
+    nvar operator%(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -4785,6 +4825,10 @@ namespace neu{
     nvar operator<(const nvar& x) const;
     
     nvar operator<(int x) const{
+      return *this < int64_t(x);
+    }
+    
+    nvar operator<(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -4863,6 +4907,10 @@ namespace neu{
     nvar operator<=(const nvar& x) const;
     
     nvar operator<=(int x) const{
+      return *this <= int64_t(x);
+    }
+    
+    nvar operator<=(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -4939,8 +4987,12 @@ namespace neu{
     }
     
     nvar operator>(const nvar& x) const;
-    
+
     nvar operator>(int x) const{
+      return *this > int64_t(x);
+    }
+    
+    nvar operator>(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -5017,8 +5069,12 @@ namespace neu{
     }
     
     nvar operator>=(const nvar& x) const;
-    
+
     nvar operator>=(int x) const{
+      return *this >= int64_t(x);
+    }
+    
+    nvar operator>=(long long x) const{
       switch(t_){
         case None:
         case Undefined:
@@ -5095,8 +5151,12 @@ namespace neu{
     }
     
     nvar operator==(const nvar& x) const;
-    
+
     nvar operator==(int x) const{
+      return *this == int64_t(x);
+    }
+    
+    nvar operator==(long long x) const{
       switch(t_){
         case Integer:
           return h_.i == x;
@@ -5151,8 +5211,12 @@ namespace neu{
     }
     
     nvar operator!=(const nvar& x) const;
-    
+
     nvar operator!=(int x) const{
+      return *this != int64_t(x);
+    }
+    
+    nvar operator!=(long long x) const{
       switch(t_){
         case Integer:
           return h_.i != x;
@@ -6742,8 +6806,8 @@ namespace neu{
     char* pack_(char* buf, size_t& size, size_t& pos) const;
     void unpack_(char* buf, size_t& pos);
     
-    Type t_;
     Head h_;
+    Type t_;
   };
   
   inline nvar nfunc(const nstr& f){
@@ -6800,11 +6864,19 @@ namespace neu{
     return v2 > v1;
   }
   
+  inline bool operator<(long long v1, const nvar& v2){
+    return v2 > v1;
+  }
+  
   inline bool operator<=(double v1, const nvar& v2){
     return v2 >= v1;
   }
   
   inline bool operator<=(int v1, const nvar& v2){
+    return v2 >= v1;
+  }
+  
+  inline bool operator<=(long long v1, const nvar& v2){
     return v2 >= v1;
   }
   
@@ -6816,11 +6888,19 @@ namespace neu{
     return v2 < v1;
   }
   
+  inline bool operator>(long long v1, const nvar& v2){
+    return v2 < v1;
+  }
+  
   inline bool operator>=(double v1, const nvar& v2){
     return v2 <= v1;
   }
   
   inline bool operator>=(int v1, const nvar& v2){
+    return v2 <= v1;
+  }
+  
+  inline bool operator>=(long long v1, const nvar& v2){
     return v2 <= v1;
   }
   
@@ -6832,11 +6912,19 @@ namespace neu{
     return v2 == v1;
   }
   
+  inline bool operator==(long long v1, const nvar& v2){
+    return v2 == v1;
+  }
+  
   inline bool operator!=(double v1, const nvar& v2){
     return v2 != v1;
   }
   
   inline bool operator!=(int v1, const nvar& v2){
+    return v2 != v1;
+  }
+  
+  inline bool operator!=(long long v1, const nvar& v2){
     return v2 != v1;
   }
   
@@ -6848,11 +6936,19 @@ namespace neu{
     return v2 + v1;
   }
   
+  inline nvar operator+(long long v1, const nvar& v2){
+    return v2 + v1;
+  }
+  
   inline nvar operator-(double v1, const nvar& v2){
     return -v2 + v1;
   }
   
   inline nvar operator-(int v1, const nvar& v2){
+    return -v2 + v1;
+  }
+  
+  inline nvar operator-(long long v1, const nvar& v2){
     return -v2 + v1;
   }
   
@@ -6864,6 +6960,10 @@ namespace neu{
     return v2 * v1;
   }
   
+  inline nvar operator*(long long v1, const nvar& v2){
+    return v2 * v1;
+  }
+  
   inline nvar operator/(double v1, const nvar& v2){
     return nvar(v1) / v2;
   }
@@ -6872,11 +6972,19 @@ namespace neu{
     return nvar(v1) / v2;
   }
   
+  inline nvar operator/(long long v1, const nvar& v2){
+    return nvar(v1) / v2;
+  }
+  
   inline nvar operator%(double v1, const nvar& v2){
     return nvar(v1) % v2;
   }
   
   inline nvar operator%(int v1, const nvar& v2){
+    return nvar(v1) % v2;
+  }
+  
+  inline nvar operator%(long long v1, const nvar& v2){
     return nvar(v1) % v2;
   }
   
