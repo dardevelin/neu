@@ -139,6 +139,49 @@ void _forceNPLSymbols(){
   nvar x18;
   double y18 = 2;
   nvar z18 = x18 % y18;
+
+  nvar x19;
+  int64_t y19 = 2;
+  x19 += y19;
+  
+  nvar x20;
+  double y20 = 2;
+  x20 += y20;
+  
+  int64_t x21 = x20.toLong();
+  double x22 = x20.toDouble();
+  
+  nvar x23;
+  int64_t y23 = 2;
+  x23 -= y23;
+  
+  nvar x24;
+  double y24 = 2;
+  x24 -= y24;
+  
+  nvar x25;
+  int64_t y25 = 2;
+  x25 *= y25;
+  
+  nvar x26;
+  double y26 = 2;
+  x26 *= y26;
+  
+  nvar x27;
+  int64_t y27 = 2;
+  x27 /= y27;
+  
+  nvar x28;
+  double y28 = 2;
+  x28 /= y28;
+  
+  nvar x29;
+  int64_t y29 = 2;
+  x29 %= y29;
+  
+  nvar x30;
+  double y30 = 2;
+  x30 %= y30;
 }
 
 namespace{
@@ -627,6 +670,15 @@ namespace{
     
     Value* convertNum(Value* from, Type* toType, bool trunc=true){
       if(isVar(from)){
+        if(toType->isIntegerTy()){
+          Value* v = globalCall("long nvar::toLong(nvar*)", {from});
+          return convertNum(v, toType);
+        }
+        else if(toType->isFloatingPointTy()){
+          Value* v = globalCall("long nvar::toDouble(nvar*)", {from});
+          return convertNum(v, toType);
+        }
+        
         return from;
       }
       
@@ -1336,6 +1388,211 @@ namespace{
       return createRem(v[0], v[1]);
     }
     
+    Value* addBy(Value* l, Value* r){
+      Type* tl = l->getType();
+      Type* tr = r->getType();
+      
+      if(isVar(tl)){
+        if(tr->isIntegerTy()){
+          Value* vl = convert(r, "long");
+          return globalCall("nvar* nvar::operator+=(nvar*, long)",
+                            {l, vl});
+        }
+        else if(tr->isFloatingPointTy()){
+          Value* vd = convert(r, "double");
+          return globalCall("nvar* nvar::operator+=(nvar*, double)",
+                            {l, vd});
+        }
+        
+        Value* vr = toVar(r);
+        
+        if(!vr){
+          return 0;
+        }
+        
+        return globalCall("nvar* nvar::operator+=(nvar*, nvar*)",
+                          {l, vr});
+        
+      }
+      
+      Value* lv = createLoad(l);
+      Value* rc = convert(r, lv);
+      
+      if(!rc){
+        return 0;
+      }
+    
+      Value* o = createAdd(lv, rc);
+    
+      store(o, l);
+    
+      return l;
+    }
+    
+    Value* subBy(Value* l, Value* r){
+      Type* tl = l->getType();
+      Type* tr = r->getType();
+      
+      if(isVar(tl)){
+        if(tr->isIntegerTy()){
+          Value* vl = convert(r, "long");
+          return globalCall("nvar* nvar::operator-=(nvar*, long)",
+                            {l, vl});
+        }
+        else if(tr->isFloatingPointTy()){
+          Value* vd = convert(r, "double");
+          return globalCall("nvar* nvar::operator-=(nvar*, double)",
+                            {l, vd});
+        }
+        
+        Value* vr = toVar(r);
+        
+        if(!vr){
+          return 0;
+        }
+        
+        return globalCall("nvar* nvar::operator-=(nvar*, nvar*)",
+                          {l, vr});
+        
+      }
+      
+      Value* lv = createLoad(l);
+      Value* rc = convert(r, lv);
+      
+      if(!rc){
+        return 0;
+      }
+      
+      Value* o = createSub(lv, rc);
+      
+      store(o, l);
+      
+      return l;
+    }
+    
+    Value* mulBy(Value* l, Value* r){
+      Type* tl = l->getType();
+      Type* tr = r->getType();
+      
+      if(isVar(tl)){
+        if(tr->isIntegerTy()){
+          Value* vl = convert(r, "long");
+          return globalCall("nvar* nvar::operator*=(nvar*, long)",
+                            {l, vl});
+        }
+        else if(tr->isFloatingPointTy()){
+          Value* vd = convert(r, "double");
+          return globalCall("nvar* nvar::operator*=(nvar*, double)",
+                            {l, vd});
+        }
+        
+        Value* vr = toVar(r);
+        
+        if(!vr){
+          return 0;
+        }
+        
+        return globalCall("nvar* nvar::operator*=(nvar*, nvar*)",
+                          {l, vr});
+        
+      }
+      
+      Value* lv = createLoad(l);
+      Value* rc = convert(r, lv);
+      
+      if(!rc){
+        return 0;
+      }
+      
+      Value* o = createMul(lv, rc);
+      
+      store(o, l);
+      
+      return l;
+    }
+    
+    Value* divBy(Value* l, Value* r){
+      Type* tl = l->getType();
+      Type* tr = r->getType();
+      
+      if(isVar(tl)){
+        if(tr->isIntegerTy()){
+          Value* vl = convert(r, "long");
+          return globalCall("nvar* nvar::operator/=(nvar*, long)",
+                            {l, vl});
+        }
+        else if(tr->isFloatingPointTy()){
+          Value* vd = convert(r, "double");
+          return globalCall("nvar* nvar::operator/=(nvar*, double)",
+                            {l, vd});
+        }
+        
+        Value* vr = toVar(r);
+        
+        if(!vr){
+          return 0;
+        }
+        
+        return globalCall("nvar* nvar::operator/=(nvar*, nvar*)",
+                          {l, vr});
+        
+      }
+      
+      Value* lv = createLoad(l);
+      Value* rc = convert(r, lv);
+      
+      if(!rc){
+        return 0;
+      }
+      
+      Value* o = createDiv(lv, rc);
+      
+      store(o, l);
+      
+      return l;
+    }
+    
+    Value* modBy(Value* l, Value* r){
+      Type* tl = l->getType();
+      Type* tr = r->getType();
+      
+      if(isVar(tl)){
+        if(tr->isIntegerTy()){
+          Value* vl = convert(r, "long");
+          return globalCall("nvar* nvar::operator%=(nvar*, long)",
+                            {l, vl});
+        }
+        else if(tr->isFloatingPointTy()){
+          Value* vd = convert(r, "double");
+          return globalCall("nvar* nvar::operator%=(nvar*, double)",
+                            {l, vd});
+        }
+        
+        Value* vr = toVar(r);
+        
+        if(!vr){
+          return 0;
+        }
+        
+        return globalCall("nvar* nvar::operator%=(nvar*, nvar*)",
+                          {l, vr});
+        
+      }
+      
+      Value* lv = createLoad(l);
+      Value* rc = convert(r, lv);
+      
+      if(!rc){
+        return 0;
+      }
+      
+      Value* o = createRem(lv, rc);
+      
+      store(o, l);
+      
+      return l;
+    }
+  
     Value* createShl(Value* v1, Value* v2){
       Value* ret = builder_.CreateShl(v1, v2, "shl.out");
       if(isUnsigned(v1) && isUnsigned(v2)){
@@ -1538,6 +1795,10 @@ namespace{
         case FKEY_ShL_2:{
           Value* l = compile(n[0]);
           Value* r = compile(n[1]);
+
+          if(isVar(l) || isVar(r)){
+            error("invalid operands", n);
+          }
           
           ValueVec v = normalize(l, r);
           
@@ -1552,6 +1813,10 @@ namespace{
           Value* l = compile(n[0]);
           Value* r = compile(n[1]);
           
+          if(isVar(l) || isVar(r)){
+            error("invalid operands", n);
+          }
+          
           ValueVec v = normalize(l, r);
           
           if(v.empty()){
@@ -1564,6 +1829,10 @@ namespace{
         case FKEY_BitAnd_2:{
           Value* l = compile(n[0]);
           Value* r = compile(n[1]);
+          
+          if(isVar(l) || isVar(r)){
+            error("invalid operands", n);
+          }
           
           ValueVec v = normalize(l, r);
           
@@ -1590,6 +1859,10 @@ namespace{
         case FKEY_BitXOr_2:{
           Value* l = compile(n[0]);
           Value* r = compile(n[1]);
+          
+          if(isVar(l) || isVar(r)){
+            error("invalid operands", n);
+          }
           
           ValueVec v = normalize(l, r);
           
@@ -1691,19 +1964,7 @@ namespace{
             return 0;
           }
           
-          Value* lv = createLoad(l);
-          Value* rc = convert(r, lv);
-
-          if(!rc){
-            error("invalid operands", n);
-            return 0;
-          }
-          
-          Value* o = createAdd(lv, rc);
-          
-          store(o, l);
-          
-          return l;
+          return addBy(l, r);
         }
         case FKEY_SubBy_2:{
           Value* l = getLValue(n[0]);
@@ -1716,19 +1977,7 @@ namespace{
             return 0;
           }
           
-          Value* lv = createLoad(l);
-          Value* rc = convert(r, lv);
-          
-          if(!rc){
-            error("invalid operands", n);
-            return 0;
-          }
-          
-          Value* o = createSub(lv, rc);
-          
-          store(o, l);
-          
-          return l;
+          return subBy(l, r);
         }
         case FKEY_MulBy_2:{
           Value* l = getLValue(n[0]);
@@ -1741,19 +1990,7 @@ namespace{
             return 0;
           }
           
-          Value* lv = createLoad(l);
-          Value* rc = convert(r, lv);
-          
-          if(!rc){
-            error("invalid operands", n);
-            return 0;
-          }
-          
-          Value* o = createMul(lv, rc);
-          
-          store(o, l);
-          
-          return l;
+          return mulBy(l, r);
         }
         case FKEY_DivBy_2:{
           Value* l = getLValue(n[0]);
@@ -1766,19 +2003,7 @@ namespace{
             return 0;
           }
           
-          Value* lv = createLoad(l);
-          Value* rc = convert(r, lv);
-          
-          if(!rc){
-            error("invalid operands", n);
-            return 0;
-          }
-          
-          Value* o = createDiv(lv, rc);
-          
-          store(o, l);
-          
-          return l;
+          return divBy(l, r);
         }
         case FKEY_ModBy_2:{
           Value* l = getLValue(n[0]);
@@ -1791,19 +2016,7 @@ namespace{
             return 0;
           }
           
-          Value* lv = createLoad(l);
-          Value* rc = convert(r, lv);
-          
-          if(!rc){
-            error("invalid operands", n);
-            return 0;
-          }
-          
-          Value* o = createRem(lv, rc);
-          
-          store(o, l);
-          
-          return l;
+          return modBy(l, r);
         }
         case FKEY_Not_1:{
           Value* r = compile(n[0]);
@@ -3208,6 +3421,12 @@ namespace{
     createFunction("void nvar::~nvar(nvar*)",
                    "_ZN3neu4nvarD1Ev");
     
+    createFunction("long nvar::toLong(nvar*)",
+                   "_ZNK3neu4nvar6toLongEv");
+    
+    createFunction("double nvar::toDouble(nvar*)",
+                   "_ZNK3neu4nvar8toDoubleEv");
+    
     createFunction("nvar* nvar::operator=(nvar*, long)",
                    "_ZN3neu4nvaraSEx");
     
@@ -3261,6 +3480,51 @@ namespace{
     
     createFunction("void nvar::operator%(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvarrmERKS0_");
+    
+    createFunction("nvar* nvar::operator+=(nvar*, long)",
+                   "_ZN3neu4nvarpLEx");
+    
+    createFunction("nvar* nvar::operator+=(nvar*, double)",
+                   "_ZN3neu4nvarpLEd");
+    
+    createFunction("nvar* nvar::operator+=(nvar*, nvar*)",
+                   "_ZN3neu4nvarpLERKS0_");
+    
+    createFunction("nvar* nvar::operator-=(nvar*, long)",
+                   "_ZN3neu4nvarmIEx");
+    
+    createFunction("nvar* nvar::operator-=(nvar*, double)",
+                   "_ZN3neu4nvarmIEd");
+    
+    createFunction("nvar* nvar::operator-=(nvar*, nvar*)",
+                   "_ZN3neu4nvarmIERKS0_");
+    
+    createFunction("nvar* nvar::operator*=(nvar*, long)",
+                   "_ZN3neu4nvarmLEx");
+    
+    createFunction("nvar* nvar::operator*=(nvar*, double)",
+                   "_ZN3neu4nvarmLEd");
+    
+    createFunction("nvar* nvar::operator*=(nvar*, nvar*)",
+                   "_ZN3neu4nvarmLERKS0_");
+    
+    createFunction("nvar* nvar::operator/=(nvar*, long)",
+                   "_ZN3neu4nvardVEx");
+    
+    createFunction("nvar* nvar::operator/=(nvar*, double)",
+                   "_ZN3neu4nvardVEd");
+    
+    createFunction("nvar* nvar::operator/=(nvar*, nvar*)",
+                   "_ZN3neu4nvardVERKS0_");
+    
+    createFunction("nvar* nvar::operator%=(nvar*, long)",
+                   "_ZN3neu4nvarrMEx");
+    
+    createFunction("nvar* nvar::operator%=(nvar*, double)",
+                   "_ZN3neu4nvarrMEd");
+    
+    createFunction("nvar* nvar::operator%=(nvar*, nvar*)",
+                   "_ZN3neu4nvarrMERKS0_");
     
     delete compiler_;
   }
