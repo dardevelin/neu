@@ -72,6 +72,43 @@ using namespace std;
 using namespace llvm;
 using namespace neu;
 
+// force symbols to be generated that might otherwise be missing
+void _forceNPLSymbols(){
+  int8_t* v3 = 0;
+  nvar x3(v3, 1);
+  
+  int16_t* v4 = 0;
+  nvar x4(v4, 1);
+  
+  int32_t* v5 = 0;
+  nvar x5(v5, 1);
+  
+  int64_t* v6 = 0;
+  nvar x6(v6, 1);
+  
+  float* v7 = 0;
+  nvar x7(v7, 1);
+  
+  double* v8 = 0;
+  nvar x8(v8, 1);
+  
+  int64_t x9 = 0;
+  nvar v9;
+  v9 = x9;
+  
+  double x10 = 0;
+  nvar v10;
+  v10 = x10;
+  
+  nvar x1;
+  int64_t y1 = 2;
+  nvar z1 = x1 + y1;
+  
+  nvar x2;
+  double y2 = 2;
+  nvar z2 = x2 + y2;
+}
+
 namespace{
 
   typedef NVector<Type*> TypeVec;
@@ -522,7 +559,7 @@ namespace{
 
     void dealloc(Value* v){
       if(isVar(elementType(v))){
-        globalCall("nvar.dtor", {v});
+        globalCall("void nvar::~nvar(nvar*)", {v});
       }
     }
             
@@ -643,7 +680,7 @@ namespace{
       if(!v){
         Value* ret = createAlloca("nvar", name);
         Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
-        createStore(t, getInt8(nvar::Undefined));
+        createStore(getInt8(nvar::Undefined), t);
         return ret;
       }
       
@@ -1020,10 +1057,6 @@ namespace{
       Type* t1 = v1->getType();
       Type* t2 = v2->getType();
       
-      if(isVar(t2)){
-        return add(v2, v1);
-      }
-      
       if(isVar(t1)){
         Value* ret = createVar();
         
@@ -1050,6 +1083,9 @@ namespace{
                    {ret, v1, v});
         
         return ret;
+      }
+      else if(isVar(t2)){
+        return add(v2, v1);
       }
       
       ValueVec v = normalize(v1, v2);
@@ -1149,6 +1185,8 @@ namespace{
     }
     
     void createStore(Value* v, Value* ptr){
+      dump(v);
+      dump(ptr);
       builder_.CreateStore(v, ptr);
     }
     
@@ -1165,6 +1203,8 @@ namespace{
           globalCall("nvar* nvar::operator=(nvar*, double)", {ptr, vd});
         }
         else if(isVar(t)){
+          dump(ptr);
+          dump(v);
           globalCall("nvar* nvar::operator=(nvar*, nvar*)", {ptr, v});
         }
       }
@@ -1213,13 +1253,13 @@ namespace{
         
         Value* v = getLocal(n);
         if(v){
-          return createLoad(v);
+          return isVar(v) ? v : createLoad(v);
         }
         
         v = getAttribute(n);
         
         if(v){
-          return createLoad(v);
+          return isVar(v) ? v : createLoad(v);
         }
         
         error("undefined symbol", n);
