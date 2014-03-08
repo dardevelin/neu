@@ -320,33 +320,29 @@ namespace{
         scopeMap_[s] = vp;
       }
     
-      void putTemp(Value* v){
-        assert(!tempMap_.hasKey(v));
-        tempMap_[v] = true;
+      void putVar(Value* v){
+        assert(!varMap_.hasKey(v));
+        varMap_[v] = true;
       }
       
-      void claimTemp(Value* v){
-        auto itr = tempMap_.find(v);
-        assert(itr != tempMap_.end());
-        tempMap_.erase(itr);
+      void claimVar(Value* v){
+        auto itr = varMap_.find(v);
+        assert(itr != varMap_.end());
+        varMap_.erase(itr);
       }
       
       void dealloc(NPLCompiler* compiler){
-        for(auto& itr : scopeMap_){
-          compiler->dealloc(itr.second);
-        }
-        
-        for(auto& itr : tempMap_){
+        for(auto& itr : varMap_){
           compiler->dealloc(itr.first);
         }
       }
       
     private:
       typedef NMap<nstr, Value*> ScopeMap_;
-      typedef NMap<Value*, bool> TempMap_;
+      typedef NMap<Value*, bool> VarMap_;
       
       ScopeMap_ scopeMap_;
-      TempMap_ tempMap_;
+      VarMap_ varMap_;
     };
     
     NPLCompiler(Module& module, FunctionMap& functionMap, ostream& estr)
@@ -679,7 +675,7 @@ namespace{
     Value* createVar_(Value* v, const nstr& name){
       if(!v){
         Value* ret = createAlloca("nvar", name);
-        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
+        Value* t = createStructGEP(ret, 1, "t");
         createStore(getInt8(nvar::Undefined), t);
         return ret;
       }
@@ -687,8 +683,8 @@ namespace{
       Type* t = v->getType();
       if(t->isIntegerTy()){
         Value* ret = createAlloca("nvar", name);
-        Value* h = builder_.CreateStructGEP(ret, 0, "var.h");
-        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
+        Value* h = createStructGEP(ret, 0, "h");
+        Value* t = createStructGEP(ret, 1, "t");
         Value* vl = convert(v, "long");
         
         createStore(vl, h);
@@ -697,9 +693,9 @@ namespace{
       }
       else if(t->isDoubleTy()){
         Value* ret = createAlloca("nvar", name);
-        Value* h = builder_.CreateStructGEP(ret, 0, "var.h");
+        Value* h = createStructGEP(ret, 0, "h");
         h = builder_.CreateBitCast(h, type("double*"));
-        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
+        Value* t = createStructGEP(ret, 1, "t");
         
         createStore(v, h);
         createStore(getInt8(nvar::Float), t);
@@ -707,9 +703,9 @@ namespace{
       }
       else if(t->isFloatTy()){
         Value* ret = createAlloca("nvar", name);
-        Value* h = builder_.CreateStructGEP(ret, 0, "var.h");
+        Value* h = createStructGEP(ret, 0, "h");
         h = builder_.CreateBitCast(h, type("double*"));
-        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
+        Value* t = createStructGEP(ret, 0, "t");
         
         Value* vd = convert(v, "double");
         createStore(vd, h);
@@ -765,9 +761,9 @@ namespace{
 
       Value* ret = createVar_(v, name);
       if(ret){
-        putTemp(ret);
-        return ret;
+        putVar(ret);
       }
+
       return ret;
     }
 
@@ -793,9 +789,9 @@ namespace{
     }
     
     Value* createVar(const nstr& name="var", Value* v=0){
-      Value* ret = createVar_(v, "var");
+      Value* ret = createVar_(v, name);
       if(ret){
-        putTemp(ret);
+        putVar(ret);
         return ret;
       }
       return ret;
@@ -1003,7 +999,7 @@ namespace{
           BasicBlock* cb = builder_.GetInsertBlock();
           builder_.SetInsertPoint(entry_);
           
-          Value* ap = createStructGEP(this_, a["index"], s + ".ptr");
+          Value* ap = createStructGEP(this_, a["index"], s);
 
           builder_.SetInsertPoint(cb);
           
@@ -1022,7 +1018,12 @@ namespace{
       return builder_.CreateGEP(ptr, index, "gep");
     }
     
-    Value* createStructGEP(Value* structPtr, size_t index, const nstr& name){
+    Value* createStructGEP(Value* structPtr,
+                           size_t index,
+                           const nstr& fieldName){
+      nstr name = structPtr->getName().str();
+      name.findReplace(".ptr", "");
+      name += "." + fieldName + ".ptr";
       return builder_.CreateStructGEP(structPtr, index, name.c_str());
     }
     
@@ -2585,14 +2586,14 @@ namespace{
 
             Value* as = f->arg_begin();
             Value* ap = createAlloca(elementType(as->getType()), "args");
-            Value* tp = createStructGEP(ap, 1, "this.ptr");
+            Value* tp = createStructGEP(ap, 1, "this");
             createStore(this_, tp);
             
             for(size_t i = 0; i < size; ++i){
               const nvar& fi = fs[i];
               
               Value* vi = compile(fi);
-              Value* vp = createStructGEP(ap, i + 2, fi.str() + ".ptr");
+              Value* vp = createStructGEP(ap, i + 2, fi.str());
               vi = convert(vi, vp);
               if(!vi){
                 error("invalid operand", fi);
@@ -2802,7 +2803,7 @@ namespace{
       
       builder_.SetInsertPoint(entry_);
 
-      this_ = createLoad(createStructGEP(args_, 1, "this.ptr"));
+      this_ = createLoad(createStructGEP(args_, 1, "this"));
       
       pushScope();
       
@@ -2811,7 +2812,7 @@ namespace{
       for(size_t i = 0; i < fs.size(); ++i){
         const nstr& s = fs[i];
         
-        Value* v = createStructGEP(args_, offset + i, s + ".ptr");
+        Value* v = createStructGEP(args_, offset + i, s);
         putLocal(s, v);
       }
       
@@ -2869,11 +2870,11 @@ namespace{
       scope->put(s, v);
     }
     
-    void putTemp(Value* v){
+    void putVar(Value* v){
       assert(!scopeStack_.empty());
       
       LocalScope* scope = scopeStack_.back();
-      scope->putTemp(v);
+      scope->putVar(v);
     }
     
     nvar& getInfo(Value* v){
