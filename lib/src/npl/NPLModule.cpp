@@ -236,6 +236,8 @@ namespace{
     _symbolMap["this"] = SKEY_this;
   }
   
+  class NPLCompiler;
+  
   class Global{
   public:
     Global();
@@ -244,21 +246,21 @@ namespace{
     
     Function* getFunction(const nstr& f);
     
-    StructType* varType(){
-      return varType_;
-    }
+    void createFunction(const nstr& f, const nstr& mf);
+    
+    StructType* varType;
     
   private:
     LLVMContext& context_;
     Module module_;
     FunctionMap functionMap_;
-    StructType* varType_;
+    NPLCompiler* compiler_;
   };
   
   NBasicMutex _mutex;
   Global* _global;
   
-  Function* _globalFunc(const nstr& f){
+  Function* globalFunc(const nstr& f){
     return _global->getFunction(f);
   }
   
@@ -281,16 +283,33 @@ namespace{
         scopeMap_[s] = vp;
       }
     
+      void putTemp(Value* v){
+        assert(!tempMap_.hasKey(v));
+        tempMap_[v] = true;
+      }
+      
+      void claimTemp(Value* v){
+        auto itr = tempMap_.find(v);
+        assert(itr != tempMap_.end());
+        tempMap_.erase(itr);
+      }
+      
       void dealloc(NPLCompiler* compiler){
         for(auto& itr : scopeMap_){
           compiler->dealloc(itr.second);
+        }
+        
+        for(auto& itr : tempMap_){
+          compiler->dealloc(itr.first);
         }
       }
       
     private:
       typedef NMap<nstr, Value*> ScopeMap_;
+      typedef NMap<Value*, bool> TempMap_;
       
       ScopeMap_ scopeMap_;
+      TempMap_ tempMap_;
     };
     
     NPLCompiler(Module& module, FunctionMap& functionMap, ostream& estr)
@@ -346,7 +365,7 @@ namespace{
       Type* baseType;
       
       if(t.get("var", false)){
-        baseType = _global->varType();
+        baseType = _global->varType;
       }
       else if(isFloat){
         if(bits == 64){
@@ -544,6 +563,10 @@ namespace{
     }
     
     Value* convertNum(Value* from, Type* toType, bool trunc=true){
+      if(isVar(from)){
+        return from;
+      }
+      
       if(toType->isPointerTy()){
         toType = elementType(toType);
       }
@@ -576,9 +599,6 @@ namespace{
         else if(fromType->isFloatTy()){
           return trunc ? builder_.CreateFPToSI(from, toType, name.c_str()) : 0;
         }
-        else if(isVar(from)){
-          return from;
-        }
       }
       else if(toElementType->isDoubleTy()){
         if(IntegerType* fromIntType = dyn_cast<IntegerType>(fromElementType)){
@@ -594,9 +614,6 @@ namespace{
         }
         else if(fromElementType->isFloatTy()){
           return builder_.CreateFPExt(from, toType, name.c_str());
-        }
-        else if(isVar(from)){
-          return from;
         }
       }
       else if(toElementType->isFloatTy()){
@@ -614,66 +631,137 @@ namespace{
         else if(fromElementType->isFloatTy()){
           return from;
         }
-        else if(isVar(from)){
-          return from;
-        }
       }
       else if(isVar(toElementType)){
-        if(IntegerType* fromIntType = dyn_cast<IntegerType>(fromElementType)){
-          return convert(from, "long");
-        }
-        else if(fromElementType->isDoubleTy()){
-          return from;
-        }
-        else if(fromElementType->isFloatTy()){
-          return convert(from, "double");
-        }
-        else if(isVar(from)){
-          return from;
-        }
+        return toVar(from);
       }
       
       return 0;
     }
 
-    Value* toVar(Value* v){
+    Value* createVar_(Value* v, const nstr& name){
+      if(!v){
+        Value* ret = createAlloca("nvar", name);
+        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
+        createStore(t, getInt8(nvar::Undefined));
+        return ret;
+      }
+      
       Type* t = v->getType();
-      if(IntegerType* intType = dyn_cast<IntegerType>(t)){
-        Value* v = createAlloca("nvar", "var");
-        Value* h = builder_.CreateStructGEP(v, 0, "var.h");
-        Value* t = builder_.CreateStructGEP(v, 1, "var.t");
+      if(t->isIntegerTy()){
+        Value* ret = createAlloca("nvar", name);
+        Value* h = builder_.CreateStructGEP(ret, 0, "var.h");
+        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
         Value* vl = convert(v, "long");
         
         createStore(vl, h);
         createStore(getInt8(nvar::Integer), t);
-        return v;
+        return ret;
       }
       else if(t->isDoubleTy()){
-        Value* v = createAlloca("nvar", "var");
-        Value* h = builder_.CreateStructGEP(v, 0, "var.h");
+        Value* ret = createAlloca("nvar", name);
+        Value* h = builder_.CreateStructGEP(ret, 0, "var.h");
         h = builder_.CreateBitCast(h, type("double*"));
-        Value* t = builder_.CreateStructGEP(v, 1, "var.t");
+        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
         
         createStore(v, h);
         createStore(getInt8(nvar::Float), t);
-        return v;
+        return ret;
       }
       else if(t->isFloatTy()){
-        Value* v = createAlloca("nvar", "var");
-        Value* h = builder_.CreateStructGEP(v, 0, "var.h");
+        Value* ret = createAlloca("nvar", name);
+        Value* h = builder_.CreateStructGEP(ret, 0, "var.h");
         h = builder_.CreateBitCast(h, type("double*"));
-        Value* t = builder_.CreateStructGEP(v, 1, "var.t");
+        Value* t = builder_.CreateStructGEP(ret, 1, "var.t");
         
         Value* vd = convert(v, "double");
         createStore(vd, h);
         createStore(getInt8(nvar::Float), t);
-        return v;
+        return ret;
       }
-      else if(t == _global->varType()){
-        return v;
+      else if(VectorType* vt = dyn_cast<VectorType>(elementType(t))){
+        Type* et = elementType(t);
+        Value* n = getInt32(vectorLength(vt));
+        Value* ret = createAlloca("nvar", name);
+        if(IntegerType* intType = dyn_cast<IntegerType>(et)){
+          size_t bits = intType->getBitWidth();
+          switch(bits){
+            case 8:
+              globalCall("void nvar::nvar(nvar*, char*, int)", {ret, v, n});
+              return ret;
+            case 16:
+              globalCall("void nvar::nvar(nvar*, short*, int)", {ret, v, n});
+              return ret;
+            case 32:
+              globalCall("void nvar::nvar(nvar*, int*, int)", {ret, v, n});
+              return ret;
+            case 64:
+              globalCall("void nvar::nvar(nvar*, long*, int)", {ret, v, n});
+              return ret;
+            default:
+              assert(false);
+          }
+          return 0;
+        }
+        else if(et->isDoubleTy()){
+          globalCall("void nvar::nvar(nvar*, double*, int)", {ret, v, n});
+          return ret;
+        }
+        else if(et->isFloatTy()){
+          globalCall("void nvar::nvar(nvar*, float*, int)", {ret, v, n});
+          return ret;
+        }
+      }
+      else if(isVar(t)){
+        Value* ret = createAlloca("nvar", name);
+        globalCall("void nvar::nvar(nvar*, nvar*)", {ret, v});
+        return ret;
       }
       
       return 0;
+    }
+    
+    Value* toVar(Value* v, const nstr& name="var"){
+      if(isVar(v)){
+        return v;
+      }
+
+      Value* ret = createVar_(v, name);
+      if(ret){
+        putTemp(ret);
+        return ret;
+      }
+      return ret;
+    }
+
+    Value* create(const nstr& t, const nstr& name, Value* v=0){
+      return create(type(t), name, v);
+    }
+    
+    Value* create(const nvar& t, const nstr& name, Value* v=0){
+      return create(type(t), name, v);
+    }
+    
+    Value* create(Type* t, const nstr& name, Value* v=0){
+      if(isVar(t)){
+        return createVar(name, v);
+      }
+
+      Value* ret = createAlloca(t, name);
+      if(v){
+        store(ret, v);
+      }
+      
+      return ret;
+    }
+    
+    Value* createVar(const nstr& name="var", Value* v=0){
+      Value* ret = createVar_(v, "var");
+      if(ret){
+        putTemp(ret);
+        return ret;
+      }
+      return ret;
     }
     
     Value* convert(Value* from, const nstr& toType, bool trunc=true){
@@ -712,6 +800,10 @@ namespace{
       Type* e1 = elementType(t1);
       Type* e2 = elementType(t2);
       
+      if(isVar(e1) || isVar(e2)){
+        return {convert(v1, "nvar"), convert(v2, "nvar")};
+      }
+      
       Type* tn = 0;
       
       if(IntegerType* intType1 = dyn_cast<IntegerType>(e1)){
@@ -732,22 +824,18 @@ namespace{
         }
       }
       else if(e1->isDoubleTy()){
-        if(IntegerType* intType2 = dyn_cast<IntegerType>(e2)){
-          size_t bits2 = intType2->getBitWidth();
-          
+        if(e2->isIntegerTy()){
           tn = trunc ? t1 : 0;
         }
-        else if(e2->isDoubleTy() || e2->isFloatTy()){
+        else if(e2->isFloatingPointTy()){
           tn = t1;
         }
       }
       else if(e1->isFloatTy()){
-        if(IntegerType* intType2 = dyn_cast<IntegerType>(e2)){
-          size_t bit2 = intType2->getBitWidth();
-          
+        if(e2->isIntegerTy()){
           tn = trunc ? t2 : 0;
         }
-        else if(e2->isDoubleTy() || e2->isFloatTy()){
+        else if(e2->isFloatingPointTy()){
           tn = t2;
         }
       }
@@ -795,15 +883,20 @@ namespace{
       return vectorLength(v->getType());
     }
     
-    Value* getNumeric(const nvar& x, Value* v=0){
+    Value* getNumeric(const nvar& x, Value* v){
       return getNumeric(x, v ? v->getType() : 0);
     }
     
     Value* getNumeric(const nvar& x, const nstr& t){
       return getNumeric(x, type(t));
     }
+
+    Value* getNumeric(const nvar& x){
+      Type* t = 0;
+      return getNumeric(x, t);
+    }
     
-    Value* getNumeric(const nvar& x, Type* l=0){
+    Value* getNumeric(const nvar& x, Type* l){
       if(l){
         Type* t = elementType(l);
         if(IntegerType* it = dyn_cast<IntegerType>(t)){
@@ -819,10 +912,8 @@ namespace{
           return getInt1(false);
         case nvar::True:
           return getInt1(true);
-        case nvar::Integer:{
-          int64_t i = x.asLong();
-          return nvar::intBytes(i) > 32 ? getInt64(i) : getInt32(i);
-        }
+        case nvar::Integer:
+          return getInt64(x);
         case nvar::Float:
           return getDouble(x.asDouble());
         default:
@@ -929,62 +1020,45 @@ namespace{
       Type* t1 = v1->getType();
       Type* t2 = v2->getType();
       
+      if(isVar(t2)){
+        return add(v2, v1);
+      }
+      
       if(isVar(t1)){
-        if(isVar(t2)){
-          
+        Value* ret = createVar();
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator+(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
         }
-        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
-          
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator+(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
         }
-        else if(t2->isDoubleTy()){
-          
+
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
         }
-        else if(t2->isFloatTy()){
-          
-        }
+        
+        globalCall("void nvar::operator+(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
       }
-      else if(IntegerType* intType1 = dyn_cast<IntegerType>(t1)){
-        if(isVar(t2)){
-          
-        }
-        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
-          
-        }
-        else if(t2->isDoubleTy()){
-          
-        }
-        else if(t2->isFloatTy()){
-          
-        }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
       }
-      else if(t1->isDoubleTy()){
-        if(isVar(t2)){
-          
-        }
-        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
-          
-        }
-        else if(t2->isDoubleTy()){
-          
-        }
-        else if(t2->isFloatTy()){
-          
-        }
-      }
-      else if(t1->isFloatTy()){
-        if(isVar(t2)){
-          
-        }
-        else if(IntegerType* intType2 = dyn_cast<IntegerType>(t2)){
-          
-        }
-        else if(t2->isDoubleTy()){
-          
-        }
-        else if(t2->isFloatTy()){
-          
-        }
-      }
+      
+      return createAdd(v[0], v[1]);
     }
     
     Value* createSub(Value* v1, Value* v2){
@@ -1084,17 +1158,14 @@ namespace{
         
         if(dyn_cast<IntegerType>(t)){
           Value* vl = convert(v, "long");
-          globalCall("nvar.set.l", {ptr, vl});
+          globalCall("nvar* nvar::operator=(nvar*, long)", {ptr, vl});
         }
-        else if(t->isDoubleTy()){
-          globalCall("nvar.set.d", {ptr, v});
-        }
-        else if(t->isFloatTy()){
+        else if(t->isFloatingPointTy()){
           Value* vd = convert(v, "double");
-          globalCall("nvar.set.d", {ptr, vd});
+          globalCall("nvar* nvar::operator=(nvar*, double)", {ptr, vd});
         }
         else if(isVar(t)){
-          globalCall("nvar.set.v", {ptr, v});
+          globalCall("nvar* nvar::operator=(nvar*, nvar*)", {ptr, v});
         }
       }
       else{
@@ -1126,9 +1197,9 @@ namespace{
       return itr->second;
     }
     
-    Value* compile(const nvar& n, Value* lhs=0){
+    Value* compile(const nvar& n){
       if(n.isNumeric()){
-        return getNumeric(n, lhs);
+        return getNumeric(n);
       }
       else if(n.isSymbol()){
         SymbolKey key = getSymbolKey(n);
@@ -1165,21 +1236,21 @@ namespace{
       
       switch(key){
         case FKEY_Add_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          Value* l = compile(n[0]);
+          if(!l){
             return 0;
           }
           
-          return createAdd(v[0], v[1]);
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
+          }
+          
+          return add(l, r);
         }
         case FKEY_Sub_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1191,8 +1262,8 @@ namespace{
           return createSub(v[0], v[1]);
         }
         case FKEY_Mul_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1204,8 +1275,8 @@ namespace{
           return createMul(v[0], v[1]);
         }
         case FKEY_Div_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1217,8 +1288,8 @@ namespace{
           return createDiv(v[0], v[1]);
         }
         case FKEY_Mod_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1230,8 +1301,8 @@ namespace{
           return createRem(v[0], v[1]);
         }
         case FKEY_ShL_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1243,8 +1314,8 @@ namespace{
           return createShl(v[0], v[1]);
         }
         case FKEY_ShR_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1256,8 +1327,8 @@ namespace{
           return createLShr(v[0], v[1]);
         }
         case FKEY_BitAnd_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1269,8 +1340,8 @@ namespace{
           return createAnd(v[0], v[1]);
         }
         case FKEY_BitOr_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1282,8 +1353,8 @@ namespace{
           return createOr(v[0], v[1]);
         }
         case FKEY_BitXOr_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1296,7 +1367,7 @@ namespace{
         }
         case FKEY_Block_n:{
           if(n.empty()){
-            return getInt32(0);
+            return getInt64(0);
           }
           
           Value* rv;
@@ -1312,7 +1383,7 @@ namespace{
         }
         case FKEY_ScopedBlock_n:{
           if(n.empty()){
-            return getInt32(0);
+            return getInt64(0);
           }
          
           pushScope();
@@ -1331,41 +1402,33 @@ namespace{
           return ok ? rv : 0;
         }
         case FKEY_Local_1:{
-          Type* t = type(n[0]);
-          
           const nstr& s = n[0];
-          
-          Value* v = createAlloca(t, s);
 
-          if(isVar(t)){
-            globalCall("nvar.ctor", {v});
+          Value* v = create(n[0], s);
+          if(!v){
+            return 0;
           }
           
           putLocal(s, v);
-
-          return v;
+          
+          return getInt64(0);
         }
         case FKEY_Local_2:{
-          Type* t = type(n[0]);
-          
           const nstr& s = n[0];
-          
-          Value* v = createAlloca(t, s);
-          Value* r = compile(n[1], v);
+
+          Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
           
-          Value* rn = convert(r, v);
-          if(!rn){
-            error("invalid operands", n);
+          Value* v = create(n[0], s, r);
+          if(!v){
+            return 0;
           }
-          
-          store(rn, v);
           
           putLocal(s, v);
           
-          return v;
+          return getInt64(0);
         }
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
@@ -1373,23 +1436,14 @@ namespace{
             return 0;
           }
           
-          Value* r = compile(n[1], l);
+          Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
           
-          Value* rc = convert(r, l);
+          store(r, l);
           
-          dump(rc);
-          
-          if(!rc){
-            error("invalid operands", n);
-            return 0;
-          }
-          
-          store(rc, l);
-          
-          return getInt32(0);
+          return l;
         }
         case FKEY_AddBy_2:{
           Value* l = getLValue(n[0]);
@@ -1397,7 +1451,7 @@ namespace{
             return 0;
           }
           
-          Value* r = compile(n[1], l);
+          Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
@@ -1422,7 +1476,7 @@ namespace{
             return 0;
           }
           
-          Value* r = compile(n[1], l);
+          Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
@@ -1447,7 +1501,7 @@ namespace{
             return 0;
           }
           
-          Value* r = compile(n[1], l);
+          Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
@@ -1472,7 +1526,7 @@ namespace{
             return 0;
           }
           
-          Value* r = compile(n[1], l);
+          Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
@@ -1497,7 +1551,7 @@ namespace{
             return 0;
           }
           
-          Value* r = compile(n[1], l);
+          Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
@@ -1534,8 +1588,8 @@ namespace{
           return builder_.CreateSelect(rc, getInt1(0), getInt1(1), "not.out");
         }
         case FKEY_XOr_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1547,8 +1601,8 @@ namespace{
           return builder_.CreateXor(v[0], v[1], "xor.out");
         }
         case FKEY_And_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1560,8 +1614,8 @@ namespace{
           return builder_.CreateAnd(v[0], v[1], "and.out");
         }
         case FKEY_Or_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1573,8 +1627,8 @@ namespace{
           return builder_.CreateOr(v[0], v[1], "or.out");
         }
         case FKEY_EQ_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1591,8 +1645,8 @@ namespace{
           }
         }
         case FKEY_NE_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1609,8 +1663,8 @@ namespace{
           }
         }
         case FKEY_LT_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1630,8 +1684,8 @@ namespace{
           return builder_.CreateFCmpULT(v[0], v[1], "flt.out");
         }
         case FKEY_LE_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1651,8 +1705,8 @@ namespace{
           return builder_.CreateFCmpULE(v[0], v[1], "fle.out");
         }
         case FKEY_GT_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1672,8 +1726,8 @@ namespace{
           return builder_.CreateFCmpUGT(v[0], v[1], "fgt.out");
         }
         case FKEY_GE_2:{
-          Value* l = compile(n[0], lhs);
-          Value* r = compile(n[1], l);
+          Value* l = compile(n[0]);
+          Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
           
@@ -1730,7 +1784,7 @@ namespace{
           
           builder_.SetInsertPoint(mb);
           
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_If_3:{
           Value* cv = compile(n[0]);
@@ -1788,7 +1842,7 @@ namespace{
           
           builder_.SetInsertPoint(mb);
           
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_Select_3:{
           Value* cv = compile(n[0]);
@@ -1916,7 +1970,7 @@ namespace{
           loopContinue_ = 0;
           loopMerge_ = 0;
           
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_For_4:{
           Value* iv = compile(n[0]);
@@ -1969,7 +2023,7 @@ namespace{
           loopContinue_ = 0;
           loopMerge_ = 0;
           
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_Break_0:{
           if(!loopMerge_){
@@ -1977,7 +2031,7 @@ namespace{
           }
           
           builder_.CreateBr(loopMerge_);
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_Continue_0:{
           if(!loopContinue_){
@@ -1985,14 +2039,14 @@ namespace{
           }
           
           builder_.CreateBr(loopContinue_);
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_Ret_0:{
           builder_.CreateRetVoid();
           
           foundReturn_ = true;
           
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_Ret_1:{
           if(!rt_){
@@ -2021,7 +2075,7 @@ namespace{
           
           foundReturn_ = true;
           
-          return getInt32(0);
+          return getInt64(0);
         }
         case FKEY_Inc_1:{
           Value* l = getLValue(n[0]);
@@ -2123,7 +2177,7 @@ namespace{
             return 0;
           }
           
-          Value* zero = getInt32(0);
+          Value* zero = getInt64(0);
           ValueVec v = normalize(zero, vn);
           
           if(v.empty()){
@@ -2152,7 +2206,7 @@ namespace{
           
           ValueVec v;
           for(size_t i = 0; i < size; ++i){
-            v.push_back(getNumeric(n[i], lhs));
+            v.push_back(getNumeric(n[i]));
           }
                         
           VectorType* vt = VectorType::get(v[0]->getType(), size);
@@ -2191,7 +2245,7 @@ namespace{
           args.push_back(l);
           args.push_back(r);
           
-          return builder_.CreateCall(_globalFunc("llvm.pow.f64"),
+          return builder_.CreateCall(globalFunc("double pow(double)"),
                                      args.vector(), "pow");
         }
         case FKEY_Sqrt_1:{
@@ -2208,7 +2262,7 @@ namespace{
           ValueVec args;
           args.push_back(v);
           
-          return builder_.CreateCall(_globalFunc("llvm.sqrt.f64"),
+          return builder_.CreateCall(globalFunc("double sqrt(double)"),
                                      args.vector(), "sqrt");
         }
         case FKEY_Exp_1:{
@@ -2225,7 +2279,7 @@ namespace{
           ValueVec args;
           args.push_back(v);
           
-          return builder_.CreateCall(_globalFunc("llvm.exp.f64"),
+          return builder_.CreateCall(globalFunc("double exp(double)"),
                                      args.vector(), "exp");
         }
         case FKEY_Log_1:{
@@ -2242,7 +2296,7 @@ namespace{
           ValueVec args;
           args.push_back(v);
           
-          return builder_.CreateCall(_globalFunc("llvm.log.f64"),
+          return builder_.CreateCall(globalFunc("double log(double)"),
                                      args.vector(), "log");
         }
         case FKEY_Floor_1:
@@ -2294,11 +2348,11 @@ namespace{
           Value* sr;
           
           if(et->isDoubleTy()){
-            sr = builder_.CreateCall(_globalFunc("llvm.sqrt.f64"),
+            sr = builder_.CreateCall(globalFunc("double sqrt(double)"),
                                      args.vector(), "sqrt");
           }
           else{
-            sr = builder_.CreateCall(_globalFunc("llvm.sqrt.f32"),
+            sr = builder_.CreateCall(globalFunc("double sqrt(double)"),
                                      args.vector(), "sqrt");
           }
           
@@ -2343,11 +2397,11 @@ namespace{
           args.push_back(d);
           
           if(et->isDoubleTy()){
-            return builder_.CreateCall(_globalFunc("llvm.sqrt.f64"),
+            return builder_.CreateCall(globalFunc("double sqrt(double)"),
                                        args.vector(), "sqrt");
           }
 
-          return builder_.CreateCall(_globalFunc("llvm.sqrt.f32"),
+          return builder_.CreateCall(globalFunc("float sqrt(float)"),
                                      args.vector(), "sqrt");
         }
         case FKEY_DotProduct_2:{
@@ -2481,7 +2535,7 @@ namespace{
             
             if(f->getReturnType()->isVoidTy()){
               builder_.CreateCall(f, args.vector());
-              return getInt32(0);
+              return getInt64(0);
             }
             
             return builder_.CreateCall(f, args.vector(), name.c_str());
@@ -2509,7 +2563,7 @@ namespace{
             
             if(f->getReturnType()->isVoidTy()){
               builder_.CreateCall(f, {ap});
-              return getInt32(0);
+              return getInt64(0);
             }
 
             return builder_.CreateCall(f, {ap}, name.c_str());
@@ -2775,6 +2829,13 @@ namespace{
       scope->put(s, v);
     }
     
+    void putTemp(Value* v){
+      assert(!scopeStack_.empty());
+      
+      LocalScope* scope = scopeStack_.back();
+      scope->putTemp(v);
+    }
+    
     nvar& getInfo(Value* v){
       auto itr = infoMap_.find(v);
       
@@ -2805,7 +2866,7 @@ namespace{
     }
     
     bool isVar(Type* t){
-      return elementType(t) == _global->varType();
+      return elementType(t) == _global->varType;
     }
     
     bool isVar(Value* v){
@@ -2813,8 +2874,7 @@ namespace{
     }
     
     Value* globalCall(const nvar& c, const ValueVec& v){
-      Function* f = _globalFunc(c);
-      assert(f);
+      Function* f = globalFunc(c);
 
       Type* rt = f->getReturnType();
       
@@ -2868,55 +2928,81 @@ namespace{
     _initFunctionMap();
     _initSymbolMap();
     
-    NPLCompiler compiler(module_, functionMap_, cerr);
+    compiler_ = new NPLCompiler(module_, functionMap_, cerr);
     
-    functionMap_["llvm.sqrt.f64"] =
-    compiler.createFunction("llvm.sqrt.f64", "double", {"double"});
-    
-    functionMap_["llvm.sqrt.f32"] =
-    compiler.createFunction("llvm.sqrt.f32", "float", {"float"});
-    
-    functionMap_["llvm.pow.f64"] =
-    compiler.createFunction("llvm.pow.f64", "double", {"double", "double"});
-    
-    functionMap_["llvm.pow.f32"] =
-    compiler.createFunction("llvm.pow.f32", "float", {"float", "float"});
-    
-    functionMap_["llvm.log.f64"] =
-    compiler.createFunction("llvm.log.f64", "double", {"double"});
-    
-    functionMap_["llvm.log.f32"] =
-    compiler.createFunction("llvm.log.f32", "float", {"float"});
-    
-    functionMap_["llvm.exp.f64"] =
-    compiler.createFunction("llvm.exp.f64", "double", {"double"});
-    
-    functionMap_["llvm.exp.f32"] =
-    compiler.createFunction("llvm.exp.f32", "float", {"float"});
-
-    varType_ = compiler.createStructType("nvar", {"long", "char"});
+    varType = compiler_->createStructType("nvar", {"long", "char"});
   }
   
   void Global::init(){
-    NPLCompiler compiler(module_, functionMap_, cerr);
+    createFunction("double sqrt(double)",
+                   "llvm.sqrt.f64");
+
+    createFunction("float sqrt(float)",
+                   "llvm.sqrt.f32");
     
-    functionMap_["void nvar::~nvar()"] =
-    compiler.createFunction("_ZN3neu4nvarD1Ev", "void", {"nvar*"});
+    createFunction("double pow(double, double)",
+                   "llvm.pow.f64");
     
-    functionMap_["nvar* nvar::operator=(long)"] =
-    compiler.createFunction("_ZN3neu4nvaraSEx", "nvar*", {"nvar*", "long"});
+    createFunction("double log(double)",
+                   "llvm.sqrt.f64");
     
-    functionMap_["nvar* nvar::operator=(double)"] =
-    compiler.createFunction("_ZN3neu4nvaraSEd", "nvar*", {"nvar*", "double"});
+    createFunction("double exp(double)",
+                   "llvm.sqrt.f64");
     
-    functionMap_["nvar* nvar::operator=(nvar*)"] =
-    compiler.createFunction("_ZN3neu4nvaraSERKS0_", "nvar*", {"nvar*", "nvar*"});
+    createFunction("void nvar::nvar(nvar*, nvar*)",
+                   "_ZN3neu4nvarC1ERKS0_");
+
+    createFunction("void nvar::nvar(nvar*, char*, int)",
+                   "_ZN3neu4nvarC1EPai");
     
-    functionMap_["void nvar::operator+(nvar*, nvar*, long)"] =
-    compiler.createFunction("_ZNK3neu4nvarplEx", "void", {"nvar*", "nvar*", "long"});
+    createFunction("void nvar::nvar(nvar*, short*, int)",
+                   "_ZN3neu4nvarC1EPsi");
     
-    functionMap_["void nvar::operator+(nvar*, nvar*, double)"] =
-    compiler.createFunction("_ZNK3neu4nvarplEd", "void", {"nvar*", "nvar*", "double"});
+    createFunction("void nvar::nvar(nvar*, int*, int)",
+                   "_ZN3neu4nvarC1EPii");
+    
+    createFunction("void nvar::nvar(nvar*, long*, int)",
+                   "_ZN3neu4nvarC1EPxi");
+    
+    createFunction("void nvar::nvar(nvar*, float*, int)",
+                   "_ZN3neu4nvarC1EPfi");
+    
+    createFunction("void nvar::nvar(nvar*, double*, int)",
+                   "_ZN3neu4nvarC1EPdi");
+    
+    createFunction("void nvar::~nvar(nvar*)",
+                   "_ZN3neu4nvarD1Ev");
+    
+    createFunction("nvar* nvar::operator=(nvar*, long)",
+                   "_ZN3neu4nvaraSEx");
+    
+    createFunction("nvar* nvar::operator=(nvar*, double)",
+                   "_ZN3neu4nvaraSEd");
+    
+    createFunction("nvar* nvar::operator=(nvar*, nvar*)",
+                   "_ZN3neu4nvaraSERKS0_");
+    
+    createFunction("void nvar::operator+(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvarplEx");
+    
+    createFunction("void nvar::operator+(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvarplEd");
+
+    createFunction("void nvar::operator+(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvarplERKS0_");
+    
+    delete compiler_;
+  }
+  
+  void Global::createFunction(const nstr& fs, const nstr& mf){
+    nvar fv = nvar::parseFuncSpec(fs.c_str());
+    
+    Function* f =
+    compiler_->createFunction(mf,
+                              compiler_->type(fv["ret"]),
+                              compiler_->typeVec(fv["args"]));
+    
+    functionMap_[fs] = f;
   }
   
   Function* Global::getFunction(const nstr& f){

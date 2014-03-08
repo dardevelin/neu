@@ -598,6 +598,36 @@ namespace neu{
     : t_(Vector){
       h_.v = new nvec(std::move(v));
     }
+
+    nvar(int8_t* v, int32_t n)
+    : t_(Vector){
+      h_.v = new nvec(v, v + n);
+    }
+
+    nvar(int16_t* v, int32_t n)
+    : t_(Vector){
+      h_.v = new nvec(v, v + n);
+    }
+    
+    nvar(int32_t* v, int32_t n)
+    : t_(Vector){
+      h_.v = new nvec(v, v + n);
+    }
+    
+    nvar(int64_t* v, int32_t n)
+    : t_(Vector){
+      h_.v = new nvec(v, v + n);
+    }
+    
+    nvar(float* v, int32_t n)
+    : t_(Vector){
+      h_.v = new nvec(v, v + n);
+    }
+    
+    nvar(double* v, int32_t n)
+    : t_(Vector){
+      h_.v = new nvec(v, v + n);
+    }
     
     nvar(std::initializer_list<nvar> il)
     : t_(Vector){
@@ -6807,7 +6837,7 @@ namespace neu{
       }
     }
     
-    static nvar parseFuncSpec(const char* fs, bool types){
+    static nvar parseFuncSpec(const char* fs){
       nvar ret;
       
       nstr name;
@@ -6821,8 +6851,10 @@ namespace neu{
         switch(c){
           case '(':
             done = true;
+            ret("name") = name;
             break;
           case ' ':
+            ret("ret") = name;
             name = "";
             break;
           case '\0':
@@ -6835,19 +6867,17 @@ namespace neu{
 
         ++i;
       
-        if(types){
-          ret("ret") = name;
-        }
-        
         if(done){
           break;
         }
       }
-      
+    
       name.clear();
       
       size_t n = 0;
       bool first = true;
+      
+      done = false;
       
       for(;;){
         c = fs[i];
@@ -6858,11 +6888,14 @@ namespace neu{
             ret("args") << name;
             name = "";
             break;
+          case ' ':
+            break;
           case ')':
             if(!name.empty()){
               ret("args") << name;
               name = "";
             }
+            done = true;
             break;
           case '\0':
             NERROR("invalid func spec" + nstr(fs));
@@ -6879,10 +6912,12 @@ namespace neu{
             break;
         }
         
+        if(done){
+          break;
+        }
+        
         ++i;
       }
-      
-      ret << name << n;
       
       return ret;
     }
