@@ -131,6 +131,14 @@ void _forceNPLSymbols(){
   nvar x16;
   double y16 = 2;
   nvar z16 = x16 / y16;
+  
+  nvar x17;
+  int64_t y17 = 2;
+  nvar z17 = x17 % y17;
+  
+  nvar x18;
+  double y18 = 2;
+  nvar z18 = x18 % y18;
 }
 
 namespace{
@@ -1284,6 +1292,50 @@ namespace{
       return builder_.CreateFRem(v1, v2, "frem.out");
     }
     
+    Value* mod(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        Value* ret = createVar();
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator%(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
+        }
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator%(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
+        }
+        
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
+        }
+        
+        globalCall("void nvar::operator%(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
+      }
+      else if(isVar(t2)){
+        return mod(toVar(v1), v2);
+      }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
+      }
+      
+      return createRem(v[0], v[1]);
+    }
+    
     Value* createShl(Value* v1, Value* v2){
       Value* ret = builder_.CreateShl(v1, v2, "shl.out");
       if(isUnsigned(v1) && isUnsigned(v2)){
@@ -1472,16 +1524,16 @@ namespace{
         }
         case FKEY_Mod_2:{
           Value* l = compile(n[0]);
-          Value* r = compile(n[1]);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          if(!l){
             return 0;
           }
           
-          return createRem(v[0], v[1]);
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
+          }
+          
+          return mod(l, r);
         }
         case FKEY_ShL_2:{
           Value* l = compile(n[0]);
@@ -3200,6 +3252,15 @@ namespace{
     
     createFunction("void nvar::operator/(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvardvERKS0_");
+    
+    createFunction("void nvar::operator%(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvarrmEx");
+    
+    createFunction("void nvar::operator%(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvarrmEd");
+    
+    createFunction("void nvar::operator%(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvarrmERKS0_");
     
     delete compiler_;
   }
