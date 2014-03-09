@@ -808,9 +808,6 @@ namespace{
     }
 
     Value* createVar_(Value* v, const nstr& name){
-      cerr << "... creating with:" << endl;
-      v->dump();
-      
       if(!v){
         Value* ret = createAlloca("nvar", name);
         Value* t = createStructGEP(ret, 1, "t_");
@@ -3738,14 +3735,6 @@ namespace{
     Value* globalCall(const nvar& c, const ValueVec& v){
       Function* f = globalFunc(c);
 
-      cerr << "-------------" << endl;
-      f->dump();
-      cerr << "=============" << endl;
-      
-      for(Value* vi : v){
-        dump(vi);
-      }
-      
       Type* rt = f->getReturnType();
       
       if(rt->isVoidTy()){
