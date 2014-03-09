@@ -2856,14 +2856,9 @@ namespace{
             return 0;
           }
           
-          Value* r = getNumeric(1, l);
+          Value* v = addBy(l, getNumeric(1));
           
-          Value* lv = createLoad(l);
-          Value* o = createAdd(lv, r);
-          
-          store(o, l);
-          
-          return o;
+          return createLoad(v);
         }
         case FKEY_PostInc_1:{
           Value* l = getLValue(n[0]);
@@ -2871,14 +2866,11 @@ namespace{
             return 0;
           }
           
-          Value* r = getNumeric(1, l);
+          Value* vp = createLoad(l);
           
-          Value* lv = createLoad(l);
-          Value* o = createAdd(lv, r);
+          addBy(l, getNumeric(1));
           
-          store(o, l);
-          
-          return lv;
+          return vp;
         }
         case FKEY_Dec_1:{
           Value* l = getLValue(n[0]);
@@ -2886,14 +2878,9 @@ namespace{
             return 0;
           }
           
-          Value* r = getNumeric(1, l);
+          Value* v = subBy(l, getNumeric(1));
           
-          Value* lv = createLoad(l);
-          Value* o = createSub(lv, r);
-          
-          store(o, l);
-          
-          return o;
+          return createLoad(v);
         }
         case FKEY_PostDec_1:{
           Value* l = getLValue(n[0]);
@@ -2901,14 +2888,11 @@ namespace{
             return 0;
           }
           
-          Value* r = getNumeric(1, l);
+          Value* vp = createLoad(l);
           
-          Value* lv = createLoad(l);
-          Value* o = createSub(lv, r);
+          subBy(l, getNumeric(1));
           
-          store(o, l);
-          
-          return lv;
+          return vp;
         }
         case FKEY_Idx_2:{
           Value* v = compile(n[0]);
