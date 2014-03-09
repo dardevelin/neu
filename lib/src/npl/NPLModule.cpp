@@ -2025,19 +2025,19 @@ namespace{
             return 0;
           }
           
-          ValueVec v = normalize(r, getInt8(0), false);
-          if(v.empty()){
-            error("invalid operand", n[0]);
-            return 0;
-          }
+          Value* rc = convert(r, "long");
           
-          Value* rc = builder_.CreateICmpNE(v[0], v[1], "cmp.out");
+          Value* c = builder_.CreateICmpNE(rc, getInt64(0), "cmp.out");
           
-          return builder_.CreateSelect(rc, getInt1(0), getInt1(1), "not.out");
+          return builder_.CreateSelect(c, getInt1(0), getInt1(1), "not.out");
         }
         case FKEY_XOr_2:{
           Value* l = compile(n[0]);
           Value* r = compile(n[1]);
+          
+          if(isVar(l) || isVar(r)){
+            error("invalid operands", n);
+          }
           
           ValueVec v = normalize(l, r);
           
@@ -3525,6 +3525,32 @@ namespace{
     
     createFunction("nvar* nvar::operator%=(nvar*, nvar*)",
                    "_ZN3neu4nvarrMERKS0_");
+    
+    createFunction("nvar* nvar::operator%=(nvar*, nvar*)",
+                   "_ZN3neu4nvarrMERKS0_");
+    
+    createFunction("void nvar::operator!(nvar*, nvar*)",
+                   "_ZNK3neu4nvarntEv");
+    
+    createFunction("void nvar::operator&&(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvaraaERKS0_");
+    
+    createFunction("void nvar::operator||(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvarooERKS0_");
+    
+    createFunction("void nvar::operator==(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvareqERKS0_");
+    
+    createFunction("void nvar::operator!=(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvarneERKS0_");
+    
+    createFunction("void nvar::operator<(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvarltERKS0_");
+    
+    createFunction("void nvar::operator<=(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvarleERKS0_");
+    
+    
     
     delete compiler_;
   }
