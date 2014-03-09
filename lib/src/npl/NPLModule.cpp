@@ -2041,6 +2041,78 @@ namespace{
       return globalCall("double pow(double)", {v1, v2});
     }
     
+    Value* sqrt(Value* v){
+      if(isVar(v)){
+        Value* ret = createVar("sqrt");
+        
+        globalCall("void nvar::sqrt(nvar*, nvar*, void*)",
+                   {ret, v});
+        
+        return ret;
+      }
+      
+      v = convert(v, "double");
+      if(!v){
+        return 0;
+      }
+      
+      return globalCall("double sqrt(double)", {v});
+    }
+    
+    Value* exp(Value* v){
+      if(isVar(v)){
+        Value* ret = createVar("exp");
+        
+        globalCall("void nvar::exp(nvar*, nvar*, void*)",
+                   {ret, v});
+        
+        return ret;
+      }
+      
+      v = convert(v, "double");
+      if(!v){
+        return 0;
+      }
+      
+      return globalCall("double exp(double)", {v});
+    }
+    
+    Value* log(Value* v){
+      if(isVar(v)){
+        Value* ret = createVar("log");
+        
+        globalCall("void nvar::log(nvar*, nvar*, void*)",
+                   {ret, v});
+        
+        return ret;
+      }
+      
+      v = convert(v, "double");
+      if(!v){
+        return 0;
+      }
+      
+      return globalCall("double log(double)", {v});
+    }
+    
+    Value* floor(Value* v){
+      if(isVar(v)){
+        Value* ret = createVar("floor");
+        
+        globalCall("void nvar::floor(nvar*, nvar*, void*)",
+                   {ret, v});
+        
+        return ret;
+      }
+      
+      v = convert(v, "double");
+      if(!v){
+        return 0;
+      }
+      
+      return globalCall("double floor(double)", {v});
+    }
+    
     Value* createShl(Value* v1, Value* v2){
       Value* ret = builder_.CreateShl(v1, v2, "shl.out");
       if(isUnsigned(v1) && isUnsigned(v2)){
@@ -3064,17 +3136,8 @@ namespace{
           if(!v){
             return 0;
           }
-          
-          v = convert(v, "double");
-          if(!v){
-            return error("type mismatch", n[0]);
-          }
-          
-          ValueVec args;
-          args.push_back(v);
-          
-          return builder_.CreateCall(globalFunc("double sqrt(double)"),
-                                     args.vector(), "sqrt");
+
+          return sqrt(v);
         }
         case FKEY_Exp_1:{
           Value* v = compile(n[0]);
@@ -3082,33 +3145,15 @@ namespace{
             return 0;
           }
           
-          v = convert(v, "double");
-          if(!v){
-            return error("type mismatch", n[0]);
-          }
-          
-          ValueVec args;
-          args.push_back(v);
-          
-          return builder_.CreateCall(globalFunc("double exp(double)"),
-                                     args.vector(), "exp");
+          return exp(v);
         }
         case FKEY_Log_1:{
           Value* v = compile(n[0]);
           if(!v){
             return 0;
           }
-          
-          v = convert(v, "double");
-          if(!v){
-            return error("type mismatch", n[0]);
-          }
-          
-          ValueVec args;
-          args.push_back(v);
-          
-          return builder_.CreateCall(globalFunc("double log(double)"),
-                                     args.vector(), "log");
+
+          return log(v);
         }
         case FKEY_Floor_1:
         {
@@ -3117,7 +3162,7 @@ namespace{
             return 0;
           }
           
-          return convert(v, "int");
+          return floor(v);
         }
         case FKEY_Normalize_1:{
           Value* v = compile(n[0]);
@@ -3979,7 +4024,7 @@ namespace{
     createFunction("void nvar::log(nvar*, nvar*, void*)",
                    "_ZN3neu4nvar3logERKS0_PNS_7NObjectE");
     
-    createFunction("void nvar::pow(nvar*, nvar*, void*)",
+    createFunction("void nvar::floor(nvar*, nvar*, void*)",
                    "_ZN3neu4nvar5floorERKS0_");
     
     delete compiler_;
