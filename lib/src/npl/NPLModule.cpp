@@ -217,6 +217,18 @@ void _forceNPLSymbols(){
   b = x35 >= x35;
   b = x35 >= x36;
   b = x35 >= x37;
+  
+  nvar x38;
+  int x39 = 1;
+  nvar x40 = x38[x39];
+  
+  nvar x41;
+  nvar x42;
+  nvar x43 = x41[x42];
+  
+  size_t x44 = x41.size();
+  
+  nvar x45 = -x43;
 }
 
 namespace{
@@ -269,10 +281,8 @@ namespace{
     FKEY_Dec_1,
     FKEY_PostDec_1,
     FKEY_Idx_2,
-    FKEY_Len_1,
     FKEY_Size_1,
     FKEY_Neg_1,
-    FKEY_Inv_1,
     FKEY_Sqrt_1,
     FKEY_Pow_2,
     FKEY_Exp_1,
@@ -352,10 +362,8 @@ namespace{
     _functionMap[{"While", 2}] = FKEY_While_2;
     _functionMap[{"For", 4}] = FKEY_For_4;
     _functionMap[{"Idx", 2}] = FKEY_Idx_2;
-    _functionMap[{"Len", 1}] = FKEY_Len_1;
     _functionMap[{"Size", 1}] = FKEY_Size_1;
     _functionMap[{"Neg", 1}] = FKEY_Neg_1;
-    _functionMap[{"Inv", 1}] = FKEY_Inv_1;
     _functionMap[{"Sqrt", 1}] = FKEY_Sqrt_1;
     _functionMap[{"Pow", 2}] = FKEY_Pow_2;
     _functionMap[{"Exp", 1}] = FKEY_Exp_1;
@@ -1934,6 +1942,64 @@ namespace{
       return builder_.CreateFCmpUGE(v[0], v[1], "fge.out");
     }
     
+    Value* idx(Value* v1, Value* v2){
+      if(vectorLength(v1) > 0){
+        Value* i = convert(v2, "int");
+        
+        Value* vi = builder_.CreateExtractElement(v1, i);
+        
+        if(isUnsigned(vi)){
+          setUnsigned(vi);
+        }
+        
+        return vi;
+      }
+      
+      if(isVar(v1)){
+        if(isVar(v2)){
+          return globalCall("nvar* nvar::operator[](nvar*, nvar*)",
+                            {v1, v2});
+        }
+        else{
+          Value* i = convert(v2, "int");
+          if(!i){
+            return 0;
+          }
+          
+          return globalCall("nvar* nvar::operator[](nvar*, int)",
+                            {v1, i});
+        }
+      }
+      
+      return 0;
+    }
+    
+    Value* size(Value* v){
+      if(isVar(v)){
+        return globalCall("long nvar::size[](nvar*)",
+                          {v});
+      }
+      
+      return getUInt64(vectorLength(v));
+    }
+    
+    Value* neg(Value* v){
+      if(isVar(v)){
+        Value* ret = createVar("neg");
+        globalCall("void nvar::operator-(nvar*, nvar*)",
+                   {ret, v});
+        return ret;
+      }
+      
+      ValueVec vs = normalize(getInt64(0), v);
+      
+      if(vs.empty()){
+        return 0;
+      }
+      
+      return createSub(vs[0], vs[1]);
+    }
+    
     Value* createShl(Value* v1, Value* v2){
       Value* ret = builder_.CreateShl(v1, v2, "shl.out");
       if(isUnsigned(v1) && isUnsigned(v2)){
@@ -2688,7 +2754,7 @@ namespace{
             BasicBlock* b = BasicBlock::Create(context_, "case", func_);
             builder_.SetInsertPoint(b);
             
-            Value* cv = compile(c);
+            compile(c);
             builder_.CreateBr(loopMerge_);
             
             s->addCase(getInt64(k), b);
@@ -2896,74 +2962,36 @@ namespace{
         }
         case FKEY_Idx_2:{
           Value* v = compile(n[0]);
-          
-          if(vectorLength(v) == 0){
-            return error("not a vector", n[0]);
+          if(!v){
+            return 0;
           }
           
           Value* i = compile(n[1]);
           
-          if(!i){
-            return 0;
-          }
-          
-          i = convert(i, "int");
-          
-          Value* vi = builder_.CreateExtractElement(v, i);
-          
-          if(isUnsigned(v)){
-            setUnsigned(vi);
-          }
-          
-          return vi;
+          return idx(v, i);
         }
-        case FKEY_Len_1:
         case FKEY_Size_1:{
           Value* v = compile(n[0]);
           if(!v){
             return 0;
           }
           
-          Value* r = getUInt64(vectorLength(v));
-          
-          return r;
+          return size(v);
         }
         case FKEY_Neg_1:{
-          Value* vn = compile(n[0]);
-          if(!vn){
+          Value* v = compile(n[0]);
+          if(!v){
             return 0;
           }
           
-          Value* zero = getInt64(0);
-          ValueVec v = normalize(zero, vn);
-          
-          if(v.empty()){
-            return error("type mismatch", n[0]);
-          }
-          
-          return createSub(v[0], v[1]);
-        }
-        case FKEY_Inv_1:{
-          Value* vn = compile(n[0]);
-          if(!vn){
-            return 0;
-          }
-          
-          Value* one = getDouble(1);
-          ValueVec v = normalize(one, vn);
-          
-          if(v.empty()){
-            return error("type mismatch", n);
-          }
-          
-          return createDiv(v[0], v[1]);
+          return neg(v);
         }
         case FKEY_Vec_n:{
           size_t size = n.size();
           
           ValueVec v;
           for(size_t i = 0; i < size; ++i){
-            v.push_back(getNumeric(n[i]));
+            v.push_back(compile(n[i]));
           }
                         
           VectorType* vt = VectorType::get(v[0]->getType(), size);
@@ -3900,6 +3928,18 @@ namespace{
     
     createFunction("void nvar::operator>=(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvargeERKS0_");
+    
+    createFunction("nvar* nvar::operator[](nvar*, int)",
+                   "_ZN3neu4nvarixEi");
+    
+    createFunction("nvar* nvar::operator[](nvar*, nvar*)",
+                   "_ZN3neu4nvarixERKS0_");
+    
+    createFunction("long nvar::size(nvar*)",
+                   "_ZNK3neu4nvar4sizeEv");
+    
+    createFunction("void nvar::operator-(nvar*, nvar*)",
+                   "_ZNK3neu4nvarngEv");
     
     delete compiler_;
   }
