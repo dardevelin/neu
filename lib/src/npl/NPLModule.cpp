@@ -494,15 +494,11 @@ namespace{
       return tv;
     }
     
-    Type* type(const char* t){
-      return type(NPLParser::parseType(t));
-    }
-    
-    Type* type(const nstr& t){
-      return type(NPLParser::parseType(t));
-    }
-    
     Type* type(const nvar& t){
+      if(t.isString()){
+        return type(NPLParser::parseType(t));
+      }
+      
       size_t bits = t.get("bits", 0);
       size_t ptr = t.get("ptr", 0);
       
@@ -812,6 +808,9 @@ namespace{
     }
 
     Value* createVar_(Value* v, const nstr& name){
+      cerr << "... creating with:" << endl;
+      v->dump();
+      
       if(!v){
         Value* ret = createAlloca("nvar", name);
         Value* t = createStructGEP(ret, 1, "t_");
@@ -842,37 +841,44 @@ namespace{
         createStore(getInt8(nvar::Float), t);
         return ret;
       }
-      else if(VectorType* vt = dyn_cast<VectorType>(elementType(t))){
-        Type* et = elementType(t);
-        Value* n = getInt32(vectorLength(vt));
-        Value* ret = createAlloca("nvar", name);
-        if(IntegerType* intType = dyn_cast<IntegerType>(et)){
-          size_t bits = intType->getBitWidth();
-          switch(bits){
-            case 8:
-              globalCall("void nvar::nvar(nvar*, char*, int)", {ret, v, n});
-              return ret;
-            case 16:
-              globalCall("void nvar::nvar(nvar*, short*, int)", {ret, v, n});
-              return ret;
-            case 32:
-              globalCall("void nvar::nvar(nvar*, int*, int)", {ret, v, n});
-              return ret;
-            case 64:
-              globalCall("void nvar::nvar(nvar*, long*, int)", {ret, v, n});
-              return ret;
-            default:
-              NERROR("invalid vector integer type");
+      else if(t->isPointerTy()){
+        Type* pt = elementType(t);
+        
+        if(VectorType* vt = dyn_cast<VectorType>(pt)){
+          Type* et = elementType(vt);
+          Type* at = pointerType(et);
+          Value* vp = builder_.CreateBitCast(v, at);
+          Value* n = getInt32(vectorLength(vt));
+          Value* ret = createAlloca("nvar", name);
+        
+          if(IntegerType* intType = dyn_cast<IntegerType>(et)){
+            size_t bits = intType->getBitWidth();
+            switch(bits){
+              case 8:
+                globalCall("void nvar::nvar(nvar*, char*, int)", {ret, vp, n});
+                return ret;
+              case 16:
+                globalCall("void nvar::nvar(nvar*, short*, int)", {ret, vp, n});
+                return ret;
+              case 32:
+                globalCall("void nvar::nvar(nvar*, int*, int)", {ret, vp, n});
+                return ret;
+              case 64:
+                globalCall("void nvar::nvar(nvar*, long*, int)", {ret, vp, n});
+                return ret;
+              default:
+                NERROR("invalid vector integer type");
+            }
+            return 0;
           }
-          return 0;
-        }
-        else if(et->isDoubleTy()){
-          globalCall("void nvar::nvar(nvar*, double*, int)", {ret, v, n});
-          return ret;
-        }
-        else if(et->isFloatTy()){
-          globalCall("void nvar::nvar(nvar*, float*, int)", {ret, v, n});
-          return ret;
+          else if(et->isDoubleTy()){
+            globalCall("void nvar::nvar(nvar*, double*, int)", {ret, vp, n});
+            return ret;
+          }
+          else if(et->isFloatTy()){
+            globalCall("void nvar::nvar(nvar*, float*, int)", {ret, vp, n});
+            return ret;
+          }
         }
       }
       else if(isVar(t)){
@@ -1019,7 +1025,7 @@ namespace{
     }
     
     Type* elementType(Type* t){
-      if(SequentialType* st = dyn_cast<PointerType>(t)){
+      if(SequentialType* st = dyn_cast<SequentialType>(t)){
         return st->getElementType();
       }
       
@@ -2046,7 +2052,7 @@ namespace{
         Value* ret = createVar("sqrt");
         
         globalCall("void nvar::sqrt(nvar*, nvar*, void*)",
-                   {ret, v});
+                   {ret, v, null()});
         
         return ret;
       }
@@ -2064,7 +2070,7 @@ namespace{
         Value* ret = createVar("exp");
         
         globalCall("void nvar::exp(nvar*, nvar*, void*)",
-                   {ret, v});
+                   {ret, v, null()});
         
         return ret;
       }
@@ -2082,7 +2088,7 @@ namespace{
         Value* ret = createVar("log");
         
         globalCall("void nvar::log(nvar*, nvar*, void*)",
-                   {ret, v});
+                   {ret, v, null()});
         
         return ret;
       }
@@ -2100,7 +2106,7 @@ namespace{
         Value* ret = createVar("floor");
         
         globalCall("void nvar::floor(nvar*, nvar*, void*)",
-                   {ret, v});
+                   {ret, v, null()});
         
         return ret;
       }
@@ -2174,11 +2180,9 @@ namespace{
           Value* vd = convert(v, "double");
           globalCall("nvar* nvar::operator=(nvar*, double)", {ptr, vd});
         }
-        else if(isVar(t)){
-          dump(ptr);
-          dump(v);
-          globalCall("nvar* nvar::operator=(nvar*, nvar*)", {ptr, v});
-        }
+        
+        Value* vr = toVar(v);
+        globalCall("nvar* nvar::operator=(nvar*, nvar*)", {ptr, vr});
       }
       else{
         builder_.CreateStore(v, ptr);
@@ -3109,14 +3113,16 @@ namespace{
                         
           VectorType* vt = VectorType::get(v[0]->getType(), size);
           
-          Value* vr = createAlloca(vt, "vec");
-          vr = createLoad(vr);
+          Value* vp = createAlloca(vt, "vec");
+          Value* vr = createLoad(vp);
           
           for(size_t i = 0; i < size; ++i){
             vr = builder_.CreateInsertElement(vr, v[i], getInt32(i));
           }
           
-          return vr;
+          createStore(vr, vp);
+          
+          return vp;
         }
         case FKEY_Pow_2:{
           Value* l = compile(n[0]);
@@ -3732,6 +3738,14 @@ namespace{
     Value* globalCall(const nvar& c, const ValueVec& v){
       Function* f = globalFunc(c);
 
+      cerr << "-------------" << endl;
+      f->dump();
+      cerr << "=============" << endl;
+      
+      for(Value* vi : v){
+        dump(vi);
+      }
+      
       Type* rt = f->getReturnType();
       
       if(rt->isVoidTy()){
