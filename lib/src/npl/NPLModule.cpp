@@ -229,6 +229,15 @@ void _forceNPLSymbols(){
   size_t x44 = x41.size();
   
   nvar x45 = -x43;
+  
+  nvar x46;
+  nvar x47;
+  
+  nvar x48 = nvar::pow(x46, x47);
+  nvar x49 = nvar::sqrt(x46);
+  nvar x50 = nvar::exp(x46);
+  nvar x51 = nvar::log(x47);
+  nvar x52 = nvar::floor(x48);
 }
 
 namespace{
@@ -611,6 +620,11 @@ namespace{
       return 0;
     }
 
+    ConstantPointerNull* null(){
+      return
+      ConstantPointerNull::get(PointerType::get(Type::getInt8Ty(context_), 0));
+    }
+    
     Value* getDouble(double v){
       return ConstantFP::get(context_, APFloat(v));
     }
@@ -2000,6 +2014,33 @@ namespace{
       return createSub(vs[0], vs[1]);
     }
     
+    Value* pow(Value* v1, Value* v2){
+      if(isVar(v1) || isVar(v2)){
+        ValueVec v = normalize(v1, v2);
+        if(v.empty()){
+          return 0;
+        }
+        
+        Value* ret = createVar("pow");
+        globalCall("void nvar::pow(nvar*, nvar*, nvar*, void*)",
+                   {ret, v[0], v[1], null()});
+        
+        return ret;
+      }
+      
+      v1 = convert(v1, "double");
+      if(!v1){
+        return 0;
+      }
+      
+      v2 = convert(v1, "double");
+      if(!v2){
+        return 0;
+      }
+
+      return globalCall("double pow(double)", {v1, v2});
+    }
+    
     Value* createShl(Value* v1, Value* v2){
       Value* ret = builder_.CreateShl(v1, v2, "shl.out");
       if(isUnsigned(v1) && isUnsigned(v2)){
@@ -3011,27 +3052,12 @@ namespace{
             return 0;
           }
           
-          l = convert(l, "double");
-          if(!l){
-            return error("type mismatch", n[0]);
-          }
-          
           Value* r = compile(n[1]);
           if(!r){
             return 0;
           }
           
-          r = convert(r, "double");
-          if(!r){
-            return error("type mismatch", n[1]);
-          }
-          
-          ValueVec args;
-          args.push_back(l);
-          args.push_back(r);
-          
-          return builder_.CreateCall(globalFunc("double pow(double)"),
-                                     args.vector(), "pow");
+          return pow(l, r);
         }
         case FKEY_Sqrt_1:{
           Value* v = compile(n[0]);
@@ -3940,6 +3966,21 @@ namespace{
     
     createFunction("void nvar::operator-(nvar*, nvar*)",
                    "_ZNK3neu4nvarngEv");
+    
+    createFunction("void nvar::pow(nvar*, nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar3powERKS0_S2_PNS_7NObjectE");
+    
+    createFunction("void nvar::sqrt(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar4sqrtERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::exp(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar3expERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::log(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar3logERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::pow(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar5floorERKS0_");
     
     delete compiler_;
   }
