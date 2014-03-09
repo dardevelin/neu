@@ -5882,6 +5882,12 @@ namespace neu{
       }
     }
     
+    nvar keys() const{
+      nvec ks;
+      keys(ks);
+      return nvar(move(ks));
+    }
+    
     void allKeys(nvec& v) const{
       switch(t_){
         case Function:
@@ -5911,6 +5917,12 @@ namespace neu{
           h_.hsm->m->allKeys(v);
           break;
       }
+    }
+    
+    nvar allKeys() const{
+      nvec ks;
+      allKeys(ks);
+      return nvar(move(ks));
     }
     
     nvec::iterator begin(){
@@ -6976,99 +6988,99 @@ namespace neu{
     return ostr;
   }
   
-  inline bool operator<(double v1, const nvar& v2){
+  inline nvar operator<(double v1, const nvar& v2){
     return v2 > v1;
   }
   
-  inline bool operator<(int v1, const nvar& v2){
+  inline nvar operator<(int v1, const nvar& v2){
     return v2 > v1;
   }
   
-  inline bool operator<(long long v1, const nvar& v2){
+  inline nvar operator<(long long v1, const nvar& v2){
     return v2 > v1;
   }
 
-  inline bool operator<(unsigned long v1, const nvar& v2){
+  inline nvar operator<(unsigned long v1, const nvar& v2){
     return v2 > v1;
   }
   
-  inline bool operator<=(double v1, const nvar& v2){
+  inline nvar operator<=(double v1, const nvar& v2){
     return v2 >= v1;
   }
   
-  inline bool operator<=(int v1, const nvar& v2){
+  inline nvar operator<=(int v1, const nvar& v2){
     return v2 >= v1;
   }
   
-  inline bool operator<=(long long v1, const nvar& v2){
+  inline nvar operator<=(long long v1, const nvar& v2){
     return v2 >= v1;
   }
   
-  inline bool operator<=(unsigned long v1, const nvar& v2){
+  inline nvar operator<=(unsigned long v1, const nvar& v2){
     return v2 >= v1;
   }
   
-  inline bool operator>(double v1, const nvar& v2){
+  inline nvar operator>(double v1, const nvar& v2){
     return v2 < v1;
   }
   
-  inline bool operator>(int v1, const nvar& v2){
+  inline nvar operator>(int v1, const nvar& v2){
     return v2 < v1;
   }
   
-  inline bool operator>(long long v1, const nvar& v2){
+  inline nvar operator>(long long v1, const nvar& v2){
     return v2 < v1;
   }
   
-  inline bool operator>(unsigned long v1, const nvar& v2){
+  inline nvar operator>(unsigned long v1, const nvar& v2){
     return v2 < v1;
   }
   
-  inline bool operator>=(double v1, const nvar& v2){
+  inline nvar operator>=(double v1, const nvar& v2){
     return v2 <= v1;
   }
   
-  inline bool operator>=(int v1, const nvar& v2){
+  inline nvar operator>=(int v1, const nvar& v2){
     return v2 <= v1;
   }
   
-  inline bool operator>=(long long v1, const nvar& v2){
+  inline nvar operator>=(long long v1, const nvar& v2){
     return v2 <= v1;
   }
   
-  inline bool operator>=(unsigned long v1, const nvar& v2){
+  inline nvar operator>=(unsigned long v1, const nvar& v2){
     return v2 <= v1;
   }
   
-  inline bool operator==(double v1, const nvar& v2){
+  inline nvar operator==(double v1, const nvar& v2){
     return v2 == v1;
   }
   
-  inline bool operator==(int v1, const nvar& v2){
+  inline nvar operator==(int v1, const nvar& v2){
     return v2 == v1;
   }
   
-  inline bool operator==(long long v1, const nvar& v2){
+  inline nvar operator==(long long v1, const nvar& v2){
     return v2 == v1;
   }
   
-  inline bool operator==(unsigned long v1, const nvar& v2){
+  inline nvar operator==(unsigned long v1, const nvar& v2){
     return v2 == v1;
   }
   
-  inline bool operator!=(double v1, const nvar& v2){
+  inline nvar operator!=(double v1, const nvar& v2){
     return v2 != v1;
   }
   
-  inline bool operator!=(int v1, const nvar& v2){
+  inline nvar operator!=(int v1, const nvar& v2){
     return v2 != v1;
   }
   
-  inline bool operator!=(long long v1, const nvar& v2){
+  inline nvar operator!=(long long v1, const nvar& v2){
     return v2 != v1;
   }
   
-  inline bool operator!=(unsigned long v1, const nvar& v2){
+  inline nvar operator!=(unsigned long v1, const nvar& v2){
     return v2 != v1;
   }
   
