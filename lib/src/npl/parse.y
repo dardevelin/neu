@@ -49,15 +49,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
+
+#include <string>
+#include <iostream>
   
-  #include <string>
-  #include <iostream>
+#include "NPLParser_.h"
+#include "parse.h"
   
-  #include "NPLParser_.h"
-  #include "parse.h"
-  
-  using namespace std;
-  using namespace neu;
+using namespace std;
+using namespace neu;
   
 %}
 
@@ -69,7 +69,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE FLOAT
 
-%type<v> stmt expr expr_num func_def args block stmts if_stmt exprs classes case_stmts case_stmt case_label case_labels
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args block stmts if_stmt classes case_stmts case_stmt case_label case_labels
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -138,17 +138,11 @@ expr: expr_num {
 | IDENTIFIER {
   $$ = PS->sym($1);
 }
-| IDENTIFIER '[' expr ']' {
-  $$ = PS->func("Idx") << PS->sym($1) << move($3);
-}
 | '&' IDENTIFIER {
   $$ = PS->func("Ptr") << PS->sym($2);
 }
 | '*' IDENTIFIER {
   $$ = PS->func("DePtr") << PS->sym($2);
-}
-| '(' expr ')' {
-  $$ = move($2);
 }
 | KW_TRUE {
   $$ = PS->var(true);
@@ -254,7 +248,7 @@ expr: expr_num {
 | expr '&' expr {
   $$ = PS->func("BitAnd") << move($1) << move($3);
 }
-| IDENTIFIER '(' exprs ')' {
+| IDENTIFIER '(' args ')' {
   nvar c = PS->func($1);
   c.append($3);
   
@@ -265,12 +259,55 @@ expr: expr_num {
     $$ = PS->func("Call") << move(c);
   }
 }
-| '{' exprs '}' {
+| '{' args '}' {
   $$ = PS->func("Vec");
   $$.append($2);
 }
 | expr '?' expr ':' expr  {
   $$ = PS->func("Select") << move($1) << move($3) << move($5);
+}
+| '[' exprs ']' {
+  $$ = move($2);
+}
+| '[' ':' expr ',' exprs ']' {
+  $$ = move($5);
+  $$.setHead($3);
+}
+| '[' '|' multi_exprs ']' {
+  $$ = move($3);
+}
+| '[' '|' ':' expr ',' multi_exprs ']' {
+  $$ = move($6);
+  $$.setHead($4);
+}
+| '(' expr_list ')' {
+  if($2.size() == 1){
+    $$ = move($2[0]);
+  }
+  else{
+    $$ = move($2);
+  }
+}
+| '(' expr_list ',' ')' {
+  $$ = move($2);
+}
+| '(' ':' expr ',' expr_list ')' {
+  $$ = move($5);
+  $$.setHead($3);
+}
+| '(' '|' multi_expr_list ')' {
+  $$ = move($3);
+}
+| '(' '|' multi_expr_list ',' ')' {
+  $$ = move($3);
+}
+| '(' '|' ':' expr ',' multi_expr_list ')' {
+  $$ = move($6);
+  $$.setHead($4);
+}
+| IDENTIFIER gets {
+  $$ = undef;
+  PS->handleGet(PS->sym($1), $2, $$);
 }
 ;
 
@@ -296,6 +333,12 @@ args: /* empty */ {
 }
 ;
 
+expr_map: expr ':' expr {
+  $$ = nvec();
+  $$ << move($1) << move($3);
+}
+;
+
 exprs: /* empty */ {
   $$ = nvec();
 }
@@ -304,7 +347,105 @@ exprs: /* empty */ {
   $$ << move($3);
 }
 | expr {
-  $$ = nvec() << move($1);
+  $$ = nvec();
+  $$ << move($1);
+}
+| expr_map {
+  $$ = undef;
+  $$($1[0]) = move($1[1]);
+}
+| exprs ',' expr_map {
+  $$ = move($1);
+  $$($3[0]) = move($3[1]);
+}
+;
+
+multi_exprs: /* empty */ {
+  $$ = nvec();
+  $$.touchMultimap();
+}
+| multi_exprs ',' expr {
+  $$ = move($1);
+  $$ << move($3);
+}
+| expr {
+  $$ = nvec();
+  $$.touchMultimap();
+  $$ << move($1);
+}
+| expr_map {
+  $$ = undef;
+  $$.touchMultimap();
+  $$($1[0]) = move($1[1]);
+}
+| multi_exprs ',' expr_map {
+  $$ = move($1);
+  $$($3[0]) = move($3[1]);
+}
+;
+
+expr_list: /* empty */ {
+  $$ = nlist();
+}
+| expr_list ',' expr {
+  $$ = move($1);
+  $$ << $3;
+}
+| expr {
+  $$ = nlist();
+  $$ << $1;
+}
+| expr_map {
+  $$($1[0]) = move($1[1]);
+}
+| expr_list ',' expr_map {
+  $$ = move($1);
+  $$($3[0]) = move($3[1]);
+}
+;
+
+multi_expr_list: /* empty */ {
+  $$ = nlist();
+  $$.touchMultimap();
+}
+| multi_expr_list ',' expr {
+  $$ = move($1);
+  $$ << move($3);
+}
+| expr {
+  $$ = nlist();
+  $$.touchMultimap();
+  $$ << move($1);
+}
+| expr_map {
+  $$ = nlist();
+  $$.touchMultimap();
+  $$($1[0]) = move($1[1]);
+}
+| multi_expr_list ',' expr_map {
+  $$ = move($1);
+  $$($3[0]) = move($3[1]);
+}
+;
+
+get: '[' expr ']' {
+  $$ = PS->func("Idx") << move($2);
+}
+| '.' IDENTIFIER {
+  $$ = PS->func("Dot") << PS->sym($2);
+}
+| '.' '(' expr ')' {
+  $$ = PS->func("Dot") << move($3);
+}
+;
+
+gets: gets get {
+  $$ = move($1);
+  $$ << move($2);
+}
+| get {
+  $$ = nvec();
+  $$ << move($1);
 }
 ;
 

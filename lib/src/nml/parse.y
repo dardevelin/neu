@@ -50,14 +50,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
   
-  #include <string>
-  #include <iostream>
+#include <string>
+#include <iostream>
   
-  #include "NMLParser_.h"
-  #include "parse.h"
+#include "NMLParser_.h"
+#include "parse.h"
   
-  using namespace std;
-  using namespace neu;
+using namespace std;
+using namespace neu;
   
 %}
 
@@ -69,7 +69,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW ENDL DOUBLE INTEGER REAL
 
-%type<v> stmt expr expr_num expr_map expr_vec expr_multi_vec expr_list expr_multi_list get_item get_vec func func_vec block stmts
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -220,17 +220,17 @@ expr: expr_num {
 | expr OR expr {
   $$ = PS->func("Or") << move($1) << move($3);
 }
-| '[' expr_vec ']' {
+| '[' exprs ']' {
   $$ = move($2);
 }
-| '[' ':' expr ',' expr_vec ']' {
+| '[' ':' expr ',' exprs ']' {
   $$ = move($5);
   $$.setHead($3);
 }
-| '[' '|' expr_multi_vec '|' ']' {
+| '[' '|' multi_exprs ']' {
   $$ = move($3);
 }
-| '[' '|' ':' expr ',' expr_multi_vec '|' ']' {
+| '[' '|' ':' expr ',' multi_exprs ']' {
   $$ = move($6);
   $$.setHead($4);
 }
@@ -249,17 +249,17 @@ expr: expr_num {
   $$ = move($5);
   $$.setHead($3);
 }
-| '(' '|' expr_multi_list '|' ')' {
+| '(' '|' multi_expr_list ')' {
   $$ = move($3);
 }
-| '(' '|' expr_multi_list ',' ')' {
+| '(' '|' multi_expr_list ',' ')' {
   $$ = move($3);
 }
-| '(' '|' ':' expr ',' expr_multi_list ')' {
+| '(' '|' ':' expr ',' multi_expr_list ')' {
   $$ = move($6);
   $$.setHead($4);
 }
-| IDENTIFIER get_vec {
+| IDENTIFIER gets {
   $$ = undef;
   PS->handleGet(PS->sym($1), $2, $$);
 }
@@ -284,10 +284,10 @@ expr_map: expr ':' expr {
   $$ << move($1) << move($3);
 }
 
-expr_vec: /* empty */ {
+exprs: /* empty */ {
   $$ = nvec();
 }
-| expr_vec ',' expr {
+| exprs ',' expr {
   $$ = move($1);
   $$ << move($3);
 }
@@ -299,17 +299,17 @@ expr_vec: /* empty */ {
   $$ = undef;
   $$($1[0]) = move($1[1]);
 }
-| expr_vec ',' expr_map {
+| exprs ',' expr_map {
   $$ = move($1);
   $$($3[0]) = move($3[1]);
 }
 ;
 
-expr_multi_vec: /* empty */ {
+multi_exprs: /* empty */ {
   $$ = nvec();
   $$.touchMultimap();
 }
-| expr_multi_vec ',' expr {
+| multi_exprs ',' expr {
   $$ = move($1);
   $$ << move($3);
 }
@@ -323,7 +323,7 @@ expr_multi_vec: /* empty */ {
   $$.touchMultimap();
   $$($1[0]) = move($1[1]);
 }
-| expr_multi_vec ',' expr_map {
+| multi_exprs ',' expr_map {
   $$ = move($1);
   $$($3[0]) = move($3[1]);
 }
@@ -349,11 +349,11 @@ expr_list: /* empty */ {
 }
 ;
 
-expr_multi_list: /* empty */ {
+multi_expr_list: /* empty */ {
   $$ = nlist();
   $$.touchMultimap();
 }
-| expr_multi_list ',' expr {
+| multi_expr_list ',' expr {
   $$ = move($1);
   $$ << move($3);
 }
@@ -367,22 +367,22 @@ expr_multi_list: /* empty */ {
   $$.touchMultimap();
   $$($1[0]) = move($1[1]);
 }
-| expr_multi_list ',' expr_map {
+| multi_expr_list ',' expr_map {
   $$ = move($1);
   $$($3[0]) = move($3[1]);
 }
 ;
 
-func: IDENTIFIER '(' func_vec ')' {
+func: IDENTIFIER '(' args ')' {
   $$ = PS->func($1);
   $$.append($3);
 }
 ;
 
-func_vec: /* empty */ {
+args: /* empty */ {
   $$ = undef;
 }
-| func_vec ',' expr {
+| args ',' expr {
   $$ = move($1);
   $$ << move($3);
 }
@@ -416,7 +416,7 @@ stmts: stmts stmt {
 }
 ;
 
-get_item: '[' expr ']' {
+get: '[' expr ']' {
   $$ = PS->func("Idx") << move($2);
 }
 | '.' IDENTIFIER {
@@ -438,11 +438,11 @@ get_item: '[' expr ']' {
 }
 ;
 
-get_vec: get_vec get_item {
+gets: gets get {
   $$ = move($1);
   $$ << move($2);
 }
-| get_item {
+| get {
   $$ = nvec();
   $$ << move($1);
 }

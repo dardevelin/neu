@@ -230,7 +230,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       if(found){
         ostr << "[|";
         ostr << sstr.str();
-        ostr << "|]";
+        ostr << "]";
       }
       else{
         ostr << "undef";
@@ -272,12 +272,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       }
       
       if(found){
-        if(mm){
-          ostr << "|]";
-        }
-        else{
-          ostr << "]";
-        }
+        ostr << "]";
       }
       break;
     }
@@ -315,20 +310,10 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       }
       
       if(vec){
-        if(mm){
-          ostr << "|]";
-        }
-        else{
-          ostr << "]";
-        }
+        ostr << "]";
       }
       else{
-        if(mm){
-          ostr << "|)";
-        }
-        else{
-          ostr << ")";
-        }
+        ostr << ")";
       }
       break;
     }
@@ -367,20 +352,10 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
       }
       
       if(vec){
-        if(mm){
-          ostr << "|]";
-        }
-        else{
-          ostr << "]";
-        }
+        ostr << "]";
       }
       else{
-        if(mm){
-          ostr << "|)";
-        }
-        else{
-          ostr << ")";
-        }
+        ostr << ")";
       }
       break;
     }
