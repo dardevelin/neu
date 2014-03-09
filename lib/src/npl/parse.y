@@ -447,8 +447,8 @@ get: '[' expr ']' {
 | '.' IDENTIFIER {
   $$ = PS->func("Dot") << PS->sym($2);
 }
-| '.' '(' expr ')' {
-  $$ = PS->func("Dot") << move($3);
+| '{' expr '}' {
+  $$ = PS->func("Put") << move($2);
 }
 ;
 

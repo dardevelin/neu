@@ -238,6 +238,12 @@ void _forceNPLSymbols(){
   nvar x50 = nvar::exp(x46);
   nvar x51 = nvar::log(x47);
   nvar x52 = nvar::floor(x48);
+  
+  nvar x53;
+  x53("a") = 9;
+  x53(x52) = 10;
+  
+  nvar x54("b");
 }
 
 namespace{
@@ -312,7 +318,8 @@ namespace{
     FKEY_Call_1,
     FKEY_Ptr_1,
     FKEY_DePtr_1,
-    FKEY_Float_1
+    FKEY_Float_1,
+    FKEY_Put_2
   };
   
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionKeyMap;
@@ -394,6 +401,7 @@ namespace{
     _functionMap[{"Ptr", 1}] = FKEY_Ptr_1;
     _functionMap[{"DePtr", 1}] = FKEY_DePtr_1;
     _functionMap[{"Float", 1}] = FKEY_Float_1;
+    _functionMap[{"Put", 2}] = FKEY_Put_2;
   }
   
   static void _initSymbolMap(){
@@ -681,6 +689,14 @@ namespace{
       return vi;
     }
 
+    Value* getString(const nstr& str){
+      Value* gs = builder_.CreateGlobalStringPtr(str.c_str());
+      return builder_.CreateBitCast(gs, type("char*"));
+      
+      //Value* a = ConstantDataArray::getString(context_, str.c_str());
+      //return builder_.CreateBitCast(a, type("char*"));
+    }
+    
     void deleteVar(Value* v){
       globalCall("void nvar::~nvar(nvar*)", {v});
     }
@@ -703,18 +719,15 @@ namespace{
         return 0;
       }
       
-      if(!n.isFunction()){
-        error("expected an l-value", n);
+      Value* v = compile(n);
+      
+      if(!v){
         return 0;
       }
       
-      FunctionKey key = getFunctionKey(n);
-      
-      switch(key){
-        // ndm - implement
-      }
-      
-      return 0;
+      assert(v->getType()->isPointerTy());
+
+      return v;
     }
   
     Value* convertNum(Value* from, Value* to, bool trunc=true){
@@ -841,7 +854,12 @@ namespace{
       else if(t->isPointerTy()){
         Type* pt = elementType(t);
         
-        if(VectorType* vt = dyn_cast<VectorType>(pt)){
+        if(pt->isIntegerTy(8)){
+          Value* ret = createAlloca("nvar", name);
+          globalCall("void nvar::nvar(nvar*, char*)", {ret, v});
+          return ret;
+        }
+        else if(VectorType* vt = dyn_cast<VectorType>(pt)){
           Type* et = elementType(vt);
           Type* at = pointerType(et);
           Value* vp = builder_.CreateBitCast(v, at);
@@ -1027,6 +1045,14 @@ namespace{
       }
       
       return t;
+    }
+    
+    bool isString(Value* v){
+      return isString(v->getType());
+    }
+    
+    bool isString(Type* t){
+      return t->isPointerTy() && elementType(t)->isIntegerTy(8);
     }
     
     size_t vectorLength(VectorType* vt){
@@ -2238,6 +2264,9 @@ namespace{
         error("undefined symbol", n);
         
         return 0;
+      }
+      else if(n.isString()){
+        return getString(n);
       }
       else if(!n.isFunction()){
         error("invalid input", n);
@@ -3461,6 +3490,31 @@ namespace{
 
           return compile(f);
         }
+        case FKEY_Put_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          
+          if(isString(r)){
+            return globalCall("nvar* nvar::put(nvar*, char*)",
+                              {l, r});
+          }
+          
+          Value* rc = toVar(r);
+          if(!rc){
+            return 0;
+          }
+          
+          return globalCall("nvar* nvar::put(nvar*, nvar*)",
+                            {l, rc});
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
@@ -3568,7 +3622,7 @@ namespace{
       // ndm - debug
       module_.dump();
       
-      return foundError_;
+      return !foundError_;
     }
     
     Function* createPrototype(const nstr& className, const nvar& f){
@@ -3810,6 +3864,9 @@ namespace{
     
     createFunction("void nvar::nvar(nvar*, nvar*)",
                    "_ZN3neu4nvarC1ERKS0_");
+    
+    createFunction("void nvar::nvar(nvar*, char*)",
+                   "_ZN3neu4nvarC1EPKc");
 
     createFunction("void nvar::nvar(nvar*, char*, int)",
                    "_ZN3neu4nvarC1EPai");
@@ -4029,6 +4086,12 @@ namespace{
     
     createFunction("void nvar::floor(nvar*, nvar*, void*)",
                    "_ZN3neu4nvar5floorERKS0_");
+
+    createFunction("nvar* nvar::put(nvar*, char*)",
+                   "_ZN3neu4nvarclEPKc");
+    
+    createFunction("nvar* nvar::put(nvar*, nvar*)",
+                   "_ZN3neu4nvarclERKS0_");
     
     delete compiler_;
   }
