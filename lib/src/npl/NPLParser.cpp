@@ -107,6 +107,7 @@ namespace{
       builtinMap_({"normalize", 1}) = "Normalize";
       builtinMap_({"dot", 2}) = "DotProduct";
       builtinMap_({"cross", 2}) = "CrossProduct";
+      builtinMap_({"pushBack", 1}) = "PushBack";
     }
     
     bool isReservedName(const nstr& name) const{

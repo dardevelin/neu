@@ -85,6 +85,7 @@ using namespace neu;
 %left '^'
 %right '!' '~'
 %right INC DEC
+%left '.'
 
 %%
 
@@ -449,6 +450,13 @@ get: '[' expr ']' {
 }
 | '{' expr '}' {
   $$ = PS->func("Put") << move($2);
+}
+| '.' IDENTIFIER '(' args ')' {
+  $$ = PS->func($2);
+  $$.append($4);
+  if(!PS->handleBuiltin($$)){
+    $$ = PS->func("In") << move($$);
+  }
 }
 ;
 

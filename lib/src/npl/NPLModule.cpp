@@ -244,6 +244,10 @@ void _forceNPLSymbols(){
   x53(x52) = 10;
   
   nvar x54("b");
+  
+  nvar x55 = 9;
+  nvar x56;
+  x56.pushBack(x55);
 }
 
 namespace{
@@ -319,7 +323,8 @@ namespace{
     FKEY_Ptr_1,
     FKEY_DePtr_1,
     FKEY_Float_1,
-    FKEY_Put_2
+    FKEY_Put_2,
+    FKEY_PushBack_2
   };
   
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionKeyMap;
@@ -402,6 +407,7 @@ namespace{
     _functionMap[{"DePtr", 1}] = FKEY_DePtr_1;
     _functionMap[{"Float", 1}] = FKEY_Float_1;
     _functionMap[{"Put", 2}] = FKEY_Put_2;
+    _functionMap[{"PushBack", 2}] = FKEY_PushBack_2;
   }
   
   static void _initSymbolMap(){
@@ -732,6 +738,39 @@ namespace{
   
     Value* convertNum(Value* from, Value* to, bool trunc=true){
       return convertNum(from, to->getType(), trunc);
+    }
+    
+    Value* completeVar(Value* h, const nvar& v){
+      nvec keys;
+      v.keys(keys);
+
+      if(keys.size() == 0 && v.empty()){
+        return h;
+      }
+      
+      Value* vc = toVar(h);
+      
+      for(size_t i = 0; i < v.size(); ++i){
+        pushBack(vc, toVar(compile(v[i])));
+      }
+      
+      for(const nvar& k : keys){
+        const nvar& vk = v[k];
+        
+        Value* kv;
+
+        if(vk.isSymbol()){
+          kv = getString(vk);
+        }
+        else{
+          kv = compile(k);
+        }
+        
+        Value* p = put(vc, kv);
+        store(compile(vk), p);
+      }
+      
+      return vc;
     }
     
     Value* convertNum(Value* from, Type* toType, bool trunc=true){
@@ -2142,6 +2181,26 @@ namespace{
       return globalCall("double floor(double)", {v});
     }
     
+    Value* put(Value* l, Value* r){
+      if(isString(r)){
+        return globalCall("nvar* nvar::put(nvar*, char*)",
+                          {l, r});
+      }
+      
+      Value* rc = toVar(r);
+      if(!rc){
+        return 0;
+      }
+      
+      return globalCall("nvar* nvar::put(nvar*, nvar*)",
+                        {l, rc});
+    }
+    
+    void pushBack(Value* l, Value* r){
+      globalCall("void nvar::pushBack(nvar*, nvar*)",
+                 {l, r});
+    }
+    
     Value* createShl(Value* v1, Value* v2){
       Value* ret = builder_.CreateShl(v1, v2, "shl.out");
       if(isUnsigned(v1) && isUnsigned(v2)){
@@ -2235,10 +2294,12 @@ namespace{
 
       return itr->second;
     }
-    
+
     Value* compile(const nvar& n){
       if(n.isNumeric()){
-        return getNumeric(n);
+        Value* v = getNumeric(n);
+        v = completeVar(v, n);
+        return v;
       }
       else if(n.isSymbol()){
         SymbolKey key = getSymbolKey(n);
@@ -2266,12 +2327,14 @@ namespace{
         return 0;
       }
       else if(n.isString()){
-        return getString(n);
+        Value* v = getString(n);
+        v = completeVar(v, n);
+        return v;
       }
       else if(!n.isFunction()){
-        error("invalid input", n);
-        
-        return 0;
+        Value* v = createVar();
+        v = completeVar(v, n);
+        return v;
       }
       
       FunctionKey key = getFunctionKey(n);
@@ -3502,18 +3565,29 @@ namespace{
           
           Value* r = compile(n[1]);
           
-          if(isString(r)){
-            return globalCall("nvar* nvar::put(nvar*, char*)",
-                              {l, r});
-          }
-          
-          Value* rc = toVar(r);
-          if(!rc){
+          return put(l, r);
+        }
+        case FKEY_PushBack_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
             return 0;
           }
           
-          return globalCall("nvar* nvar::put(nvar*, nvar*)",
-                            {l, rc});
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          
+          if(!r){
+            return 0;
+          }
+          
+          Value* rc = toVar(r);
+          
+          pushBack(l, rc);
+
+          return getInt64(0);
         }
         default:
           func_->dump();
@@ -4092,6 +4166,9 @@ namespace{
     
     createFunction("nvar* nvar::put(nvar*, nvar*)",
                    "_ZN3neu4nvarclERKS0_");
+    
+    createFunction("void nvar::pushBack(nvar*, nvar*)",
+                   "_ZN3neu4nvar8pushBackERKS0_");
     
     delete compiler_;
   }
