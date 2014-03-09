@@ -1628,6 +1628,312 @@ namespace{
       return l;
     }
   
+    Value* eq(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        Value* ret = createVar("eq");
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator==(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
+        }
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator==(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
+        }
+        
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
+        }
+        
+        globalCall("void nvar::operator==(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
+      }
+      else if(isVar(t2)){
+        return eq(v2, v1);
+      }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
+      }
+      
+      if(isIntegral(v[0])){
+        return builder_.CreateICmpEQ(v[0], v[1], "eq.out");
+      }
+      else{
+        return builder_.CreateFCmpUEQ(v[0], v[1], "feq.out");
+      }
+    }
+    
+    Value* ne(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        Value* ret = createVar("ne");
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator!=(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
+        }
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator!=(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
+        }
+        
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
+        }
+        
+        globalCall("void nvar::operator!=(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
+      }
+      else if(isVar(t2)){
+        return ne(v2, v1);
+      }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
+      }
+      
+      if(isIntegral(v[0])){
+        return builder_.CreateICmpNE(v[0], v[1], "ne.out");
+      }
+      else{
+        return builder_.CreateFCmpUNE(v[0], v[1], "fne.out");
+      }
+    }
+    
+    Value* lt(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        Value* ret = createVar("lt");
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator<(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
+        }
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator<(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
+        }
+        
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
+        }
+        
+        globalCall("void nvar::operator<(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
+      }
+      else if(isVar(t2)){
+        return gt(v2, v1);
+      }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
+      }
+      
+      if(isIntegral(v[0])){
+        if(isUnsigned(v[0]) && isUnsigned(v[1])){
+          return builder_.CreateICmpULT(v[0], v[1], "lt.out");
+        }
+        
+        return builder_.CreateICmpSLT(v[0], v[1], "lt.out");
+      }
+      
+      return builder_.CreateFCmpULT(v[0], v[1], "flt.out");
+    }
+    
+    Value* le(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        Value* ret = createVar("le");
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator<=(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
+        }
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator<=(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
+        }
+        
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
+        }
+        
+        globalCall("void nvar::operator<=(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
+      }
+      else if(isVar(t2)){
+        return ge(v2, v1);
+      }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
+      }
+      
+      if(isIntegral(v[0])){
+        if(isUnsigned(v[0]) && isUnsigned(v[1])){
+          return builder_.CreateICmpULE(v[0], v[1], "le.out");
+        }
+        
+        return builder_.CreateICmpSLE(v[0], v[1], "le.out");
+      }
+      
+      return builder_.CreateFCmpULE(v[0], v[1], "fle.out");
+    }
+    
+    Value* gt(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        Value* ret = createVar("gt");
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator>(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
+        }
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator>(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
+        }
+        
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
+        }
+        
+        globalCall("void nvar::operator>(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
+      }
+      else if(isVar(t2)){
+        return lt(v2, v1);
+      }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
+      }
+      
+      if(isIntegral(v[0])){
+        if(isUnsigned(v[0]) && isUnsigned(v[1])){
+          return builder_.CreateICmpUGT(v[0], v[1], "gt.out");
+        }
+        
+        return builder_.CreateICmpSGT(v[0], v[1], "gt.out");
+      }
+      
+      return builder_.CreateFCmpUGT(v[0], v[1], "fgt.out");
+    }
+    
+    Value* ge(Value* v1, Value* v2){
+      Type* t1 = v1->getType();
+      Type* t2 = v2->getType();
+      
+      if(isVar(t1)){
+        Value* ret = createVar("ge");
+        
+        if(t2->isIntegerTy()){
+          Value* vl = convert(v2, "long");
+          globalCall("void nvar::operator>=(nvar*, nvar*, long)",
+                     {ret, v1, vl});
+          return ret;
+        }
+        else if(t2->isFloatingPointTy()){
+          Value* vd = convert(v2, "double");
+          globalCall("void nvar::operator>=(nvar*, nvar*, double)",
+                     {ret, v1, vd});
+          return ret;
+        }
+        
+        Value* v = toVar(v2);
+        
+        if(!v){
+          return 0;
+        }
+        
+        globalCall("void nvar::operator>=(nvar*, nvar*, nvar*)",
+                   {ret, v1, v});
+        
+        return ret;
+      }
+      else if(isVar(t2)){
+        return le(v2, v1);
+      }
+      
+      ValueVec v = normalize(v1, v2);
+      
+      if(v.empty()){
+        return 0;
+      }
+      
+      if(isIntegral(v[0])){
+        if(isUnsigned(v[0]) && isUnsigned(v[1])){
+          return builder_.CreateICmpUGE(v[0], v[1], "ge.out");
+        }
+        
+        return builder_.CreateICmpSGE(v[0], v[1], "ge.out");
+      }
+      
+      return builder_.CreateFCmpUGE(v[0], v[1], "fge.out");
+    }
+    
     Value* createShl(Value* v1, Value* v2){
       Value* ret = builder_.CreateShl(v1, v2, "shl.out");
       if(isUnsigned(v1) && isUnsigned(v2)){
@@ -2055,12 +2361,20 @@ namespace{
         }
         case FKEY_Not_1:{
           Value* r = compile(n[0]);
-          
+
           if(!r){
             return 0;
           }
           
+          if(isVar(r)){
+            return globalCall("void nvar::operator!(nvar*, nvar*)", {r});
+          }
+          
           Value* rc = convert(r, "long");
+          
+          if(!rc){
+            return 0;
+          }
           
           Value* c = builder_.CreateICmpNE(rc, getInt64(0), "cmp.out");
           
@@ -2088,10 +2402,16 @@ namespace{
           Value* r = compile(n[1]);
           
           ValueVec v = normalize(l, r);
-          
+
           if(v.empty()){
             error("invalid operands", n);
             return 0;
+          }
+          
+          if(isVar(v[0])){
+            Value* ret = createVar();
+            return globalCall("void nvar::operator&&(nvar*, nvar*, nvar*)",
+                              {ret, v[0], v[1]});
           }
           
           return builder_.CreateAnd(v[0], v[1], "and.out");
@@ -2107,127 +2427,97 @@ namespace{
             return 0;
           }
           
+          if(isVar(v[0])){
+            Value* ret = createVar();
+            return globalCall("void nvar::operator||(nvar*, nvar*, nvar*)",
+                              {ret, v[0], v[1]});
+          }
+          
           return builder_.CreateOr(v[0], v[1], "or.out");
         }
         case FKEY_EQ_2:{
           Value* l = compile(n[0]);
-          Value* r = compile(n[1]);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          if(!l){
             return 0;
           }
           
-          if(isIntegral(v[0])){
-            return builder_.CreateICmpEQ(v[0], v[1], "eq.out");
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
           }
-          else{
-            return builder_.CreateFCmpUEQ(v[0], v[1], "feq.out");
-          }
+          
+          return eq(l, r);
         }
         case FKEY_NE_2:{
           Value* l = compile(n[0]);
-          Value* r = compile(n[1]);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          if(!l){
             return 0;
           }
           
-          if(isIntegral(v[0])){
-            return builder_.CreateICmpNE(v[0], v[1], "ne.out");
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
           }
-          else{
-            return builder_.CreateFCmpUNE(v[0], v[1], "fne.out");
-          }
+          
+          return ne(l, r);
         }
         case FKEY_LT_2:{
           Value* l = compile(n[0]);
-          Value* r = compile(n[1]);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          if(!l){
             return 0;
           }
           
-          if(isIntegral(v[0])){
-            if(isUnsigned(v[0]) && isUnsigned(v[1])){
-              return builder_.CreateICmpULT(v[0], v[1], "lt.out");
-            }
-            
-            return builder_.CreateICmpSLT(v[0], v[1], "lt.out");
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
           }
           
-          return builder_.CreateFCmpULT(v[0], v[1], "flt.out");
+          return lt(l, r);
         }
         case FKEY_LE_2:{
           Value* l = compile(n[0]);
-          Value* r = compile(n[1]);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          if(!l){
             return 0;
           }
           
-          if(isIntegral(v[0])){
-            if(isUnsigned(v[0]) && isUnsigned(v[1])){
-              return builder_.CreateICmpULE(v[0], v[1], "le.out");
-            }
-            
-            return builder_.CreateICmpSLE(v[0], v[1], "le.out");
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
           }
           
-          return builder_.CreateFCmpULE(v[0], v[1], "fle.out");
+          return le(l, r);
         }
         case FKEY_GT_2:{
           Value* l = compile(n[0]);
-          Value* r = compile(n[1]);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          if(!l){
             return 0;
           }
           
-          if(isIntegral(v[0])){
-            if(isUnsigned(v[0]) && isUnsigned(v[1])){
-              return builder_.CreateICmpUGT(v[0], v[1], "gt.out");
-            }
-            
-            return builder_.CreateICmpSGT(v[0], v[1], "gt.out");
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
           }
-
-          return builder_.CreateFCmpUGT(v[0], v[1], "fgt.out");
+          
+          return gt(l, r);
         }
         case FKEY_GE_2:{
           Value* l = compile(n[0]);
-          Value* r = compile(n[1]);
-          
-          ValueVec v = normalize(l, r);
-          
-          if(v.empty()){
-            error("invalid operands", n);
+          if(!l){
             return 0;
           }
           
-          if(isIntegral(v[0])){
-            if(isUnsigned(v[0]) && isUnsigned(v[1])){
-              return builder_.CreateICmpUGE(v[0], v[1], "ge.out");
-            }
-            
-            return builder_.CreateICmpSGE(v[0], v[1], "ge.out");
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return 0;
           }
           
-          return builder_.CreateFCmpUGE(v[0], v[1], "fge.out");
+          return ge(l, r);
         }
         case FKEY_If_2:
         {
