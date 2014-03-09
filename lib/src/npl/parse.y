@@ -69,7 +69,7 @@ using namespace neu;
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE FLOAT
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args block stmts if_stmt classes case_stmts case_stmt case_label case_labels
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args params block stmts if_stmt classes case_stmts case_stmt case_label case_labels
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -311,17 +311,17 @@ expr: expr_num {
 }
 ;
 
-func_def: TYPE IDENTIFIER '(' args ')' {
+func_def: TYPE IDENTIFIER '(' params ')' {
   nvar f = PS->func($2);
   f.append($4);
   $$ = PS->func("TypedFunc") << move($1) << move(f);
 }
 ;
 
-args: /* empty */ {
+params: /* empty */ {
   $$ = undef;
 }
-| args ',' TYPE IDENTIFIER {
+| params ',' TYPE IDENTIFIER {
   $$ = move($1);
   $3.setHead(PS->sym($4));
   $$ << move($3);
@@ -329,6 +329,19 @@ args: /* empty */ {
 | TYPE IDENTIFIER {
   $$ = undef;
   $1.setHead(PS->sym($2));
+  $$ << move($1);
+}
+;
+
+args: /* empty */ {
+  $$ = nvec();
+}
+| args ',' expr {
+  $$ = move($1);
+  $$ << move($3);
+}
+| expr {
+  $$ = nvec();
   $$ << move($1);
 }
 ;
