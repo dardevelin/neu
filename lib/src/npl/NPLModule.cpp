@@ -182,6 +182,41 @@ void _forceNPLSymbols(){
   nvar x30;
   double y30 = 2;
   x30 %= y30;
+  
+  nvar x31 = 2;
+  nvar x32 = !x31;
+  
+  nvar x33 = x31 && x32;
+  nvar x34 = x31 || x32;
+  
+  nvar x35 = 2;
+  int64_t x36 = 9;
+  double x37 = 3;
+  bool b;
+  
+  b = x35 == x35;
+  b = x35 == x36;
+  b = x35 == x37;
+  
+  b = x35 != x35;
+  b = x35 != x36;
+  b = x35 != x37;
+  
+  b = x35 < x35;
+  b = x35 < x36;
+  b = x35 < x37;
+  
+  b = x35 <= x35;
+  b = x35 <= x36;
+  b = x35 <= x37;
+  
+  b = x35 > x35;
+  b = x35 > x36;
+  b = x35 > x37;
+  
+  b = x35 >= x35;
+  b = x35 >= x36;
+  b = x35 >= x37;
 }
 
 namespace{
@@ -3538,19 +3573,59 @@ namespace{
     createFunction("void nvar::operator||(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvarooERKS0_");
     
+    createFunction("void nvar::operator==(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvareqEx");
+    
+    createFunction("void nvar::operator==(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvareqEd");
+    
     createFunction("void nvar::operator==(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvareqERKS0_");
+
+    createFunction("void nvar::operator!=(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvarneEx");
+    
+    createFunction("void nvar::operator!=(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvarneEd");
     
     createFunction("void nvar::operator!=(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvarneERKS0_");
     
+    createFunction("void nvar::operator<(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvarltEx");
+    
+    createFunction("void nvar::operator<(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvarltEd");
+    
     createFunction("void nvar::operator<(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvarltERKS0_");
+    
+    createFunction("void nvar::operator<=(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvarleEx");
+    
+    createFunction("void nvar::operator<=(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvarleEd");
     
     createFunction("void nvar::operator<=(nvar*, nvar*, nvar*)",
                    "_ZNK3neu4nvarleERKS0_");
     
+    createFunction("void nvar::operator>(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvargtEx");
     
+    createFunction("void nvar::operator>(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvargtEd");
+    
+    createFunction("void nvar::operator>(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvargtERKS0_");
+    
+    createFunction("void nvar::operator>=(nvar*, nvar*, long)",
+                   "_ZNK3neu4nvargeEx");
+    
+    createFunction("void nvar::operator>=(nvar*, nvar*, double)",
+                   "_ZNK3neu4nvargeEd");
+    
+    createFunction("void nvar::operator>=(nvar*, nvar*, nvar*)",
+                   "_ZNK3neu4nvargeERKS0_");
     
     delete compiler_;
   }
