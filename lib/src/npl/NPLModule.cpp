@@ -3459,7 +3459,12 @@ namespace{
             return error("invalid operand[0]", n);
           }
 
-          return sqrt(v);
+          Value* ret = sqrt(v);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Exp_1:{
           Value* v = compile(n[0]);
@@ -3467,7 +3472,12 @@ namespace{
             return error("invalid operand[0]", n);
           }
           
-          return exp(v);
+          Value* ret = exp(v);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Log_1:{
           Value* v = compile(n[0]);
@@ -3475,7 +3485,12 @@ namespace{
             return error("invalid operand[0]", n);
           }
 
-          return log(v);
+          Value* ret = log(v);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Floor_1:
         {
@@ -3484,7 +3499,12 @@ namespace{
             return error("invalid operand[0]", n);
           }
           
-          return floor(v);
+          Value* ret = floor(v);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Normalize_1:{
           Value* v = compile(n[0]);
@@ -3787,12 +3807,20 @@ namespace{
           }
           
           if(!isVar(l)){
-            return error("invalid operand[1]", n);
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
-          return put(l, r);
+          Value* ret = put(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_PushBack_2:{
           Value* l = getLValue(n[0]);
@@ -3801,11 +3829,10 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
-          
           if(!r){
             return error("invalid operand[1]", n);
           }
@@ -3823,7 +3850,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
 
           return globalCall("void nvar::touchMultimap(nvar*)", {l});
@@ -3835,7 +3862,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           return globalCall("void nvar::touchList(nvar*)", {l});
@@ -3847,7 +3874,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* ret = createVar("keys");
@@ -3860,7 +3887,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
@@ -3879,7 +3906,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* ret = createVar("popBack");
@@ -3892,7 +3919,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);;
           }
           
           Value* ret = createVar("popFront");
@@ -3905,7 +3932,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
@@ -3924,7 +3951,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* i = compile(n[1]);
@@ -3950,7 +3977,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           return globalCall("void nvar::clear(nvar*)", {l});
@@ -3962,7 +3989,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           return globalCall("bool nvar::empty(nvar*)", {l});
@@ -3974,7 +4001,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* ret = createVar("back");
@@ -3987,12 +4014,12 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return r;
+            return error("invalid operand[1]", n);
           }
           
           Value* rv = toVar(r);
@@ -4007,7 +4034,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
@@ -4034,7 +4061,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
@@ -4053,6 +4080,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("cos");
           
@@ -4065,6 +4095,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("acos");
           
@@ -4077,6 +4110,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("cosh");
           
@@ -4089,6 +4125,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("sin");
           
@@ -4101,6 +4140,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("asin");
           
@@ -4113,6 +4155,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("sinh");
           
@@ -4125,6 +4170,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("tan");
           
@@ -4137,6 +4185,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("atan");
           
@@ -4149,6 +4200,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           Value* ret = createVar("tanh");
           
@@ -4161,7 +4215,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
@@ -4170,6 +4224,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           return globalCall("void nvar::merge(nvar*, nvar*)", {l, rv});
         }
@@ -4180,7 +4237,7 @@ namespace{
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("not a var[0]", n);
           }
           
           Value* r = compile(n[1]);
@@ -4189,6 +4246,9 @@ namespace{
           }
           
           Value* rv = toVar(r);
+          if(!rv){
+            error("not a var[0]", n);
+          }
           
           return globalCall("void nvar::outerMerge(nvar*, nvar*)", {l, rv});
         }
