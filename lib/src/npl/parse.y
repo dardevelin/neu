@@ -454,7 +454,7 @@ get: '[' expr ']' {
 | '.' IDENTIFIER '(' args ')' {
   $$ = PS->func($2);
   $$.append($4);
-  if(!PS->handleBuiltin($$)){
+  if(!PS->handleVarBuiltin($$)){
     $$ = PS->func("In") << move($$);
   }
 }

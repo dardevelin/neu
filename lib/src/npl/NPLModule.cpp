@@ -248,6 +248,40 @@ void _forceNPLSymbols(){
   nvar x55 = 9;
   nvar x56;
   x56.pushBack(x55);
+  
+  nvar x;
+  nvar y;
+  
+  x.touchMultimap();
+  x.touchList();
+  x.toBool();
+  
+  nvar ks1 = x.keys();
+  
+  x.pushFront(y);
+  nvar b9 = x.popBack();
+  nvar f = x.popFront();
+  
+  bool hk = x.hasKey(y);
+  x.insert(0, y);
+  x.clear();
+  bool ep = x.empty();
+  nvar b2 = x.back();
+  nvar g = x.get(y);
+  nvar g2 = x.get(y, g);
+  x.erase(b);
+  nvar c1 = nvar::cos(x);
+  c1 = nvar::acos(x);
+  c1 = nvar::cosh(x);
+  c1 = nvar::sin(x);
+  c1 = nvar::asin(x);
+  c1 = nvar::sinh(x);
+  c1 = nvar::tan(x);
+  c1 = nvar::atan(x);
+  c1 = nvar::tanh(x);
+  
+  x.merge(y);
+  x.outerMerge(y);
 }
 
 namespace{
@@ -324,7 +358,32 @@ namespace{
     FKEY_DePtr_1,
     FKEY_Float_1,
     FKEY_Put_2,
-    FKEY_PushBack_2
+    FKEY_PushBack_2,
+    FKEY_TouchMultimap_1,
+    FKEY_TouchList_1,
+    FKEY_Keys_1,
+    FKEY_PushFront_2,
+    FKEY_PopBack_1,
+    FKEY_PopFront_1,
+    FKEY_HasKey_2,
+    FKEY_Insert_3,
+    FKEY_Clear_1,
+    FKEY_Empty_1,
+    FKEY_Back_1,
+    FKEY_Get_2,
+    FKEY_Get_3,
+    FKEY_Erase_2,
+    FKEY_Cos_1,
+    FKEY_Acos_1,
+    FKEY_Cosh_1,
+    FKEY_Sin_1,
+    FKEY_Asin_1,
+    FKEY_Sinh_1,
+    FKEY_Tan_1,
+    FKEY_Atan_1,
+    FKEY_Tanh_1,
+    FKEY_Merge_2,
+    FKEY_OuterMerge_2
   };
   
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionKeyMap;
@@ -408,6 +467,31 @@ namespace{
     _functionMap[{"Float", 1}] = FKEY_Float_1;
     _functionMap[{"Put", 2}] = FKEY_Put_2;
     _functionMap[{"PushBack", 2}] = FKEY_PushBack_2;
+    _functionMap[{"TouchMultimap", 1}] = FKEY_TouchMultimap_1;
+    _functionMap[{"TouchList", 1}] = FKEY_TouchList_1;
+    _functionMap[{"Keys", 1}] = FKEY_Keys_1;
+    _functionMap[{"PushFront", 2}] = FKEY_PushFront_2;
+    _functionMap[{"PopBack", 1}] = FKEY_PopBack_1;
+    _functionMap[{"PopFront", 1}] = FKEY_PopFront_1;
+    _functionMap[{"HasKey", 2}] = FKEY_HasKey_2;
+    _functionMap[{"Insert", 3}] = FKEY_Insert_3;
+    _functionMap[{"Clear", 1}] = FKEY_Clear_1;
+    _functionMap[{"Empty", 1}] = FKEY_Empty_1;
+    _functionMap[{"Back", 1}] = FKEY_Back_1;
+    _functionMap[{"Get", 2}] = FKEY_Get_2;
+    _functionMap[{"Get", 3}] = FKEY_Get_3;
+    _functionMap[{"Erase", 2}] = FKEY_Erase_2;
+    _functionMap[{"Cos", 1}] = FKEY_Cos_1;
+    _functionMap[{"Acos", 1}] = FKEY_Acos_1;
+    _functionMap[{"Cosh", 1}] = FKEY_Cosh_1;
+    _functionMap[{"Sin", 1}] = FKEY_Sin_1;
+    _functionMap[{"Asin", 1}] = FKEY_Asin_1;
+    _functionMap[{"Sinh", 1}] = FKEY_Sinh_1;
+    _functionMap[{"Tan", 1}] = FKEY_Tan_1;
+    _functionMap[{"Atan", 1}] = FKEY_Atan_1;
+    _functionMap[{"Tanh", 1}] = FKEY_Tanh_1;
+    _functionMap[{"Merge", 2}] = FKEY_Merge_2;
+    _functionMap[{"OuterMerge", 2}] = FKEY_OuterMerge_2;
   }
   
   static void _initSymbolMap(){
@@ -3589,6 +3673,382 @@ namespace{
 
           return getInt64(0);
         }
+        case FKEY_TouchMultimap_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+
+          return globalCall("void nvar::touchMultimap(nvar*)", {l});
+        }
+        case FKEY_TouchList_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          return globalCall("void nvar::touchList(nvar*)", {l});
+        }
+        case FKEY_Keys_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* ret = createVar("keys");
+          return globalCall("void nvar::keys(nvar*, nvar*)", {ret, l});
+        }
+        case FKEY_PushFront_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          return globalCall("void nvar::pushFront(nvar*, nvar*)", {l, rv});
+        }
+        case FKEY_PopBack_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* ret = createVar("popBack");
+          return globalCall("void nvar::popBack(nvar*, nvar*)", {ret, l});
+        }
+        case FKEY_PopFront_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* ret = createVar("popFront");
+          return globalCall("void nvar::popFront(nvar*, nvar*)", {ret, l});
+        }
+        case FKEY_HasKey_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          return globalCall("bool nvar::hasKey(nvar*, nvar*)", {l, rv});
+        }
+        case FKEY_Insert_3:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* i = compile(n[1]);
+          if(!i){
+            return 0;
+          }
+          
+          i = convert(i, "long");
+          
+          Value* r = compile(n[2]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          return globalCall("void nvar::insert(nvar*, long, nvar*)", {l, i, rv});
+        }
+        case FKEY_Clear_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          return globalCall("void nvar::clear(nvar*)", {l});
+        }
+        case FKEY_Empty_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          return globalCall("bool nvar::empty(nvar*)", {l});
+        }
+        case FKEY_Back_1:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* ret = createVar("back");
+          return globalCall("void nvar::back(nvar*, nvar*)", {ret, l});
+        }
+        case FKEY_Get_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("get");
+          return globalCall("void nvar::get(nvar*, nvar*, nvar*)", {ret, l, rv});
+        }
+        case FKEY_Get_3:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* d = compile(n[2]);
+          if(!d){
+            return d;
+          }
+          
+          Value* dv = toVar(d);
+          
+          Value* ret = createVar("get");
+          return globalCall("void nvar::get(nvar*, nvar*, nvar*)", {ret, l, rv, dv});
+        }
+        case FKEY_Erase_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          return globalCall("void nvar::erase(nvar*, nvar*)", {l, rv});
+        }
+        case FKEY_Cos_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("cos");
+          
+          return globalCall("void nvar::cos(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Acos_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("acos");
+          
+          return globalCall("void nvar::acos(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Cosh_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("cosh");
+          
+          return globalCall("void nvar::cosh(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Sin_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("sin");
+          
+          return globalCall("void nvar::sin(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Asin_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("asin");
+          
+          return globalCall("void nvar::asin(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Sinh_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("sinh");
+          
+          return globalCall("void nvar::sinh(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Tan_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("tan");
+          
+          return globalCall("void nvar::tan(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Atan_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("atan");
+          
+          return globalCall("void nvar::atan(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Tanh_1:{
+          Value* r = compile(n[0]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          Value* ret = createVar("tanh");
+          
+          return globalCall("void nvar::tanh(nvar*, nvar*, void*)", {ret, rv, null()});
+        }
+        case FKEY_Merge_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          return globalCall("void nvar::merge(nvar*, nvar*)", {l, rv});
+        }
+        case FKEY_OuterMerge_2:{
+          Value* l = getLValue(n[0]);
+          if(!l){
+            return 0;
+          }
+          
+          if(!isVar(l)){
+            return 0;
+          }
+          
+          Value* r = compile(n[1]);
+          if(!r){
+            return r;
+          }
+          
+          Value* rv = toVar(r);
+          
+          return globalCall("void nvar::outerMerge(nvar*, nvar*)", {l, rv});
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
@@ -4169,6 +4629,84 @@ namespace{
     
     createFunction("void nvar::pushBack(nvar*, nvar*)",
                    "_ZN3neu4nvar8pushBackERKS0_");
+    
+    createFunction("void nvar::touchMultimap(nvar*)",
+                   "_ZN3neu4nvar13touchMultimapEv");
+    
+    createFunction("void nvar::touchList(nvar*)",
+                   "_ZN3neu4nvar9touchListEv");
+    
+    createFunction("bool nvar::toBool(nvar*)",
+                   "_ZNK3neu4nvar6toBoolEv");
+    
+    createFunction("void nvar::keys(nvar*, nvar*)",
+                   "_ZNK3neu4nvar4keysEv");
+    
+    createFunction("void nvar::pushFront(nvar*, nvar*)",
+                   "_ZN3neu4nvar9pushFrontERKS0_");
+    
+    createFunction("void nvar::popBack(nvar*, nvar*)",
+                   "_ZN3neu4nvar7popBackEv");
+    
+    createFunction("void nvar::popFront(nvar*, nvar*)",
+                   "_ZN3neu4nvar8popFrontEv");
+    
+    createFunction("bool nvar::hasKey(nvar*, nvar*)",
+                   "_ZNK3neu4nvar6hasKeyERKS0_");
+    
+    createFunction("void nvar::insert(nvar*, long, nvar*)",
+                   "_ZN3neu4nvar6insertEmRKS0_");
+    
+    createFunction("void nvar::clear(nvar*)",
+                   "_ZN3neu4nvar5clearEv");
+    
+    createFunction("bool nvar::empty(nvar*)",
+                   "_ZNK3neu4nvar5emptyEv");
+    
+    createFunction("nvar* nvar::back(nvar*)",
+                   "_ZN3neu4nvar4backEv");
+    
+    createFunction("nvar* nvar::get(nvar*, nvar*)",
+                   "_ZN3neu4nvar3getERKS0_");
+    
+    createFunction("nvar* nvar::get(nvar*, nvar*, nvar*)",
+                   "_ZN3neu4nvar3getERKS0_RS0_");
+    
+    createFunction("void nvar::erase(nvar*, nvar*)",
+                   "_ZN3neu4nvar5eraseERKS0_");
+    
+    createFunction("void nvar::cos(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar3cosERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::acos(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar4acosERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::cosh(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar4coshERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::sin(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar3sinERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::asin(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar4asinERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::sinh(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar4sinhERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::tan(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar3tanERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::atan(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar4atanERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::tanh(nvar*, nvar*, void*)",
+                   "_ZN3neu4nvar4tanhERKS0_PNS_7NObjectE");
+    
+    createFunction("void nvar::merge(nvar*, nvar*)",
+                   "_ZN3neu4nvar5mergeERKS0_");
+    
+    createFunction("void nvar::outerMerge(nvar*, nvar*)",
+                   "_ZN3neu4nvar10outerMergeERKS0_");
     
     delete compiler_;
   }

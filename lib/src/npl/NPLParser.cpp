@@ -107,7 +107,32 @@ namespace{
       builtinMap_({"normalize", 1}) = "Normalize";
       builtinMap_({"dot", 2}) = "DotProduct";
       builtinMap_({"cross", 2}) = "CrossProduct";
-      builtinMap_({"pushBack", 1}) = "PushBack";
+      builtinMap_({"cos", 1}) = "Cos";
+      builtinMap_({"acos", 1}) = "Acos";
+      builtinMap_({"cosh", 1}) = "Cosh";
+      builtinMap_({"sin", 1}) = "Sin";
+      builtinMap_({"asin", 1}) = "Asin";
+      builtinMap_({"sinh", 1}) = "Sinh";
+      builtinMap_({"tan", 1}) = "Tan";
+      builtinMap_({"atan", 1}) = "Atan";
+      builtinMap_({"tanh", 1}) = "Tanh";
+      
+      varBuiltinMap_({"pushBack", 1}) = "PushBack";
+      varBuiltinMap_({"touchMultimap", 0}) = "TouchMultimap";
+      varBuiltinMap_({"touchList", 0}) = "TouchList";
+      varBuiltinMap_({"keys", 0}) = "Keys";
+      varBuiltinMap_({"pushFront", 1}) = "PushFront";
+      varBuiltinMap_({"popBack", 0}) = "PopBack";
+      varBuiltinMap_({"hasKey", 1}) = "HasKey";
+      varBuiltinMap_({"insert", 2}) = "Insert";
+      varBuiltinMap_({"clear", 0}) = "Clear";
+      varBuiltinMap_({"empty", 0}) = "Empty";
+      varBuiltinMap_({"back", 0}) = "Back";
+      varBuiltinMap_({"get", 1}) = "Get";
+      varBuiltinMap_({"get", 2}) = "Get";
+      varBuiltinMap_({"erase", 0}) = "Erase";
+      varBuiltinMap_({"merge", 1}) = "Merge";
+      varBuiltinMap_({"outerMerge", 0}) = "OuterMerge";
     }
     
     bool isReservedName(const nstr& name) const{
@@ -129,9 +154,21 @@ namespace{
       return true;
     }
     
+    bool handleVarBuiltin(nvar& f){
+      nvar b = varBuiltinMap_.get({f.str(), f.size()}, none);
+      
+      if(b == none){
+        return false;
+      }
+      
+      f.str() = b;
+      return true;
+    }
+    
     nvar nameMap_;
     nvar typeMap_;
     nvar builtinMap_;
+    nvar varBuiltinMap_;
   };
   
   Global _global;
@@ -144,6 +181,10 @@ const nvar& NPLParser_::getType(const nstr& t){
 
 bool NPLParser_::handleBuiltin(nvar& f){
   return _global.handleBuiltin(f);
+}
+
+bool NPLParser_::handleVarBuiltin(nvar& f){
+  return _global.handleVarBuiltin(f);
 }
 
 NPLParser::NPLParser(){

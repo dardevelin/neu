@@ -397,6 +397,8 @@ namespace neu{
 
     bool handleBuiltin(nvar& f);
     
+    bool handleVarBuiltin(nvar& f);
+    
     nvar createSwitch(const nvar& v, const nvar& cs){
       const nmmap& mm = cs;
       
