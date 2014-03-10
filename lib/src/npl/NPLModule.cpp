@@ -2427,74 +2427,106 @@ namespace{
         case FKEY_Add_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return add(l, r);
+          Value* ret = add(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Sub_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return sub(l, r);
+          Value* ret = sub(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Mul_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return mul(l, r);
+          Value* ret = mul(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Div_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return div(l, r);
+          Value* ret = div(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Mod_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return mod(l, r);
+          Value* ret = mod(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_ShL_2:{
           Value* l = compile(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
 
           if(isVar(l) || isVar(r)){
-            error("invalid operands", n);
+            return error("invalid operands", n);
           }
           
           ValueVec v = normalize(l, r);
@@ -2508,64 +2540,88 @@ namespace{
         }
         case FKEY_ShR_2:{
           Value* l = compile(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
           if(isVar(l) || isVar(r)){
-            error("invalid operands", n);
+            return error("invalid operands", n);
           }
           
           ValueVec v = normalize(l, r);
           
           if(v.empty()){
-            error("invalid operands", n);
-            return 0;
+            return error("invalid operands", n);
           }
           
           return createLShr(v[0], v[1]);
         }
         case FKEY_BitAnd_2:{
           Value* l = compile(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
           if(isVar(l) || isVar(r)){
-            error("invalid operands", n);
+            return error("invalid operands", n);
           }
           
           ValueVec v = normalize(l, r);
           
           if(v.empty()){
-            error("invalid operands", n);
-            return 0;
+            return error("invalid operands", n);
           }
           
           return createAnd(v[0], v[1]);
         }
         case FKEY_BitOr_2:{
           Value* l = compile(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
           ValueVec v = normalize(l, r);
           
           if(v.empty()){
-            error("invalid operands", n);
-            return 0;
+            return error("invalid operands", n);
           }
           
           return createOr(v[0], v[1]);
         }
         case FKEY_BitXOr_2:{
           Value* l = compile(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
           if(isVar(l) || isVar(r)){
-            error("invalid operands", n);
+            return error("invalid operands", n);
           }
           
           ValueVec v = normalize(l, r);
           
           if(v.empty()){
-            error("invalid operands", n);
-            return 0;
+            return error("invalid operands", n);
           }
           
           return createXor(v[0], v[1]);
@@ -2611,7 +2667,7 @@ namespace{
 
           Value* v = create(n[0], s);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           putLocal(s, v);
@@ -2623,12 +2679,12 @@ namespace{
 
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* v = create(n[0], s, r);
           if(!v){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           putLocal(s, v);
@@ -2638,12 +2694,12 @@ namespace{
         case FKEY_Set_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           store(r, l);
@@ -2653,86 +2709,111 @@ namespace{
         case FKEY_AddBy_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return addBy(l, r);
+          Value* ret = addBy(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_SubBy_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return subBy(l, r);
+          Value* ret = subBy(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_MulBy_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return mulBy(l, r);
+          Value* ret = mulBy(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_DivBy_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return divBy(l, r);
+          Value* ret = divBy(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_ModBy_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return modBy(l, r);
+          Value* ret = modBy(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Not_1:{
           Value* r = compile(n[0]);
 
           if(!r){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(isVar(r)){
             return globalCall("void nvar::operator!(nvar*, nvar*)", {r});
           }
           
-          Value* rc = convert(r, "long");
+          Value* rc = convert(r, "bool");
           
           if(!rc){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
-          Value* c = builder_.CreateICmpNE(rc, getInt64(0), "cmp.out");
+          Value* c = builder_.CreateICmpNE(rc, getInt1(0), "cmp.out");
           
           return builder_.CreateSelect(c, getInt1(0), getInt1(1), "not.out");
         }
@@ -2755,17 +2836,23 @@ namespace{
         }
         case FKEY_And_2:{
           Value* l = compile(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
           ValueVec v = normalize(l, r);
 
           if(v.empty()){
-            error("invalid operands", n);
-            return 0;
+            return error("invalid operands", n);
           }
           
           if(isVar(v[0])){
-            Value* ret = createVar();
+            Value* ret = createVar("and");
             return globalCall("void nvar::operator&&(nvar*, nvar*, nvar*)",
                               {ret, v[0], v[1]});
           }
@@ -2774,17 +2861,23 @@ namespace{
         }
         case FKEY_Or_2:{
           Value* l = compile(n[0]);
+          if(!l){
+            return error("invalid operand[0]", n);
+          }
+          
           Value* r = compile(n[1]);
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
           ValueVec v = normalize(l, r);
           
           if(v.empty()){
-            error("invalid operands", n);
-            return 0;
+            return error("invalid operands", n);
           }
           
           if(isVar(v[0])){
-            Value* ret = createVar();
+            Value* ret = createVar("or");
             return globalCall("void nvar::operator||(nvar*, nvar*, nvar*)",
                               {ret, v[0], v[1]});
           }
@@ -2794,92 +2887,116 @@ namespace{
         case FKEY_EQ_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
-          
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return eq(l, r);
+          Value* ret = eq(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_NE_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
-          
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return ne(l, r);
+          Value* ret = ne(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_LT_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
-          
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return lt(l, r);
+          Value* ret = lt(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_LE_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
-          
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return le(l, r);
+          Value* ret = le(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_GT_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
-          
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return gt(l, r);
+          Value* ret = gt(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_GE_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
-          
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return ge(l, r);
+          Value* ret = ge(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_If_2:
         {
           Value* cv = compile(n[0]);
           if(!cv){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isIntegral(cv)){
@@ -2902,7 +3019,7 @@ namespace{
           Value* tv = compile(n[1]);
           
           if(!tv){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           if(!builder_.GetInsertBlock()->getTerminator()){
@@ -2919,7 +3036,7 @@ namespace{
           Value* cv = compile(n[0]);
           
           if(!cv){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isIntegral(cv)){
@@ -2942,7 +3059,7 @@ namespace{
           
           Value* tv = compile(n[1]);
           if(!tv){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           if(!builder_.GetInsertBlock()->getTerminator()){
@@ -2956,7 +3073,7 @@ namespace{
           
           Value* ev = compile(n[2]);
           if(!ev){
-            return 0;
+            return error("invalid operand[2]", n);
           }
           
           ev = convert(ev, tv);
@@ -2977,17 +3094,17 @@ namespace{
           Value* cv = compile(n[0]);
           
           if(!cv){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* tv = compile(n[1]);
           if(!tv){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           Value* fv = compile(n[2]);
           if(!fv){
-            return 0;
+            return error("invalid operand[2]", n);
           }
           
           return builder_.CreateSelect(cv, tv, fv, "select");
@@ -2998,8 +3115,7 @@ namespace{
           v = convert(v, "long");
           
           if(!v){
-            error("invalid operand", n[0]);
-            return 0;
+            return error("invalid operand", n[0]);
           }
           
           loopMerge_ = BasicBlock::Create(context_, "switch.merge", func_);
@@ -3065,7 +3181,7 @@ namespace{
           
           Value* cv = compile(n[0]);
           if(!cv){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isIntegral(cv)){
@@ -3089,7 +3205,7 @@ namespace{
           builder_.SetInsertPoint(lb);
           Value* lv = compile(n[1]);
           if(!lv){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           builder_.CreateBr(loopContinue_);
@@ -3104,7 +3220,7 @@ namespace{
         case FKEY_For_4:{
           Value* iv = compile(n[0]);
           if(!iv){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           BasicBlock* lb = BasicBlock::Create(context_, "for.body", func_);
@@ -3115,12 +3231,12 @@ namespace{
           
           Value* bv = compile(n[3]);
           if(!bv){
-            return 0;
+            return error("invalid operand[3]", n);
           }
           
           Value* nv = compile(n[2]);
           if(!nv){
-            return 0;
+            return error("invalid operand[2]", n);
           }
           
           loopContinue_ = BasicBlock::Create(context_, "for.cond");
@@ -3130,7 +3246,7 @@ namespace{
           
           Value* cv = compile(n[1]);
           if(!cv){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           if(!isIntegral(cv)){
@@ -3188,7 +3304,7 @@ namespace{
           Value* r = compile(n[0]);
           
           if(!r){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           r = convert(r, rt_);
@@ -3209,7 +3325,7 @@ namespace{
         case FKEY_Inc_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* v = addBy(l, getNumeric(1));
@@ -3219,7 +3335,7 @@ namespace{
         case FKEY_PostInc_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* vp = createLoad(l);
@@ -3231,7 +3347,7 @@ namespace{
         case FKEY_Dec_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* v = subBy(l, getNumeric(1));
@@ -3241,7 +3357,7 @@ namespace{
         case FKEY_PostDec_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* vp = createLoad(l);
@@ -3253,35 +3369,57 @@ namespace{
         case FKEY_Idx_2:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* i = compile(n[1]);
+          if(!i){
+            return error("invalid operand[1]", n);
+          }
           
-          return idx(v, i);
+          Value* ret = idx(v, i);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Size_1:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
-          return size(v);
+          Value* ret = size(v);
+          if(!ret){
+            return error("invalid operand", n);
+          }
+          
+          return ret;
         }
         case FKEY_Neg_1:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
-          return neg(v);
+          Value* ret = neg(v);
+          if(!ret){
+            return error("invalid operand", n);
+          }
+          
+          return ret;
         }
         case FKEY_Vec_n:{
           size_t size = n.size();
           
           ValueVec v;
           for(size_t i = 0; i < size; ++i){
-            v.push_back(compile(n[i]));
+            Value* vi = compile(n[i]);
+            if(!vi){
+              return error("invalid operand[" + nvar(i) + "]", n);
+            }
+            v.push_back(vi);
           }
                         
           VectorType* vt = VectorType::get(v[0]->getType(), size);
@@ -3300,20 +3438,25 @@ namespace{
         case FKEY_Pow_2:{
           Value* l = compile(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           Value* r = compile(n[1]);
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
-          return pow(l, r);
+          Value* ret = pow(l, r);
+          if(!ret){
+            return error("invalid operands", n);
+          }
+          
+          return ret;
         }
         case FKEY_Sqrt_1:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
 
           return sqrt(v);
@@ -3321,7 +3464,7 @@ namespace{
         case FKEY_Exp_1:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           return exp(v);
@@ -3329,7 +3472,7 @@ namespace{
         case FKEY_Log_1:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
 
           return log(v);
@@ -3338,7 +3481,7 @@ namespace{
         {
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           return floor(v);
@@ -3346,7 +3489,7 @@ namespace{
         case FKEY_Normalize_1:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           VectorType* vt = dyn_cast<VectorType>(v->getType());
@@ -3400,7 +3543,7 @@ namespace{
         case FKEY_Magnitude_1:{
           Value* v = compile(n[0]);
           if(!v){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           VectorType* vt = dyn_cast<VectorType>(v->getType());
@@ -3442,7 +3585,7 @@ namespace{
         case FKEY_DotProduct_2:{
           Value* lv = compile(n[0]);
           if(!lv){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           size_t length = vectorLength(lv);
@@ -3452,7 +3595,7 @@ namespace{
           
           Value* rv = compile(n[1]);
           if(!rv){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           size_t length2 = vectorLength(rv);
@@ -3483,7 +3626,7 @@ namespace{
         case FKEY_CrossProduct_2:{
           Value* lv = compile(n[0]);
           if(!lv){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(vectorLength(lv) != 3){
@@ -3492,7 +3635,7 @@ namespace{
           
           Value* rv = compile(n[1]);
           if(!rv){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           if(vectorLength(rv) != 3){
@@ -3640,11 +3783,11 @@ namespace{
         case FKEY_Put_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           Value* r = compile(n[1]);
@@ -3654,7 +3797,7 @@ namespace{
         case FKEY_PushBack_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3664,7 +3807,7 @@ namespace{
           Value* r = compile(n[1]);
           
           if(!r){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           Value* rc = toVar(r);
@@ -3676,7 +3819,7 @@ namespace{
         case FKEY_TouchMultimap_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3688,7 +3831,7 @@ namespace{
         case FKEY_TouchList_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3700,7 +3843,7 @@ namespace{
         case FKEY_Keys_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3713,7 +3856,7 @@ namespace{
         case FKEY_PushFront_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3732,7 +3875,7 @@ namespace{
         case FKEY_PopBack_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3745,7 +3888,7 @@ namespace{
         case FKEY_PopFront_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3758,7 +3901,7 @@ namespace{
         case FKEY_HasKey_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3767,7 +3910,7 @@ namespace{
           
           Value* r = compile(n[1]);
           if(!r){
-            return r;
+            return error("invalid operand[1]", n);
           }
           
           Value* rv = toVar(r);
@@ -3777,7 +3920,7 @@ namespace{
         case FKEY_Insert_3:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3786,14 +3929,14 @@ namespace{
           
           Value* i = compile(n[1]);
           if(!i){
-            return 0;
+            return error("invalid operand[1]", n);
           }
           
           i = convert(i, "long");
           
           Value* r = compile(n[2]);
           if(!r){
-            return r;
+            return error("invalid operand[2]", n);
           }
           
           Value* rv = toVar(r);
@@ -3803,7 +3946,7 @@ namespace{
         case FKEY_Clear_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3815,7 +3958,7 @@ namespace{
         case FKEY_Empty_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3827,7 +3970,7 @@ namespace{
         case FKEY_Back_1:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3840,7 +3983,7 @@ namespace{
         case FKEY_Get_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3860,7 +4003,7 @@ namespace{
         case FKEY_Get_3:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3869,14 +4012,14 @@ namespace{
           
           Value* r = compile(n[1]);
           if(!r){
-            return r;
+            return error("invalid operand[1]", n);
           }
           
           Value* rv = toVar(r);
           
           Value* d = compile(n[2]);
           if(!d){
-            return d;
+            return error("invalid operand[2]", n);
           }
           
           Value* dv = toVar(d);
@@ -3887,7 +4030,7 @@ namespace{
         case FKEY_Erase_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -3896,7 +4039,7 @@ namespace{
           
           Value* r = compile(n[1]);
           if(!r){
-            return r;
+            return error("invalid operand[1]", n);
           }
           
           Value* rv = toVar(r);
@@ -3906,7 +4049,7 @@ namespace{
         case FKEY_Cos_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -3918,7 +4061,7 @@ namespace{
         case FKEY_Acos_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -3930,7 +4073,7 @@ namespace{
         case FKEY_Cosh_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -3942,7 +4085,7 @@ namespace{
         case FKEY_Sin_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -3954,7 +4097,7 @@ namespace{
         case FKEY_Asin_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -3966,7 +4109,7 @@ namespace{
         case FKEY_Sinh_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -3978,7 +4121,7 @@ namespace{
         case FKEY_Tan_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -3990,7 +4133,7 @@ namespace{
         case FKEY_Atan_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -4002,7 +4145,7 @@ namespace{
         case FKEY_Tanh_1:{
           Value* r = compile(n[0]);
           if(!r){
-            return r;
+            return error("invalid operand[0]", n);
           }
           
           Value* rv = toVar(r);
@@ -4014,7 +4157,7 @@ namespace{
         case FKEY_Merge_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);;
           }
           
           if(!isVar(l)){
@@ -4023,7 +4166,7 @@ namespace{
           
           Value* r = compile(n[1]);
           if(!r){
-            return r;
+            return error("invalid operand[1]", n);
           }
           
           Value* rv = toVar(r);
@@ -4033,7 +4176,7 @@ namespace{
         case FKEY_OuterMerge_2:{
           Value* l = getLValue(n[0]);
           if(!l){
-            return 0;
+            return error("invalid operand[0]", n);
           }
           
           if(!isVar(l)){
@@ -4042,7 +4185,7 @@ namespace{
           
           Value* r = compile(n[1]);
           if(!r){
-            return r;
+            return error("invalid operand[1]", n);
           }
           
           Value* rv = toVar(r);
