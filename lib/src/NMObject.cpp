@@ -51,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NMObject.h>
 
 #include <neu/NFuncMap.h>
-#include <neu/NFactory.h>
+#include <neu/NClass.h>
 #include <neu/NScope.h>
 #include <neu/NPool.h>
 #include <neu/NCommand.h>
@@ -95,13 +95,13 @@ namespace{
   
   FuncMap _funcMap;
   
-  class Factory : public NFactory{
+  class Class : public NClass{
   public:
-    Factory() : NFactory("NMObject"){
+    Class() : NClass("neu::NMObject"){
       
     }
     
-    NObjectBase* create(const nvar& f){
+    NObjectBase* construct(const nvar& f){
       switch(f.size()){
         case 0:
           return new NMObject;
@@ -113,7 +113,7 @@ namespace{
     }
   };
   
-  Factory _factory;
+  Class _class;
   
   NRegex _outputRegex("[^]*Out\\[\\d+\\]//FullForm= ([^]+)"
                       "In\\[\\d+\\]:=[^]*");

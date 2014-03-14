@@ -51,8 +51,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_N_FUNC_MAP_H
 #define NEU_N_FUNC_MAP_H
 
+#include <unordered_map>
+#include <functional>
+
 #include <neu/nstr.h>
-#include <neu/NMap.h>
 
 namespace neu{
   
@@ -74,13 +76,12 @@ namespace neu{
       functorMap_.insert({{func, arity}, fp});
     }
     
-    // assumes that it has already been determined that f is a function
     NFunc map(const nvar& f) const{
       assert(f.fullType() == nvar::Function);
       
-      auto itr = functorMap_.find(std::make_pair(f.str(), f.size()));
+      auto itr = functorMap_.find({f.str(), f.size()});
       if(itr == functorMap_.end()){
-        itr = functorMap_.find(std::make_pair(f.str(), -1));
+        itr = functorMap_.find({f.str(), -1});
         if(itr == functorMap_.end()){
           return 0;
         }
@@ -91,7 +92,18 @@ namespace neu{
     }
     
   private:
-    typedef NMap<std::pair<nstr, int16_t>, NFunc> FunctorMap_;
+    typedef std::pair<nstr, int16_t> FuncKey_;
+    
+    struct Hash_{
+      size_t operator()(const FuncKey_& k) const{
+        std::hash<std::string> hs;
+        std::hash<int16_t> hi;
+        
+        return hs(k.first.str()) ^ hi(k.second);
+      }
+    };
+    
+    typedef std::unordered_map<FuncKey_, NFunc, Hash_> FunctorMap_;
     
     FunctorMap_ functorMap_;
   };

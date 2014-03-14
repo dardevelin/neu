@@ -782,9 +782,6 @@ namespace{
     Value* getString(const nstr& str){
       Value* gs = builder_.CreateGlobalStringPtr(str.c_str());
       return builder_.CreateBitCast(gs, type("char*"));
-      
-      //Value* a = ConstantDataArray::getString(context_, str.c_str());
-      //return builder_.CreateBitCast(a, type("char*"));
     }
     
     void deleteVar(Value* v){
@@ -804,7 +801,7 @@ namespace{
           return v;
         }
         
-        error("undefined symbol", n);
+        error("undefined symbol: " + n, n);
         
         return 0;
       }
@@ -815,7 +812,9 @@ namespace{
         return 0;
       }
       
-      assert(v->getType()->isPointerTy());
+      if(!v->getType()->isPointerTy()){
+        return error("not an l-value", n);
+      }
 
       return v;
     }
@@ -825,6 +824,8 @@ namespace{
     }
     
     Value* completeVar(Value* h, const nvar& v){
+      // ndm - clean up
+      
       nvec keys;
       v.keys(keys);
 
@@ -857,6 +858,7 @@ namespace{
       return vc;
     }
     
+    // ndm - does this work right with vectors?
     Value* convertNum(Value* from, Type* toType, bool trunc=true){
       if(isVar(from)){
         if(toType->isIntegerTy()){
@@ -867,6 +869,7 @@ namespace{
           Value* v = globalCall("long nvar::toDouble(nvar*)", {from});
           return convertNum(v, toType);
         }
+        // ndm - what to do here?
         
         return from;
       }

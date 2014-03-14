@@ -48,15 +48,44 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#include <neu/NFactory.h>
+#ifndef NEU_N_CLASS_H
+#define NEU_N_CLASS_H
 
-#include <neu/NObject.h>
+#include <neu/nvar.h>
 
-using namespace std;
-using namespace neu;
-
-NFactory::NFactory(const nstr& className)
-: className_(className){
+namespace neu{
   
-  NObject::registerFactory_(this);
-}
+  class NClass{
+  public:
+    NClass(const nstr& fullName);
+
+    virtual ~NClass();
+
+    const nstr& name() const;
+    
+    const nstr& fullName() const;
+    
+    static nvec getClasses();
+    
+    static NClass* getClass(const nstr& name);
+    
+    static NObjectBase* create(const nvar& f);
+    
+    virtual NObjectBase* construct(const nvar& f){
+      return 0;
+    }
+    
+    virtual nvar getMetadata() const{
+      return none;
+    }
+    
+    NClass& operator=(const NClass&) = delete;
+    NClass(const NClass&) = delete;
+    
+  private:
+    class NClass_* x_;
+  };
+  
+} // end namespace neu
+
+#endif // NEU_N_CLASS_H

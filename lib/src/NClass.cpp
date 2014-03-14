@@ -48,97 +48,148 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#include <neu/NRandom.h>
-
-#include <neu/NFuncMap.h>
 #include <neu/NClass.h>
+
+#include <neu/NRWMutex.h>
+#include <neu/NReadGuard.h>
+#include <neu/NWriteGuard.h>
 
 using namespace std;
 using namespace neu;
 
 namespace{
   
-  class FuncMap : public NFuncMap{
+  class Global{
   public:
-    FuncMap(){
-      
-      add("timeSeed", 0,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->timeSeed();
-          });
-      
-      add("uniform", 0,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->uniform();
-          });
-      
-      add("uniform", 2,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->uniform(v[0], v[1]);
-          });
-      
-      add("equilikely", 2,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->equilikely(v[0], v[1]);
-          });
-      
-      add("exponential", 1,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->exponential(v[0]);
-          });
-      
-      add("normal", 2,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->normal(v[0], v[1]);
-          });
-      
-      add("bernoulli", 1,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->bernoulli(v[0]);
-          });
-      
-      add("binomial", 2,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->binomial(v[0], v[1]);
-          });
-      
-      add("poisson", 1,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->poisson(v[0]);
-          });
-      
-      add("expSelect", 2,
-          [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->expSelect(v[0], v[1]);
-          });
-    }
-  };
-  
-  FuncMap _funcMap;
-  
-  class Class : public NClass{
-  public:
-    Class() : NClass("neu::NRandom"){
+    Global(){
       
     }
     
-    NObjectBase* construct(const nvar& f){
-      switch(f.size()){
-        case 0:
-          return new NRandom;
-        case 1:
-          return new NRandom(f[0]);
-        default:
-          return 0;
+    void registerClass(NClass* c){
+      const nstr& name = c->name();
+      const nstr& fullName = c->fullName();
+      
+      classMap_[name] = c;
+      classMap_[fullName] = c;
+    }
+
+    void getClasses(nvec& classes){
+      NMap<NClass*, bool> m;
+
+      for(auto& itr : classMap_){
+        NClass* c = itr.second;
+      
+        if(m.hasKey(c)){
+          continue;
+        }
+        
+        classes.push_back(c->fullName());
+        
+        m[c] = true;
       }
     }
-  };
   
-  Class _class;
+    NClass* getClass(const nstr& name){
+      auto itr = classMap_.find(name);
+      if(itr == classMap_.end()){
+        return 0;
+      }
+
+      return itr->second;
+    }
+    
+    NObjectBase* create(const nvar& f){
+      auto itr = classMap_.find(f);
+      
+      if(itr == classMap_.end()){
+        return 0;
+      }
+      
+      return itr->second->construct(f);
+    }
+    
+  private:
+    typedef NMap<nstr, NClass*> ClassMap_;
+    
+    ClassMap_ classMap_;
+  };
+
+  Global* _global = 0;
+  NRWMutex _mutex;
   
 } // end namespace
 
-NFunc NRandom::handle(const nvar& v, uint32_t flags){
-  return _funcMap.map(v);
+namespace neu{
+  
+  class NClass_{
+  public:
+    NClass_(NClass* o, const nstr& fullName)
+    : o_(o),
+    fullName_(fullName){
+     
+      nvec ns;
+      fullName.split(ns, "::");
+      name_ = ns.back();
+      
+      fullName_ = nstr::join(ns, "_");
+    }
+    
+    const nstr& name(){
+      return name_;
+    }
+    
+    const nstr& fullName(){
+      return fullName_;
+    }
+    
+  private:
+    NClass* o_;
+    nstr name_;
+    nstr fullName_;
+  };
+  
+} // end namespace neu
+
+NClass::NClass(const nstr& fullName){
+  x_ = new NClass_(this, fullName);
+  
+  NWriteGuard guard(_mutex);
+  
+  if(!_global){
+    _global = new Global;
+  }
+  _global->registerClass(this);
 }
 
+NClass::~NClass(){
+  delete x_;
+}
+
+const nstr& NClass::name() const{
+  return x_->name();
+}
+
+const nstr& NClass::fullName() const{
+  return x_->fullName();
+}
+
+NObjectBase* NClass::create(const nvar& f){
+  NReadGuard guard(_mutex);
+  
+  return _global->create(f);
+}
+
+nvec NClass::getClasses(){
+  nvec ret;
+  
+  NReadGuard guard(_mutex);
+  
+  _global->getClasses(ret);
+  return ret;
+}
+
+NClass* NClass::getClass(const nstr& name){
+  NReadGuard guard(_mutex);
+  
+  return _global->getClass(name);
+}

@@ -56,7 +56,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace neu{
   
-  class NFactory;
   class NScope;
   
   class NObject : public NObjectBase{
@@ -86,10 +85,6 @@ namespace neu{
     void setExact(bool flag);
     
     void foo(nvar& x);
-    
-    static void registerFactory_(NFactory* factory);
-    
-    static NObjectBase* create(const nvar& f);
     
     static int precedence(const nvar& f);
     

@@ -212,6 +212,10 @@ nstr nstr::toStr(const nvar& v, bool concise){
   return v.toStr(concise);
 }
 
+nstr nstr::asStr(const nvar& v){
+  return v.str();
+}
+
 bool nstr::isNeumeric() const{
   return _numericRegex.match(str_);
 }

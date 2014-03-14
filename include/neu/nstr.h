@@ -528,6 +528,8 @@ namespace neu{
     
     static nstr toStr(const nvar& v, bool concise=true);
     
+    static nstr asStr(const nvar& v);
+    
     nstr quote() const{
       nstr out = "\"";
       out += str_;
@@ -841,15 +843,14 @@ namespace neu{
     template<typename T>
     static nstr join(const T& v,
                      const nstr& delimiter,
-                     bool concise=true,
-                     bool quote=false){
+                     bool concise=true){
       std::stringstream ostr;
       typename T::const_iterator itr = v.begin();
       while(itr != v.end()){
         if(itr != v.begin()){
           ostr << delimiter.str_;
         }
-        ostr << nstr::toStr(*itr, concise, quote);
+        ostr << nstr::asStr(*itr);
         ++itr;
       }
       return ostr.str();

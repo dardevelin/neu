@@ -52,7 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NFuncMap.h>
 #include <neu/NScope.h>
-#include <neu/NFactory.h>
+#include <neu/NClass.h>
 #include <neu/NThread.h>
 #include <neu/NRWMutex.h>
 
@@ -106,26 +106,6 @@ namespace{
       
     }
     
-    void registerFactory(NFactory* factory){
-      const nstr& className = factory->className();
-      
-      if(factoryMap_.hasKey(className)){
-        return;
-      }
-      
-      factoryMap_[className] = factory;
-    }
-    
-    NObjectBase* create(const nvar& f){
-      auto itr = factoryMap_.find(f);
-      
-      if(itr == factoryMap_.end()){
-        return 0;
-      }
-      
-      return itr->second->create(f);
-    }
-    
     NScope* globalScope(){
       return globalScope_;
     }
@@ -135,22 +115,19 @@ namespace{
     }
     
   private:
-    typedef NMap<nstr, NFactory*> FactoryMap_;
-    
     NScope* globalScope_;
-    FactoryMap_ factoryMap_;
     nvar precedenceMap_;
   };
   
-  Global* _global = 0;
+  Global _global;
   
-  class Factory : public NFactory{
+  class Class : public NClass{
   public:
-    Factory() : NFactory("NObject"){
+    Class() : NClass("neu::NObject"){
       
     }
     
-    NObjectBase* create(const nvar& f){
+    NObjectBase* construct(const nvar& f){
       switch(f.size()){
         case 0:
           return new NObject;
@@ -162,7 +139,7 @@ namespace{
     }
   };
   
-  Factory _factory;
+  Class _class;
   
 } // end namespace
 
@@ -244,7 +221,7 @@ namespace neu{
     sharedScope_(false),
     threadData_(0){
       
-      NScope* gs = _global->globalScope();
+      NScope* gs = _global.globalScope();
       mainContext_.pushScope(gs);
       
       NScope* s = new NScope;
@@ -261,7 +238,7 @@ namespace neu{
     sharedScope_(true),
     threadData_(0){
       
-      NScope* gs = _global->globalScope();
+      NScope* gs = _global.globalScope();
       mainContext_.pushScope(gs);
       mainContext_.pushScope(sharedScope);
       
@@ -932,7 +909,7 @@ namespace neu{
     }
     
     nvar New(const nvar& v){
-      NObjectBase* o = _global->create(v);
+      NObjectBase* o = NClass::create(v);
       
       if(o){
         return o;
@@ -1372,20 +1349,8 @@ NFunc NObject::handle(const nvar& v, uint32_t flags){
   return _funcMap.map(v);
 }
 
-void NObject::registerFactory_(NFactory* factory){
-  if(!_global){
-    _global = new Global;
-  }
-  
-  _global->registerFactory(factory);
-}
-
 int NObject::precedence(const nvar& f){
-  return _global->precedence(f);
-}
-
-NObjectBase* NObject::create(const nvar& f){
-  return _global->create(f);
+  return _global.precedence(f);
 }
 
 void NObject::setStrict(bool flag){

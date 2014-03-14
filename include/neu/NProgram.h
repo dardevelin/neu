@@ -156,11 +156,11 @@ namespace neu{
     static int argc;
     
     static char** argv;
-    
+
+    NProgram& operator=(const NProgram&) = delete;
+    NProgram(const NProgram&) = delete;
+
   private:
-    NProgram& operator=(const NProgram&);
-    NProgram(const NProgram&);
-    
     class NProgram_* x_;
   };
   
