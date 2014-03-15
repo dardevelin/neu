@@ -48,64 +48,40 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#ifndef NEU_N_FUNC_MAP_H
-#define NEU_N_FUNC_MAP_H
+#ifndef NEU_N_META_GENERATOR_H
+#define NEU_N_META_GENERATOR_H
 
-#include <unordered_map>
-#include <functional>
+#include <ostream>
 
 #include <neu/nstr.h>
 
 namespace neu{
   
-  class NFuncMap{
+  class NMetaGenerator{
   public:
-    NFuncMap(){
-      
-    }
+    NMetaGenerator(std::ostream& ostr);
+
+    ~NMetaGenerator();
+
+    void setHandle(bool flag);
+
+    void setClass(bool flag);
+
+    void setMetadata(bool flag);
+
+    void addInclude(const nstr& path);
+
+    void addFile(const nstr& path);
+
+    void generate();
     
-    ~NFuncMap(){
-      
-    }
-    
-    void add(const nstr& func, NFunc fp){
-      functorMap_.insert({{func, -1}, fp});
-    }
-    
-    void add(const nstr& func, size_t arity, NFunc fp){
-      functorMap_.insert({{func, arity}, fp});
-    }
-    
-    NFunc map(const nvar& f) const{
-      assert(f.fullType() == nvar::Function);
-      
-      auto itr = functorMap_.find({f.str(), f.size()});
-      if(itr == functorMap_.end()){
-        itr = functorMap_.find({f.str(), -1});
-        if(itr == functorMap_.end()){
-          return 0;
-        }
-      }
-      
-      f.setFunc(itr->second);
-      return itr->second;
-    }
+    NMetaGenerator& operator=(const NMetaGenerator&) = delete;
+    NMetaGenerator(const NMetaGenerator&) = delete;
     
   private:
-    typedef std::pair<nstr, int16_t> FuncKey_;
-    
-    struct Hash_{
-      size_t operator()(const FuncKey_& k) const{
-        return std::hash<std::string>()(k.first.str()) ^
-        std::hash<int16_t>()(k.second);
-      }
-    };
-    
-    typedef std::unordered_map<FuncKey_, NFunc, Hash_> FunctorMap_;
-    
-    FunctorMap_ functorMap_;
+    class NMetaGenerator_* x_;
   };
   
 } // end namespace neu
 
-#endif // NEU_N_FUNC_MAP_H
+#endif // NEU_N_META_GENERATOR_H

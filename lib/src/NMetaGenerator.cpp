@@ -48,64 +48,91 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#ifndef NEU_N_FUNC_MAP_H
-#define NEU_N_FUNC_MAP_H
+#include <neu/NMetaGenerator.h>
 
-#include <unordered_map>
-#include <functional>
+#include <neu/NObject.h>
 
-#include <neu/nstr.h>
+using namespace std;
+using namespace neu;
+
+namespace{
+  
+  
+} // end namespace
 
 namespace neu{
   
-  class NFuncMap{
+  class NMetaGenerator_{
   public:
-    NFuncMap(){
+    NMetaGenerator_(NMetaGenerator* o, ostream& ostr)
+    : o_(o),
+    ostr_(ostr){
       
     }
     
-    ~NFuncMap(){
+    ~NMetaGenerator_(){
       
     }
     
-    void add(const nstr& func, NFunc fp){
-      functorMap_.insert({{func, -1}, fp});
+    void setHandle(bool flag){
+      
     }
     
-    void add(const nstr& func, size_t arity, NFunc fp){
-      functorMap_.insert({{func, arity}, fp});
+    void setClass(bool flag){
+      
     }
     
-    NFunc map(const nvar& f) const{
-      assert(f.fullType() == nvar::Function);
+    void setMetadata(bool flag){
       
-      auto itr = functorMap_.find({f.str(), f.size()});
-      if(itr == functorMap_.end()){
-        itr = functorMap_.find({f.str(), -1});
-        if(itr == functorMap_.end()){
-          return 0;
-        }
-      }
+    }
+    
+    void addInclude(const nstr& path){
       
-      f.setFunc(itr->second);
-      return itr->second;
+    }
+    
+    void addFile(const nstr& path){
+      
+    }
+    
+    void generate(){
+      
     }
     
   private:
-    typedef std::pair<nstr, int16_t> FuncKey_;
-    
-    struct Hash_{
-      size_t operator()(const FuncKey_& k) const{
-        return std::hash<std::string>()(k.first.str()) ^
-        std::hash<int16_t>()(k.second);
-      }
-    };
-    
-    typedef std::unordered_map<FuncKey_, NFunc, Hash_> FunctorMap_;
-    
-    FunctorMap_ functorMap_;
+    NMetaGenerator* o_;
+    ostream& ostr_;
   };
   
 } // end namespace neu
 
-#endif // NEU_N_FUNC_MAP_H
+NMetaGenerator::NMetaGenerator(ostream& ostr){
+  x_ = new NMetaGenerator_(this, ostr);
+}
+
+NMetaGenerator::~NMetaGenerator(){
+  delete x_;
+}
+
+void NMetaGenerator::setHandle(bool flag){
+  x_->setHandle(flag);
+}
+
+void NMetaGenerator::setClass(bool flag){
+  x_->setClass(flag);
+}
+
+void NMetaGenerator::setMetadata(bool flag){
+  x_->setMetadata(flag);
+}
+
+void NMetaGenerator::addInclude(const nstr& path){
+  x_->addInclude(path);
+}
+
+void NMetaGenerator::addFile(const nstr& path){
+  x_->addFile(path);
+}
+
+void NMetaGenerator::generate(){
+  x_->generate();
+}
