@@ -50,19 +50,81 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NMetaGenerator.h>
 
-#include <neu/NObject.h>
+#include "clang/Driver/Options.h"
+#include "clang/AST/AST.h"
+#include "clang/AST/ASTContext.h"
+#include "clang/AST/ASTConsumer.h"
+#include "clang/AST/RecursiveASTVisitor.h"
+#include "clang/Frontend/ASTConsumers.h"
+#include "clang/Frontend/FrontendActions.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Tooling/CommonOptionsParser.h"
+#include "clang/Tooling/Tooling.h"
+#include "clang/Rewrite/Core/Rewriter.h"
 
 using namespace std;
+using namespace llvm;
+using namespace clang;
+using namespace tooling;
 using namespace neu;
 
 namespace{
   
+  typedef vector<string> StringVec;
+  typedef vector<CompileCommand> CompileCommandVec;
+  
+  class Consumer : public ASTConsumer{
+  public:
+    Consumer(CompilerInstance* ci)
+    : ci_(ci){
+      
+    }
+    
+    void HandleTranslationUnit(ASTContext& context);
+    
+  private:
+    NMetaGenerator_* visitor_;
+    CompilerInstance* ci_;
+  };
+  
+  class Action : public ASTFrontendAction {
+  public:
+    ASTConsumer* CreateASTConsumer(CompilerInstance& compilerInstance,
+                                   StringRef file){
+      
+      return new Consumer(&compilerInstance);
+    }
+  };
+  
+  class Database : public CompilationDatabase{
+  public:
+    CompileCommandVec getCompileCommands(StringRef path) const{
+      CompileCommandVec cv;
+      
+      CompileCommand c;
+      c.Directory = ".";
+      c.CommandLine =
+      {"clang-tool", "-I/Users/nickm/testinclude", path.str()};
+      
+      cv.push_back(c);
+      
+      return cv;
+    }
+    
+    CompileCommandVec getAllCompileCommands() const{
+      return CompileCommandVec();
+    }
+    
+    StringVec getAllFiles() const{
+      return StringVec();
+    }
+  };
   
 } // end namespace
 
 namespace neu{
   
-  class NMetaGenerator_{
+  class NMetaGenerator_ : public RecursiveASTVisitor<NMetaGenerator_>{
   public:
     NMetaGenerator_(NMetaGenerator* o, ostream& ostr)
     : o_(o),
@@ -98,12 +160,22 @@ namespace neu{
       
     }
     
+    void setCompilerInstance(CompilerInstance* ci){
+      ci_ = ci;
+    }
+    
   private:
     NMetaGenerator* o_;
     ostream& ostr_;
+    CompilerInstance* ci_;
   };
   
 } // end namespace neu
+
+void Consumer::HandleTranslationUnit(ASTContext& context){
+  visitor_->setCompilerInstance(ci_);
+  visitor_->TraverseDecl(context.getTranslationUnitDecl());
+}
 
 NMetaGenerator::NMetaGenerator(ostream& ostr){
   x_ = new NMetaGenerator_(this, ostr);
