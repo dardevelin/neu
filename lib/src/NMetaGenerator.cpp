@@ -73,84 +73,115 @@ using namespace neu;
 
 namespace{
   
-  typedef vector<string> StringVec;
-  typedef vector<CompileCommand> CompileCommandVec;
-  
-  class Consumer : public ASTConsumer{
-  public:
-    Consumer(CompilerInstance* ci)
-    : ci_(ci){
-      
-    }
-    
-    void HandleTranslationUnit(ASTContext& context);
-    
-  private:
-    NMetaGenerator_* visitor_;
-    CompilerInstance* ci_;
-  };
-  
-  class Action : public ASTFrontendAction {
-  public:
-    ASTConsumer* CreateASTConsumer(CompilerInstance& compilerInstance,
-                                   StringRef file){
-      
-      return new Consumer(&compilerInstance);
-    }
-  };
-  
-  class Database : public CompilationDatabase{
-  public:
-    Database(const nvec& includes)
-    : includes_(includes){
-      
-    }
-    
-    CompileCommandVec getCompileCommands(StringRef path) const{
-      CompileCommandVec cv;
-      
-      CompileCommand c;
-      c.Directory = ".";
-      
-      c.CommandLine = {"clang-tool", "-std=c++11"};
-
-#ifdef __APPLE__
-      c.CommandLine.push_back("-stdlib=libc++");
-
-      c.CommandLine.push_back("-resource-dir");
-      c.CommandLine.push_back("/Users/nickm/llvm-3.4/build-release/bin/../lib/clang/3.4");
-      c.CommandLine.push_back("-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include");
-#endif
-      
-      for(const nstr& i : includes_){
-        //c.CommandLine.push_back("-I" + i);
-      }
-      
-      c.CommandLine.push_back(path.str());
-      
-      cv.push_back(c);
-      
-      return cv;
-    }
-    
-    CompileCommandVec getAllCompileCommands() const{
-      return CompileCommandVec();
-    }
-    
-    StringVec getAllFiles() const{
-      return StringVec();
-    }
-    
-  private:
-    const nvec& includes_;
-  };
-  
 } // end namespace
 
 namespace neu{
   
   class NMetaGenerator_ : public RecursiveASTVisitor<NMetaGenerator_>{
   public:
+    typedef vector<string> StringVec;
+    typedef vector<CompileCommand> CompileCommandVec;
+    
+    class Consumer : public ASTConsumer{
+    public:
+      Consumer(CompilerInstance* ci, NMetaGenerator_* visitor)
+      : ci_(ci),
+      visitor_(visitor){
+        
+      }
+      
+      void HandleTranslationUnit(ASTContext& context){
+        visitor_->setCompilerInstance(ci_);
+        visitor_->TraverseDecl(context.getTranslationUnitDecl());
+      }
+      
+    private:
+      NMetaGenerator_* visitor_;
+      CompilerInstance* ci_;
+    };
+    
+    class Action : public ASTFrontendAction {
+    public:
+      Action(NMetaGenerator_* visitor)
+      : visitor_(visitor){
+        
+      }
+      
+      ASTConsumer* CreateASTConsumer(CompilerInstance& compilerInstance,
+                                     StringRef file){
+        
+        return new Consumer(&compilerInstance, visitor_);
+      }
+      
+    private:
+      NMetaGenerator_* visitor_;
+    };
+    
+    class Database : public CompilationDatabase{
+    public:
+      Database(const nvec& includes)
+      : includes_(includes){
+        
+      }
+      
+      CompileCommandVec getCompileCommands(StringRef path) const{
+        CompileCommandVec cv;
+        
+        CompileCommand c;
+        c.Directory = ".";
+        
+        c.CommandLine = {"clang-tool", "-std=c++11"};
+        
+#ifdef __APPLE__
+        c.CommandLine.push_back("-stdlib=libc++");
+        
+        c.CommandLine.push_back("-resource-dir");
+        c.CommandLine.push_back("/Users/nickm/llvm-3.4/build-release/bin/../"
+                                "lib/clang/3.4");
+        
+        c.CommandLine.push_back("-I/Applications/Xcode.app/Contents/Developer/"
+                                "Platforms/MacOSX.platform/Developer/SDKs/"
+                                "MacOSX10.9.sdk/usr/include");
+#endif
+        
+        for(const nstr& i : includes_){
+          c.CommandLine.push_back("-I" + i);
+        }
+        
+        c.CommandLine.push_back(path.str());
+        
+        cv.push_back(c);
+        
+        return cv;
+      }
+      
+      CompileCommandVec getAllCompileCommands() const{
+        return CompileCommandVec();
+      }
+      
+      StringVec getAllFiles() const{
+        return StringVec();
+      }
+      
+    private:
+      const nvec& includes_;
+    };
+    
+    class Factory : public FrontendActionFactory{
+    public:
+      Factory(NMetaGenerator_* visitor)
+      : visitor_(visitor){
+        
+      }
+      
+      Action* create(){
+        return new Action(visitor_);
+      }
+      
+    private:
+      NMetaGenerator_* visitor_;
+    };
+    
     NMetaGenerator_(NMetaGenerator* o, ostream& ostr)
     : o_(o),
     ostr_(ostr),
@@ -195,12 +226,14 @@ namespace neu{
       
       ClangTool tool(db, files_);
       
-      int result =
-      tool.run(newFrontendActionFactory<Action>());
+      Factory factory(this);
+      int result = tool.run(&factory);
+      
+      cout << "result is: " << result << endl;
     }
     
     bool VisitFunctionDecl(FunctionDecl* d){
-      d->dump();
+      //d->dump();
       return true;
     }
     
@@ -220,11 +253,6 @@ namespace neu{
   };
   
 } // end namespace neu
-
-void Consumer::HandleTranslationUnit(ASTContext& context){
-  visitor_->setCompilerInstance(ci_);
-  visitor_->TraverseDecl(context.getTranslationUnitDecl());
-}
 
 NMetaGenerator::NMetaGenerator(ostream& ostr){
   x_ = new NMetaGenerator_(this, ostr);
