@@ -62,6 +62,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 
+#include <neu/nvar.h>
+#include <neu/NSys.h>
+
 using namespace std;
 using namespace llvm;
 using namespace clang;
@@ -98,13 +101,32 @@ namespace{
   
   class Database : public CompilationDatabase{
   public:
+    Database(const nvec& includes)
+    : includes_(includes){
+      
+    }
+    
     CompileCommandVec getCompileCommands(StringRef path) const{
       CompileCommandVec cv;
       
       CompileCommand c;
       c.Directory = ".";
-      c.CommandLine =
-      {"clang-tool", "-I/Users/nickm/testinclude", path.str()};
+      
+      c.CommandLine = {"clang-tool", "-std=c++11"};
+
+#ifdef __APPLE__
+      c.CommandLine.push_back("-stdlib=libc++");
+
+      c.CommandLine.push_back("-resource-dir");
+      c.CommandLine.push_back("/Users/nickm/llvm-3.4/build-release/bin/../lib/clang/3.4");
+      c.CommandLine.push_back("-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/usr/include");
+#endif
+      
+      for(const nstr& i : includes_){
+        //c.CommandLine.push_back("-I" + i);
+      }
+      
+      c.CommandLine.push_back(path.str());
       
       cv.push_back(c);
       
@@ -118,6 +140,9 @@ namespace{
     StringVec getAllFiles() const{
       return StringVec();
     }
+    
+  private:
+    const nvec& includes_;
   };
   
 } // end namespace
@@ -128,36 +153,55 @@ namespace neu{
   public:
     NMetaGenerator_(NMetaGenerator* o, ostream& ostr)
     : o_(o),
-    ostr_(ostr){
+    ostr_(ostr),
+    enableHandles_(true),
+    enableClasses_(true),
+    enableMetadata_(true){
+    
+      nstr h;
+      if(!NSys::getEnv("NEU_HOME", h)){
+        NERROR("NEU_HOME environment variable is undefined");
+      }
       
+      includes_.push_back(h + "/include");
     }
     
     ~NMetaGenerator_(){
       
     }
     
-    void setHandle(bool flag){
-      
+    void enableHandles(bool flag){
+      enableHandles_ = flag;
     }
     
-    void setClass(bool flag){
-      
+    void enableClasses(bool flag){
+      enableClasses_ = flag;
     }
     
-    void setMetadata(bool flag){
-      
+    void enableMetadata(bool flag){
+      enableMetadata_ = flag;
     }
     
     void addInclude(const nstr& path){
-      
+      includes_.push_back(path);
     }
     
     void addFile(const nstr& path){
-      
+      files_.push_back(path);
     }
     
     void generate(){
+      Database db(includes_);
       
+      ClangTool tool(db, files_);
+      
+      int result =
+      tool.run(newFrontendActionFactory<Action>());
+    }
+    
+    bool VisitFunctionDecl(FunctionDecl* d){
+      d->dump();
+      return true;
     }
     
     void setCompilerInstance(CompilerInstance* ci){
@@ -168,6 +212,11 @@ namespace neu{
     NMetaGenerator* o_;
     ostream& ostr_;
     CompilerInstance* ci_;
+    nvec includes_;
+    StringVec files_;
+    bool enableHandles_;
+    bool enableClasses_;
+    bool enableMetadata_;
   };
   
 } // end namespace neu
@@ -185,16 +234,16 @@ NMetaGenerator::~NMetaGenerator(){
   delete x_;
 }
 
-void NMetaGenerator::setHandle(bool flag){
-  x_->setHandle(flag);
+void NMetaGenerator::enableHandles(bool flag){
+  x_->enableHandles(flag);
 }
 
-void NMetaGenerator::setClass(bool flag){
-  x_->setClass(flag);
+void NMetaGenerator::enableClasses(bool flag){
+  x_->enableClasses(flag);
 }
 
-void NMetaGenerator::setMetadata(bool flag){
-  x_->setMetadata(flag);
+void NMetaGenerator::enableMetadata(bool flag){
+  x_->enableMetadata(flag);
 }
 
 void NMetaGenerator::addInclude(const nstr& path){

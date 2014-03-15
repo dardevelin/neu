@@ -63,11 +63,11 @@ namespace neu{
 
     ~NMetaGenerator();
 
-    void setHandle(bool flag);
+    void enableHandles(bool flag);
 
-    void setClass(bool flag);
+    void enableClasses(bool flag);
 
-    void setMetadata(bool flag);
+    void enableMetadata(bool flag);
 
     void addInclude(const nstr& path);
 
