@@ -48,22 +48,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#ifndef NEU_NPL_OBJECT_H
-#define NEU_NPL_OBJECT_H
+#ifndef NEU_NP_QUEUE_H
+#define NEU_NP_QUEUE_H
 
 #include <neu/NPFunc.h>
+#include <neu/nvar.h>
 
 namespace neu{
   
-  class NPLObject{
-
-  };
-  
-  class NPLFunc : public NPFunc{
+  class NPQueue{
   public:
-    NPLObject* o;
+    NPQueue(size_t threads=1);
+    
+    ~NPQueue();
+    
+    void add(NPFunc* func);
+    
+    void clear(bool free=true);
+    
+    bool run();
+    
+    void start();
+    
+    void await();
+    
+  private:
+    class NPQueue_* x_;
   };
   
 } // end namespace neu
 
-#endif // NEU_NPL_OBJECT_H
+#endif // NEU_NP_QUEUE_H

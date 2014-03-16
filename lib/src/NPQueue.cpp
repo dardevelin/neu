@@ -48,7 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#include <neu/NPLQueue.h>
+#include <neu/NPQueue.h>
 
 #include <neu/NVSemaphore.h>
 #include <neu/NThread.h>
@@ -93,10 +93,10 @@ namespace{
 
 namespace neu{
   
-class NPLQueue_{
+class NPQueue_{
 public:
   
-  NPLQueue_(NPLQueue* o, size_t threads)
+  NPQueue_(NPQueue* o, size_t threads)
   : o_(o),
     threads_(threads),
     chunk_(-1){
@@ -108,7 +108,7 @@ public:
     }
   }
   
-  ~NPLQueue_(){
+  ~NPQueue_(){
     for(size_t i = 0; i < threads_; ++i){
       Thread_* thread = threadVec_[i];
       thread->exit();
@@ -117,7 +117,7 @@ public:
     }
   }
   
-  void add(NPLFunc* func){
+  void add(NPFunc* func){
     chunk_ = -1;
     funcVec_.push_back(func);
   }
@@ -191,9 +191,9 @@ public:
   }
   
 private:
-  typedef NVector<NPLFunc*> FuncVec_;
+  typedef NVector<NPFunc*> FuncVec_;
 
-  NPLQueue* o_;
+  NPQueue* o_;
   size_t threads_;
   FuncVec_ funcVec_;
   Queue queue_;
@@ -226,7 +226,7 @@ private:
     
     void run(){
       size_t i;
-      NPLFunc* n;
+      NPFunc* n;
 
       for(;;){
         beginSem_.acquire();
@@ -372,30 +372,30 @@ private:
 
 } // end namespace Meta
 
-NPLQueue::NPLQueue(size_t threads){
-  x_ = new NPLQueue_(this, threads);
+NPQueue::NPQueue(size_t threads){
+  x_ = new NPQueue_(this, threads);
 }
 
-NPLQueue::~NPLQueue(){
+NPQueue::~NPQueue(){
   delete x_; 
 }
 
-void NPLQueue::add(NPLFunc* func){
+void NPQueue::add(NPFunc* func){
   x_->add(func);
 }
 
-void NPLQueue::clear(bool free){
+void NPQueue::clear(bool free){
   x_->clear(free);
 }
 
-void NPLQueue::start(){
+void NPQueue::start(){
   x_->start();
 }
 
-bool NPLQueue::run(){
+bool NPQueue::run(){
   return x_->run();
 }
 
-void NPLQueue::await(){
+void NPQueue::await(){
   x_->await();
 }
