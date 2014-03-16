@@ -75,9 +75,9 @@ namespace neu{
       return 0;
     }
     
-    virtual nvar getMetadata() const{
-      return none;
-    }
+    const nvar& metadata() const;
+    
+    void setMetadata(const nvar& v);
     
     NClass& operator=(const NClass&) = delete;
     NClass(const NClass&) = delete;

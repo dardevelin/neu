@@ -142,10 +142,19 @@ namespace neu{
       return fullName_;
     }
     
+    const nvar& metadata(){
+      return metadata_;
+    }
+    
+    void setMetadata(const nvar& v){
+      metadata_ = v;
+    }
+    
   private:
     NClass* o_;
     nstr name_;
     nstr fullName_;
+    nvar metadata_;
   };
   
 } // end namespace neu
@@ -192,4 +201,12 @@ NClass* NClass::getClass(const nstr& name){
   NReadGuard guard(_mutex);
   
   return _global->getClass(name);
+}
+
+const nvar& NClass::metadata() const{
+  return x_->metadata();
+}
+
+void NClass::setMetadata(const nvar& v){
+  x_->setMetadata(v);
 }

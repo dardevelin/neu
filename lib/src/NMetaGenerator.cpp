@@ -670,8 +670,18 @@ namespace neu{
       ostr << "class " << name << "_Class : public neu::NClass{" << endl;
       ostr << "public: " << endl;
       
-      ostr << "  " << name << "_Class() : NClass(\"" << fullName << "\"){}"
-      << endl << endl;
+      ostr << "  " << name << "_Class() : NClass(\"" << fullName << "\"){";
+      
+      if(enableMetadata_){
+        ostr << endl;
+        ostr << "    setMetadata(metadata_());" << endl;
+        ostr << "  }";
+      }
+      else{
+        ostr << "}";
+      }
+      
+      ostr << endl << endl;
       
       ostr << "  neu::NObjectBase* construct(const neu::nvar& f){" << endl;
       
@@ -731,7 +741,9 @@ namespace neu{
       ostr << "    return 0;" << endl;
       ostr << "  }" << endl << endl;
 
-      generateMetadata(ostr, rd);
+      if(enableMetadata_){
+        generateMetadata(ostr, rd);
+      }
       
       ostr << "};" << endl << endl;
       
@@ -748,7 +760,9 @@ namespace neu{
         Comment* ci = *itr;
         if(TextComment* tc = dyn_cast<TextComment>(ci)){
           // ndm - fix w/o c_str() - problem in nstr +=
-          str += tc->getText().str().c_str();
+          nstr tci = tc->getText().str();
+          tci.strip();
+          str += tci;
         }
         else{
           commentToStr(ci, str);
@@ -773,15 +787,7 @@ namespace neu{
     void generateMetadata(ostream& ostr, CXXRecordDecl* rd){
       nstr className = rd->getName().str();
       
-      nstr cs = getDeclComment(rd);
-      
-      if(cs.empty()){
-        return;
-      }
-      
       CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject");
-      
-      cs.escapeForC();
       
       ostr << "  neu::nvar metadata_(){" << endl;
       
@@ -789,7 +795,11 @@ namespace neu{
       
       ostr << "    neu::nvar& c = ret(\"" << className << "\");" << endl;
       
-      ostr << "    c(\"data\") = \"" << cs << "\";" << endl;
+      nstr cs = getDeclComment(rd);
+      if(!cs.empty()){
+        cs.escapeForC();
+        ostr << "    c(\"comment\") = \"" << cs << "\";" << endl;
+      }
       
       if(srd){
         ostr << "    c(\"extends\") = \"" << srd->getName().str() << "\";" << endl;
@@ -815,24 +825,74 @@ namespace neu{
           
           int m = isNCallable(md);
           if(m > 0 && m < 3){
-            nstr cs = getDeclComment(md);
-            
-            if(!cs.empty()){
-              cs.escapeForC();
-              for(size_t k = md->getMinRequiredArguments();
-                  k <= md->param_size(); ++k){
-                ostr << "    {" << endl;
+            for(size_t k = md->getMinRequiredArguments();
+                k <= md->param_size(); ++k){
+              ostr << "    {" << endl;
+              
+              nstr methodName = md->getNameAsString();
+              
+              ostr << "      neu::nvar& mi = m({\"" << methodName << "\", " <<
+              k << "});" << endl;
+              
+              nstr cs = getDeclComment(md);
+              
+              if(!cs.empty()){
+                cs.escapeForC();
                 
-                nstr methodName = md->getName().str();
+                ostr << "      mi(\"comment\") = \"" << cs << "\";" << endl;
+              }
+              
+              ostr << "      mi(\"const\") = ";
+              
+              if(md->getTypeQualifiers() & Qualifiers::Const){
+                ostr << "true";
+              }
+              else{
+                ostr << "false";
+              }
+              
+              ostr << ";" << endl;
+              
+              if(!md->getResultType().getTypePtr()->isVoidType()){
+                ostr << "      neu::nvar& ri = mi(\"return\");" << endl;
                 
-                ostr << "      neu::nvar& mi = m({\"" << methodName << "\", " <<
-                k << "});" << endl;
+                nstr rawType = md->getResultType().getAsString();
                 
-                ostr << "      mi(\"data\") = \"" << cs << "\";" << endl;
+                nvec m;
+                if(_pointerRegex.match(rawType, m)){
+                  ostr << "      ri(\"type\") = \"" << m[1].str() << "\";" << endl;
+                }
                 
-                ostr << "      mi(\"const\") = ";
+                ostr << "      ri(\"const\") = ";
                 
-                if(md->getTypeQualifiers() & Qualifiers::Const){
+                if(rawType.find("const") == 0){
+                  ostr << "true";
+                }
+                else{
+                  ostr << "false";
+                }
+                
+                ostr << ";" << endl;
+              }
+              
+              for(size_t i = 0; i < k; ++i){
+                ostr << "      {" << endl;
+                
+                ParmVarDecl* p = md->getParamDecl(i);
+                nstr rawType = p->getType().getAsString();
+                
+                ostr << "        mi.pushBack(neu::nvar());" << endl;
+                ostr << "        neu::nvar& pi = mi.back();" << endl;
+                ostr << "        pi = \"" << p->getName().str() << "\";" << endl;
+                
+                nvec m;
+                if(_pointerRegex.match(rawType, m)){
+                  ostr << "        pi(\"type\") = \"" << m[1].str() << "\";" << endl;
+                }
+                
+                ostr << "        pi(\"const\") = ";
+                
+                if(rawType.find("const") == 0){
                   ostr << "true";
                 }
                 else{
@@ -841,65 +901,16 @@ namespace neu{
                 
                 ostr << ";" << endl;
                 
-                if(!md->getResultType().getTypePtr()->isVoidType()){
-                  ostr << "      neu::nvar& ri = mi(\"return\");" << endl;
-                  
-                  nstr rawType = md->getResultType().getAsString();
-                  
-                  nvec m;
-                  if(_pointerRegex.match(rawType, m)){
-                    ostr << "      ri(\"type\") = \"" << m[1].str() << "\";" << endl;
-                  }
-                  
-                  ostr << "      ri(\"const\") = ";
-                  
-                  if(rawType.find("const") == 0){
-                    ostr << "true";
-                  }
-                  else{
-                    ostr << "false";
-                  }
-                  
-                  ostr << ";" << endl;
-                }
-                
-                for(size_t i = 0; i < k; ++i){
-                  ostr << "      {" << endl;
-                  
-                  ParmVarDecl* p = md->getParamDecl(i);
-                  nstr rawType = p->getType().getAsString();
-                  
-                  ostr << "        mi.pushBack(neu::nvar());" << endl;
-                  ostr << "        neu::nvar& pi = mi.back();" << endl;
-                  ostr << "        pi = \"" << p->getName().str() << "\";" << endl;
-                  
-                  nvec m;
-                  if(_pointerRegex.match(rawType, m)){
-                    ostr << "        pi(\"type\") = \"" << m[1].str() << "\";" << endl;
-                  }
-                  
-                  ostr << "        pi(\"const\") = ";
-                  
-                  if(rawType.find("const") == 0){
-                    ostr << "true";
-                  }
-                  else{
-                    ostr << "false";
-                  }
-                  
-                  ostr << ";" << endl;
-                  
-                  ostr << "      }" << endl;
-                }
-                ostr << "    }" << endl;
+                ostr << "      }" << endl;
               }
+              ostr << "    }" << endl;
             }
           }
         }
       }
-      
+    
       ostr << "    return ret;" << endl;
-      
+    
       ostr << "  }" << endl;
     }
 
