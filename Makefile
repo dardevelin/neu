@@ -13,10 +13,13 @@ else
   export PLATFORM_NAME = Linux64
 endif
 
-all: libs neu
+all: libs neu neu-meta
 
 neu: libs
 	(cd src/neu; $(MAKE))
+
+neu-meta: libs
+	(cd src/neu-meta; $(MAKE))
 
 libs:
 	(cd lib/src; $(MAKE))

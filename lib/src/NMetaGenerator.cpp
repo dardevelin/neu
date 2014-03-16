@@ -61,6 +61,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
+#include "clang/Sema/Sema.h"
 
 #include <neu/nvar.h>
 #include <neu/NSys.h>
@@ -72,6 +73,121 @@ using namespace tooling;
 using namespace neu;
 
 namespace{
+  
+  class Global{
+  public:
+    Global(){
+      nTypeMap_["void"] = true;
+      nTypeMap_["bool"] = true;
+      nTypeMap_["const bool"] = true;
+      nTypeMap_["const bool &"] = true;
+      nTypeMap_["_Bool"] = true;
+      nTypeMap_["const _Bool"] = true;
+      nTypeMap_["const _Bool &"] = true;
+      nTypeMap_["unsigned char"] = true;
+      nTypeMap_["const unsigned char"] = true;
+      nTypeMap_["const unsigned char &"] = true;
+      nTypeMap_["signed char"] = true;
+      nTypeMap_["const signed char"] = true;
+      nTypeMap_["const signed char &"] = true;
+      nTypeMap_["char"] = true;
+      nTypeMap_["const char"] = true;
+      nTypeMap_["const char &"] = true;
+      nTypeMap_["short"] = true;
+      nTypeMap_["const short"] = true;
+      nTypeMap_["const short &"] = true;
+      nTypeMap_["unsigned short"] = true;
+      nTypeMap_["const unsigned short"] = true;
+      nTypeMap_["const unsigned short &"] = true;
+      nTypeMap_["int"] = true;
+      nTypeMap_["const int"] = true;
+      nTypeMap_["const int &"] = true;
+      nTypeMap_["unsigned int"] = true;
+      nTypeMap_["const unsigned int"] = true;
+      nTypeMap_["const unsigned int &"] = true;
+      nTypeMap_["long"] = true;
+      nTypeMap_["const long"] = true;
+      nTypeMap_["const long &"] = true;
+      nTypeMap_["long long"] = true;
+      nTypeMap_["const long long"] = true;
+      nTypeMap_["const long long &"] = true;
+      nTypeMap_["unsigned long"] = true;
+      nTypeMap_["const unsigned long"] = true;
+      nTypeMap_["const unsigned long &"] = true;
+      nTypeMap_["unsigned long long"] = true;
+      nTypeMap_["const unsigned long long"] = true;
+      nTypeMap_["const unsigned long long &"] = true;
+      nTypeMap_["float"] = true;
+      nTypeMap_["const float"] = true;
+      nTypeMap_["const float &"] = true;
+      nTypeMap_["double"] = true;
+      nTypeMap_["const double"] = true;
+      nTypeMap_["const double &"] = true;
+      nTypeMap_["class neu::nvar"] = true;
+      nTypeMap_["class neu::nvar *"] = true;
+      nTypeMap_["const class neu::nvar"] = true;
+      nTypeMap_["const class neu::nvar &"] = true;
+      nTypeMap_["class neu::nvar &"] = true;
+      nTypeMap_["class neu::nstr"] = true;
+      nTypeMap_["const class neu::nstr"] = true;
+      nTypeMap_["const class neu::nstr &"] = true;
+      nTypeMap_["class neu::nstr &"] = true;
+      nTypeMap_["class std::basic_string<char>"] = true;
+      nTypeMap_["const class std::basic_string<char>"] = true;
+      nTypeMap_["const class std::basic_string<char> &"] = true;
+      
+      nTypeMap_["class neu::NVector<class neu::nvar, "
+                "class std::allocator<class neu::nvar> >"] = true;
+      nTypeMap_["class neu::NVector<class neu::nvar, "
+                "class std::__1::allocator<class neu::nvar> >"] = true;
+      
+      nTypeMap_["const class neu::NVector<class neu::nvar, "
+                "class std::allocator<class neu::nvar> >"] = true;
+      nTypeMap_["const class neu::NVector<class neu::nvar, "
+                "class std::__1::allocator<class neu::nvar> >"] = true;
+      
+      nTypeMap_["const class neu::NVector<class neu::nvar, "
+                "class std::allocator<class neu::nvar> > &"] = true;
+      nTypeMap_["const class neu::NVector<class neu::nvar, "
+                "class std::__1::allocator<class neu::nvar> > &"] = true;
+      
+      nTypeMap_["class neu::NList<class neu::nvar, "
+                "class std::allocator<class neu::nvar> >"] = true;
+      nTypeMap_["class neu::NList<class neu::nvar, "
+                "class std::__1::allocator<class neu::nvar> >"] = true;
+      
+      
+      nTypeMap_["const class neu::NList<class neu::nvar, "
+                "class std::allocator<class neu::nvar> >"] = true;
+      nTypeMap_["const class neu::NList<class neu::nvar, "
+                "class std::__1::allocator<class neu::nvar> >"] = true;
+      
+      nTypeMap_["const class neu::NList<class neu::nvar, "
+                "class std::allocator<class neu::nvar> > &"] = true;
+      nTypeMap_["const class neu::NList<class neu::nvar, "
+                "class std::__1::allocator<class neu::nvar> > &"] = true;
+      
+      nTypeMap_["class neu::nrat"] = true;
+      nTypeMap_["const class neu::nrat"] = true;
+      nTypeMap_["const class neu::nrat &"] = true;
+      nTypeMap_["class neu::nreal"] = true;
+      nTypeMap_["const class neu::nreal"] = true;
+      nTypeMap_["const class neu::nreal &"] = true;
+      nTypeMap_["class neu::nstr *"] = true;
+    }
+    
+    bool isNType(const nstr& t){
+      return nTypeMap_.hasKey(t);
+    }
+    
+  private:
+    typedef NMap<nstr, bool> NTypeMap_;
+    
+    NTypeMap_ nTypeMap_;
+  };
+  
+  // ndm - create on constructor below
+  Global* _global = new Global;
   
 } // end namespace
 
@@ -91,7 +207,7 @@ namespace neu{
       }
       
       void HandleTranslationUnit(ASTContext& context){
-        visitor_->setCompilerInstance(ci_);
+        visitor_->init(ci_);
         visitor_->TraverseDecl(context.getTranslationUnitDecl());
       }
       
@@ -125,6 +241,8 @@ namespace neu{
       }
       
       CompileCommandVec getCompileCommands(StringRef path) const{
+        nstr p = path.str();
+        
         CompileCommandVec cv;
         
         CompileCommand c;
@@ -148,7 +266,12 @@ namespace neu{
           c.CommandLine.push_back("-I" + i);
         }
         
-        c.CommandLine.push_back(path.str());
+        if(p.endsWith(".h")){
+          c.CommandLine.push_back("-x");
+          c.CommandLine.push_back("c++-header");
+        }
+        
+        c.CommandLine.push_back(p);
         
         cv.push_back(c);
         
@@ -182,9 +305,8 @@ namespace neu{
       NMetaGenerator_* visitor_;
     };
     
-    NMetaGenerator_(NMetaGenerator* o, ostream& ostr)
+    NMetaGenerator_(NMetaGenerator* o)
     : o_(o),
-    ostr_(ostr),
     enableHandles_(true),
     enableClasses_(true),
     enableMetadata_(true){
@@ -221,7 +343,20 @@ namespace neu{
       files_.push_back(path);
     }
     
-    void generate(){
+    void generate(ostream& ostr){
+      ostr << "#include <neu/NFuncMap.h>" << endl;
+      ostr << "#include <neu/nvar.h>" << endl;
+
+      ostr << endl;
+      
+      for(const nstr& f : files_){
+        ostr << "#include \"" << f << "\"" << endl;
+      }
+      
+      ostr << endl;
+      
+      ostr_ = &ostr;
+      
       Database db(includes_);
       
       ClangTool tool(db, files_);
@@ -229,33 +364,305 @@ namespace neu{
       Factory factory(this);
       int result = tool.run(&factory);
       
-      cout << "result is: " << result << endl;
+      //cout << "result is: " << result << endl;
     }
     
-    bool VisitFunctionDecl(FunctionDecl* d){
-      //d->dump();
+    void init(){
+      
+    }
+    
+    CXXRecordDecl* getSuperClass(CXXRecordDecl* rd, const string& className){
+      if(!rd->hasDefinition()){
+        return 0;
+      }
+      
+      for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
+          bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
+        CXXBaseSpecifier b = *bitr;
+        QualType qt = b.getType();
+        
+        QualType ct = sema_->Context.getCanonicalType(qt);
+        
+        if(ct.getAsString() == "class " + className){
+          return rd;
+        }
+        
+        const Type* t = ct.getTypePtr();
+        if(const RecordType* rt = dyn_cast<RecordType>(t)){
+          if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
+            CXXRecordDecl* s = getSuperClass(srd, className);
+            if(s){
+              return s;
+            }
+          }
+        }
+      }
+      return 0;
+    }
+    
+    CXXRecordDecl* getFirstSuperClass(CXXRecordDecl* rd,
+                                      const string& className){
+      if(!rd->hasDefinition()){
+        return 0;
+      }
+      
+      for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
+          bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
+        CXXBaseSpecifier b = *bitr;
+        QualType qt = b.getType();
+        
+        QualType ct = sema_->Context.getCanonicalType(qt);
+        
+        const Type* t = ct.getTypePtr();
+        if(const RecordType* rt = dyn_cast<RecordType>(t)){
+          if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
+            if(getSuperClass(srd, className)){
+              return srd;
+            }
+          }
+        }
+      }
+      
+      return 0;
+    }
+    
+    bool VisitCXXRecordDecl(CXXRecordDecl* d){
+      if(sema_->SourceMgr.isInMainFile(d->getLocStart())){
+        CXXRecordDecl* s = getSuperClass(d, "neu::NObject");
+        if(s){
+          generateHandler(s, d);
+        }
+      }
+
       return true;
     }
     
-    void setCompilerInstance(CompilerInstance* ci){
+    void init(CompilerInstance* ci){
       ci_ = ci;
+      sema_ = &ci_->getSema();
+    }
+    
+    bool isBaseType(QualType qt, const string& baseType){
+      QualType bct = sema_->Context.getCanonicalType(qt);
+      
+      if(const RecordType* rt = dyn_cast<RecordType>(bct)){
+        if(CXXRecordDecl* rd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
+          if(!rd->hasDefinition()){
+            return false;
+          }
+          
+          for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
+              bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
+            CXXBaseSpecifier b = *bitr;
+            
+            QualType ct = sema_->Context.getCanonicalType(b.getType());
+            
+            if(ct.getAsString() == "class " + baseType){
+              return true;
+            }
+            
+            if(isBaseType(ct, baseType)){
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+    
+    int isNCompatibleType(QualType qt){
+      QualType ct = sema_->Context.getCanonicalType(qt);
+      
+      if(_global->isNType(ct.getAsString())){
+        return 1;
+      }
+      
+      const Type* t = qt.getTypePtr();
+      
+      if(t->isPointerType()){
+        if(isBaseType(t->getPointeeType(), "neu::NObjectBase")){
+          return 2;
+        }
+      }
+      else if(isBaseType(qt, "neu::NObjectBase")){
+        return 3;
+      }
+      
+      return 0;
+    }
+    
+    int isNCallable(FunctionDecl* fd){
+      if(!isNCompatibleType(fd->getResultType())){
+        return 0;
+      }
+      
+      int t = 1;
+      for(CXXMethodDecl::param_iterator itr = fd->param_begin(),
+          itrEnd = fd->param_end(); itr != itrEnd; ++itr){
+        int ti = isNCompatibleType((*itr)->getType());
+        if(!ti){
+          return 0;
+        }
+        
+        if(ti == 2){
+          if(t < 2){
+            t = 2;
+          }
+        }
+        else if(ti == 3){
+          t = 3;
+        }
+      }
+      
+      return t;
+    }
+    
+    void generateHandler(CXXRecordDecl* srd,
+                         CXXRecordDecl* rd){
+      
+      stringstream ostr;
+      
+      nstr className = rd->getName().str();
+      nstr fullClassName = rd->getQualifiedNameAsString();
+      
+      ostr << "namespace{" << endl << endl;
+      ostr << "class " << className << "_FuncMap : public neu::NFuncMap{" << endl;
+      ostr << "public:" << endl;
+      ostr << "  " << className << "_FuncMap(){" << endl;
+      
+      typedef NVector<CXXMethodDecl*> MethodVec;
+      MethodVec mv;
+      
+      for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
+          mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
+        CXXMethodDecl* md = *mitr;
+        if(md->isUserProvided() &&
+           !md->isOverloadedOperator() &&
+           md->getAccess() == AS_public &&
+           !(isa<CXXConstructorDecl>(md) || isa<CXXDestructorDecl>(md))){
+          
+          nstr methodName = md->getName().str();
+          
+          if(methodName.empty() || methodName == "handle"){
+            continue;
+          }
+          
+          int m = isNCallable(md);
+          if(m > 0 && m < 3){
+            mv.push_back(md);
+          }
+        }
+      }
+      
+      if(mv.empty()){
+        return;
+      }
+      
+      for(size_t i = 0; i < mv.size(); ++i){
+        if(i > 0){
+          ostr << endl;
+        }
+        CXXMethodDecl* md = mv[i];
+        
+        bool isVoid = md->getResultType().getTypePtr()->isVoidType();
+        
+        for(size_t j = md->getMinRequiredArguments(); j <= md->param_size(); ++j){
+          ostr << "    add(\"" << md->getName().str() << "\", " << j <<
+          ", " << endl;
+          ostr << "      [](void* o, const neu::nvar& n) -> neu::nvar{" << endl;
+          ostr << "        ";
+          if(!isVoid){
+            ostr << "return";
+          }
+          ostr << " static_cast<" << fullClassName << "*>(o)->";
+          ostr << md->getName().str() << "(";
+          
+          for(size_t k = 0; k < j; ++k){
+            if(k > 0){
+              ostr << ", ";
+            }
+            
+            ParmVarDecl* p = md->getParamDecl(k);
+            
+            const Type* t = p->getType().getTypePtr();
+            
+            if(t->isPointerType() &&
+               isBaseType(t->getPointeeType(), "neu::NObjectBase")){
+              nstr cn = t->getPointeeType().getAsString();
+              
+              nstr c = cn.substr(0, 6);
+              
+              assert(c == "class ");
+              nstr name = cn.substr(6);
+              
+              name.findReplace("<anonymous>::", "");
+              
+              ostr << "static_cast<" << name << "*>(n[" << k << "].obj())";
+            }
+            else{
+              ostr << "n[" << k << "]";
+            }
+          }
+          ostr << ");" << endl;
+          
+          if(isVoid){
+            ostr << "    return 0;" << endl;
+          }
+          ostr << "    });" << endl;
+        }
+      }
+      
+      ostr << "  }" << endl;
+      
+      ostr << "};" << endl << endl;
+      
+      ostr << "" << className << "_FuncMap _" << className <<
+      "_FuncMap;" << endl << endl;
+      
+      ostr << "} // end namespace" << endl << endl;
+      
+      ostr << "neu::NFunc " << fullClassName << "::handle(const neu::nvar& n, uint32_t flags){" << endl;
+
+      if(srd == rd){
+        ostr << "  return _" << className <<
+        "_FuncMap.map(n) ? : neu::NObject::handle(n);" << endl;
+      }
+      else{
+        ostr << "  return _" << className << "_FuncMap.map(n) ? : " << endl;
+        ostr << getQualifiedName(getFirstSuperClass(rd, "neu::NObject"));
+        ostr << "::handle(v, flags);";
+      }
+      
+      ostr << "}" << endl;
+      
+      *ostr_ << ostr.str() << endl;
+    }
+
+    nstr getQualifiedName(NamedDecl* decl){
+      PrintingPolicy p(sema_->LangOpts);
+      nstr ret = decl->getQualifiedNameAsString(p);
+      ret.findReplace("<anonymous namespace>::", "");
+      
+      return ret;
     }
     
   private:
     NMetaGenerator* o_;
-    ostream& ostr_;
+    ostream* ostr_;
     CompilerInstance* ci_;
+    Sema* sema_;
     nvec includes_;
     StringVec files_;
     bool enableHandles_;
     bool enableClasses_;
     bool enableMetadata_;
+    
   };
   
 } // end namespace neu
 
-NMetaGenerator::NMetaGenerator(ostream& ostr){
-  x_ = new NMetaGenerator_(this, ostr);
+NMetaGenerator::NMetaGenerator(){
+  x_ = new NMetaGenerator_(this);
 }
 
 NMetaGenerator::~NMetaGenerator(){
@@ -282,6 +689,6 @@ void NMetaGenerator::addFile(const nstr& path){
   x_->addFile(path);
 }
 
-void NMetaGenerator::generate(){
-  x_->generate();
+void NMetaGenerator::generate(ostream& ostr){
+  x_->generate(ostr);
 }

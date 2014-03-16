@@ -52,9 +52,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NEU_N_FUNC_MAP_H
 
 #include <unordered_map>
-#include <functional>
 
-#include <neu/nstr.h>
+#include <neu/nvar.h>
 
 namespace neu{
   

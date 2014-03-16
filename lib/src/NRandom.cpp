@@ -139,6 +139,6 @@ namespace{
 } // end namespace
 
 NFunc NRandom::handle(const nvar& v, uint32_t flags){
-  return _funcMap.map(v);
+  return _funcMap.map(v) ? : 0;
 }
 

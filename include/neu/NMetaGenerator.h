@@ -59,7 +59,7 @@ namespace neu{
   
   class NMetaGenerator{
   public:
-    NMetaGenerator(std::ostream& ostr);
+    NMetaGenerator();
 
     ~NMetaGenerator();
 
@@ -73,7 +73,7 @@ namespace neu{
 
     void addFile(const nstr& path);
 
-    void generate();
+    void generate(std::ostream& ostr);
     
     NMetaGenerator& operator=(const NMetaGenerator&) = delete;
     NMetaGenerator(const NMetaGenerator&) = delete;
