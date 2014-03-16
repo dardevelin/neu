@@ -67,6 +67,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/nvar.h>
 #include <neu/NSys.h>
 #include <neu/NRegex.h>
+#include <neu/NBasicMutex.h>
 
 using namespace std;
 using namespace llvm;
@@ -192,7 +193,8 @@ namespace{
   };
   
   // ndm - create on constructor below
-  Global* _global = new Global;
+  Global* _global = 0;
+  NBasicMutex _mutex;
   
 } // end namespace
 
@@ -348,7 +350,7 @@ namespace neu{
       files_.push_back(path);
     }
     
-    void generate(ostream& ostr){
+    bool generate(ostream& ostr){
       ostr << "#include <neu/nvar.h>" << endl;
       
       if(enableHandles_){
@@ -374,13 +376,8 @@ namespace neu{
       ClangTool tool(db, files_);
       
       Factory factory(this);
-      int result = tool.run(&factory);
-      
-      //cout << "result is: " << result << endl;
-    }
-    
-    void init(){
-      
+
+      return tool.run(&factory) == 0;
     }
     
     CXXRecordDecl* getSuperClass(CXXRecordDecl* rd, const string& className){
@@ -390,9 +387,9 @@ namespace neu{
       
       for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
           bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
+      
         CXXBaseSpecifier b = *bitr;
         QualType qt = b.getType();
-        
         QualType ct = sema_->Context.getCanonicalType(qt);
         
         if(ct.getAsString() == "class " + className){
@@ -400,6 +397,7 @@ namespace neu{
         }
         
         const Type* t = ct.getTypePtr();
+
         if(const RecordType* rt = dyn_cast<RecordType>(t)){
           if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
             CXXRecordDecl* s = getSuperClass(srd, className);
@@ -409,6 +407,7 @@ namespace neu{
           }
         }
       }
+      
       return 0;
     }
     
@@ -420,12 +419,13 @@ namespace neu{
       
       for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
           bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
+        
         CXXBaseSpecifier b = *bitr;
         QualType qt = b.getType();
         
         QualType ct = sema_->Context.getCanonicalType(qt);
-        
         const Type* t = ct.getTypePtr();
+        
         if(const RecordType* rt = dyn_cast<RecordType>(t)){
           if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
             if(getSuperClass(srd, className)){
@@ -438,12 +438,21 @@ namespace neu{
       return 0;
     }
     
+    bool isInMainFile(Decl* d){
+      return sema_->SourceMgr.isInMainFile(d->getLocStart());
+    }
+    
     bool VisitCXXRecordDecl(CXXRecordDecl* d){
-      if(sema_->SourceMgr.isInMainFile(d->getLocStart())){
+      if(isInMainFile(d)){
         CXXRecordDecl* s = getSuperClass(d, "neu::NObject");
         if(s){
-          generateHandler(s, d);
-          generateClass(d);
+          if(enableHandles_){
+            generateHandler(s, d);
+          }
+
+          if(enableClasses_){
+            generateClass(d);
+          }
         }
       }
 
@@ -453,6 +462,7 @@ namespace neu{
     void init(CompilerInstance* ci){
       ci_ = ci;
       sema_ = &ci_->getSema();
+      context_ = &ci_->getASTContext();
     }
     
     bool isBaseType(QualType qt, const string& baseType){
@@ -530,15 +540,14 @@ namespace neu{
       return t;
     }
     
-    void generateHandler(CXXRecordDecl* srd,
-                         CXXRecordDecl* rd){
-      
+    void generateHandler(CXXRecordDecl* srd, CXXRecordDecl* rd){
       stringstream ostr;
       
-      nstr className = rd->getName().str();
+      nstr className = rd->getNameAsString();
       nstr fullClassName = rd->getQualifiedNameAsString();
       
       ostr << "namespace{" << endl << endl;
+
       ostr << "class " << className << "_FuncMap : public neu::NFuncMap{" << endl;
       ostr << "public:" << endl;
       ostr << "  " << className << "_FuncMap(){" << endl;
@@ -549,18 +558,20 @@ namespace neu{
       for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
           mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
         CXXMethodDecl* md = *mitr;
+        
         if(md->isUserProvided() &&
            !md->isOverloadedOperator() &&
            md->getAccess() == AS_public &&
            !(isa<CXXConstructorDecl>(md) || isa<CXXDestructorDecl>(md))){
           
-          nstr methodName = md->getName().str();
+          nstr methodName = md->getNameAsString();
           
           if(methodName.empty() || methodName == "handle"){
             continue;
           }
           
           int m = isNCallable(md);
+          
           if(m > 0 && m < 3){
             mv.push_back(md);
           }
@@ -575,6 +586,7 @@ namespace neu{
         if(i > 0){
           ostr << endl;
         }
+        
         CXXMethodDecl* md = mv[i];
         
         bool isVoid = md->getResultType().getTypePtr()->isVoidType();
@@ -584,11 +596,13 @@ namespace neu{
           ", " << endl;
           ostr << "      [](void* o, const neu::nvar& n) -> neu::nvar{" << endl;
           ostr << "        ";
+          
           if(!isVoid){
             ostr << "return";
           }
+        
           ostr << " static_cast<" << fullClassName << "*>(o)->";
-          ostr << md->getName().str() << "(";
+          ostr << md->getNameAsString() << "(";
           
           for(size_t k = 0; k < j; ++k){
             if(k > 0){
@@ -601,6 +615,7 @@ namespace neu{
             
             if(t->isPointerType() &&
                isBaseType(t->getPointeeType(), "neu::NObjectBase")){
+              
               nstr cn = t->getPointeeType().getAsString();
               
               nstr c = cn.substr(0, 6);
@@ -619,7 +634,7 @@ namespace neu{
           ostr << ");" << endl;
           
           if(isVoid){
-            ostr << "    return 0;" << endl;
+            ostr << "    return neu::none;" << endl;
           }
           ostr << "    });" << endl;
         }
@@ -712,7 +727,6 @@ namespace neu{
               
               const Type* t = p->getType().getTypePtr();
               
-              // ndm - remove the reference type check?
               if((t->isPointerType() || t->isReferenceType()) &&
                  isBaseType(t->getPointeeType(), "neu::NObjectBase")){
                 
@@ -739,15 +753,17 @@ namespace neu{
         }
       }
       ostr << "    return 0;" << endl;
-      ostr << "  }" << endl << endl;
+      ostr << "  }" << endl;
 
       if(enableMetadata_){
+        ostr << endl;
         generateMetadata(ostr, rd);
       }
       
       ostr << "};" << endl << endl;
       
-      ostr << name << "_Class _" << name << "Class();" << endl << endl;
+      ostr << name << "_Class* _" << name << "Class = new " <<
+      name << "_Class;" << endl << endl;
 
       ostr << "} // end namespace" << endl << endl;
 
@@ -757,12 +773,13 @@ namespace neu{
     void commentToStr(Comment* c, nstr& str){
       for(Comment::child_iterator itr = c->child_begin(),
           itrEnd = c->child_end(); itr != itrEnd; ++itr){
+
         Comment* ci = *itr;
+
         if(TextComment* tc = dyn_cast<TextComment>(ci)){
-          // ndm - fix w/o c_str() - problem in nstr +=
-          nstr tci = tc->getText().str();
-          tci.strip();
-          str += tci;
+          nstr cs = tc->getText().str();
+          cs.strip();
+          str += cs;
         }
         else{
           commentToStr(ci, str);
@@ -771,21 +788,20 @@ namespace neu{
     }
     
     nstr getDeclComment(Decl* d){
-      // ndm - make attribute for AST context
       FullComment* comment =
-      ci_->getASTContext().getCommentForDecl(d, &ci_->getPreprocessor());
+      context_->getCommentForDecl(d, &ci_->getPreprocessor());
       
       if(comment){
-        nstr cstr;
-        commentToStr(comment, cstr);
-        return cstr;
+        nstr cs;
+        commentToStr(comment, cs);
+        return cs;
       }
       
       return "";
     }
     
     void generateMetadata(ostream& ostr, CXXRecordDecl* rd){
-      nstr className = rd->getName().str();
+      nstr className = rd->getNameAsString();
       
       CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject");
       
@@ -801,18 +817,24 @@ namespace neu{
         ostr << "    c(\"comment\") = \"" << cs << "\";" << endl;
       }
       
+      nstr en;
+      
       if(srd){
-        ostr << "    c(\"extends\") = \"" << srd->getName().str() << "\";" << endl;
+        en = srd->getNameAsString();
       }
       else{
-        ostr << "    c(\"extends\") = \"NObject\";" << endl;
+        en = "NObject";
       }
+      
+      ostr << "    c(\"extends\") = neu::nvar(\"" << en <<
+      "\", neu::nvar::Sym);" << endl;
 
       ostr << "    neu::nvar& m = c(\"methods\");" << endl;
       
       for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
           mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
         CXXMethodDecl* md = *mitr;
+        
         if(md->isUserProvided() &&
            md->getAccess() == AS_public &&
            !md->isOverloadedOperator()){
@@ -824,15 +846,19 @@ namespace neu{
           }
           
           int m = isNCallable(md);
+          
           if(m > 0 && m < 3){
             for(size_t k = md->getMinRequiredArguments();
                 k <= md->param_size(); ++k){
+          
               ostr << "    {" << endl;
               
               nstr methodName = md->getNameAsString();
               
-              ostr << "      neu::nvar& mi = m({\"" << methodName << "\", " <<
-              k << "});" << endl;
+              ostr << "      neu::nvar mk({neu::nvar(\"" << methodName <<
+              "\", neu::nvar::Sym), neu::nvar(" << k << ")});" << endl;
+              
+              ostr << "      neu::nvar& mi = m(mk);" << endl;
               
               nstr cs = getDeclComment(md);
               
@@ -881,10 +907,10 @@ namespace neu{
                 ParmVarDecl* p = md->getParamDecl(i);
                 nstr rawType = p->getType().getAsString();
                 
-                ostr << "        mi.pushBack(neu::nvar());" << endl;
+                ostr << "        mi.pushBack(neu::nvar(\"" <<
+                p->getName().str() << "\", neu::nvar::Sym));" << endl;
                 ostr << "        neu::nvar& pi = mi.back();" << endl;
-                ostr << "        pi = \"" << p->getName().str() << "\";" << endl;
-                
+
                 nvec m;
                 if(_pointerRegex.match(rawType, m)){
                   ostr << "        pi(\"type\") = \"" << m[1].str() << "\";" << endl;
@@ -919,6 +945,7 @@ namespace neu{
     ostream* ostr_;
     CompilerInstance* ci_;
     Sema* sema_;
+    ASTContext* context_;
     nvec includes_;
     StringVec files_;
     bool enableHandles_;
@@ -930,6 +957,12 @@ namespace neu{
 } // end namespace neu
 
 NMetaGenerator::NMetaGenerator(){
+  _mutex.lock();
+  if(!_global){
+    _global = new Global;
+  }
+  _mutex.unlock();
+  
   x_ = new NMetaGenerator_(this);
 }
 
@@ -957,6 +990,6 @@ void NMetaGenerator::addFile(const nstr& path){
   x_->addFile(path);
 }
 
-void NMetaGenerator::generate(ostream& ostr){
-  x_->generate(ostr);
+bool NMetaGenerator::generate(ostream& ostr){
+  return x_->generate(ostr);
 }

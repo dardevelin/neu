@@ -170,6 +170,11 @@ namespace neu{
       str_ += str.str_;
       return *this;
     }
+
+    nstr& operator+=(const std::string& str){
+      str_ += str;
+      return *this;
+    }
     
     nstr& operator+=(const char* str){
       str_ += str;

@@ -73,7 +73,7 @@ namespace neu{
 
     void addFile(const nstr& path);
 
-    void generate(std::ostream& ostr);
+    bool generate(std::ostream& ostr);
     
     NMetaGenerator& operator=(const NMetaGenerator&) = delete;
     NMetaGenerator(const NMetaGenerator&) = delete;
