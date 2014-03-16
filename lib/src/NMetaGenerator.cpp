@@ -62,17 +62,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clang/Tooling/Tooling.h"
 #include "clang/Rewrite/Core/Rewriter.h"
 #include "clang/Sema/Sema.h"
+#include "clang/AST/Comment.h"
 
 #include <neu/nvar.h>
 #include <neu/NSys.h>
+#include <neu/NRegex.h>
 
 using namespace std;
 using namespace llvm;
 using namespace clang;
 using namespace tooling;
+using namespace comments;
 using namespace neu;
 
 namespace{
+  
+  NRegex _pointerRegex("(?:const )?class .*::(\\w+) \\*$");
   
   class Global{
   public:
@@ -344,8 +349,15 @@ namespace neu{
     }
     
     void generate(ostream& ostr){
-      ostr << "#include <neu/NFuncMap.h>" << endl;
       ostr << "#include <neu/nvar.h>" << endl;
+      
+      if(enableHandles_){
+        ostr << "#include <neu/NFuncMap.h>" << endl;
+      }
+      
+      if(enableClasses_){
+        ostr << "#include <neu/NClass.h>" << endl;
+      }
 
       ostr << endl;
       
@@ -431,6 +443,7 @@ namespace neu{
         CXXRecordDecl* s = getSuperClass(d, "neu::NObject");
         if(s){
           generateHandler(s, d);
+          generateClass(d);
         }
       }
 
@@ -646,6 +659,250 @@ namespace neu{
       return ret;
     }
     
+    void generateClass(CXXRecordDecl* rd){
+      nstr name = rd->getName().str();
+      nstr fullName = rd->getQualifiedNameAsString();
+      
+      stringstream ostr;
+      
+      ostr << "namespace{" << endl << endl;
+      
+      ostr << "class " << name << "_Class : public neu::NClass{" << endl;
+      ostr << "public: " << endl;
+      
+      ostr << "  " << name << "_Class() : NClass(\"" << fullName << "\"){}"
+      << endl << endl;
+      
+      ostr << "  neu::NObjectBase* construct(const neu::nvar& f){" << endl;
+      
+      for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
+          mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
+        
+        CXXMethodDecl* md = *mitr;
+        
+        if(md->isUserProvided() && isa<CXXConstructorDecl>(md)){
+          int m = isNCallable(md);
+          
+          if(m != 1 && m != 2){
+            continue;
+          }
+          
+          for(size_t k = md->getMinRequiredArguments();
+              k <= md->param_size(); ++k){
+            
+            ostr << "    if(f.size() == " << k << "){" << endl;
+            ostr << "      return new " << fullName << "(";
+            
+            for(size_t i = 0; i < k; ++i){
+              if(i > 0){
+                ostr << ", ";
+              }
+              
+              ParmVarDecl* p = md->getParamDecl(i);
+              
+              const Type* t = p->getType().getTypePtr();
+              
+              // ndm - remove the reference type check?
+              if((t->isPointerType() || t->isReferenceType()) &&
+                 isBaseType(t->getPointeeType(), "neu::NObjectBase")){
+                
+                nstr cn = t->getPointeeType().getAsString();
+                
+                nstr c = cn.substr(0, 6);
+                
+                assert(c == "class ");
+                nstr name = cn.substr(6);
+                
+                if(!t->isPointerType()){
+                  ostr << "*";
+                }
+                
+                ostr << "static_cast<" << fullName << "*>(f[" << i << "].obj())";
+              }
+              else{
+                ostr << "f[" << i << "]";
+              }
+            }
+            ostr << ");" << endl;
+            ostr << "    }" << endl;
+          }
+        }
+      }
+      ostr << "    return 0;" << endl;
+      ostr << "  }" << endl << endl;
+
+      generateMetadata(ostr, rd);
+      
+      ostr << "};" << endl << endl;
+      
+      ostr << name << "_Class _" << name << "Class();" << endl << endl;
+
+      ostr << "} // end namespace" << endl << endl;
+
+      *ostr_ << ostr.str();
+    }
+    
+    void commentToStr(Comment* c, nstr& str){
+      for(Comment::child_iterator itr = c->child_begin(),
+          itrEnd = c->child_end(); itr != itrEnd; ++itr){
+        Comment* ci = *itr;
+        if(TextComment* tc = dyn_cast<TextComment>(ci)){
+          // ndm - fix w/o c_str() - problem in nstr +=
+          str += tc->getText().str().c_str();
+        }
+        else{
+          commentToStr(ci, str);
+        }
+      }
+    }
+    
+    nstr getDeclComment(Decl* d){
+      // ndm - make attribute for AST context
+      FullComment* comment =
+      ci_->getASTContext().getCommentForDecl(d, &ci_->getPreprocessor());
+      
+      if(comment){
+        nstr cstr;
+        commentToStr(comment, cstr);
+        return cstr;
+      }
+      
+      return "";
+    }
+    
+    void generateMetadata(ostream& ostr, CXXRecordDecl* rd){
+      nstr className = rd->getName().str();
+      
+      nstr cs = getDeclComment(rd);
+      
+      if(cs.empty()){
+        return;
+      }
+      
+      CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject");
+      
+      cs.escapeForC();
+      
+      ostr << "  neu::nvar metadata_(){" << endl;
+      
+      ostr << "    neu::nvar ret;" << endl;
+      
+      ostr << "    neu::nvar& c = ret(\"" << className << "\");" << endl;
+      
+      ostr << "    c(\"data\") = \"" << cs << "\";" << endl;
+      
+      if(srd){
+        ostr << "    c(\"extends\") = \"" << srd->getName().str() << "\";" << endl;
+      }
+      else{
+        ostr << "    c(\"extends\") = \"NObject\";" << endl;
+      }
+
+      ostr << "    neu::nvar& m = c(\"methods\");" << endl;
+      
+      for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
+          mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
+        CXXMethodDecl* md = *mitr;
+        if(md->isUserProvided() &&
+           md->getAccess() == AS_public &&
+           !md->isOverloadedOperator()){
+          
+          nstr methodName = md->getNameAsString();
+          
+          if(methodName.empty()){
+            continue;
+          }
+          
+          int m = isNCallable(md);
+          if(m > 0 && m < 3){
+            nstr cs = getDeclComment(md);
+            
+            if(!cs.empty()){
+              cs.escapeForC();
+              for(size_t k = md->getMinRequiredArguments();
+                  k <= md->param_size(); ++k){
+                ostr << "    {" << endl;
+                
+                nstr methodName = md->getName().str();
+                
+                ostr << "      neu::nvar& mi = m({\"" << methodName << "\", " <<
+                k << "});" << endl;
+                
+                ostr << "      mi(\"data\") = \"" << cs << "\";" << endl;
+                
+                ostr << "      mi(\"const\") = ";
+                
+                if(md->getTypeQualifiers() & Qualifiers::Const){
+                  ostr << "true";
+                }
+                else{
+                  ostr << "false";
+                }
+                
+                ostr << ";" << endl;
+                
+                if(!md->getResultType().getTypePtr()->isVoidType()){
+                  ostr << "      neu::nvar& ri = mi(\"return\");" << endl;
+                  
+                  nstr rawType = md->getResultType().getAsString();
+                  
+                  nvec m;
+                  if(_pointerRegex.match(rawType, m)){
+                    ostr << "      ri(\"type\") = \"" << m[1].str() << "\";" << endl;
+                  }
+                  
+                  ostr << "      ri(\"const\") = ";
+                  
+                  if(rawType.find("const") == 0){
+                    ostr << "true";
+                  }
+                  else{
+                    ostr << "false";
+                  }
+                  
+                  ostr << ";" << endl;
+                }
+                
+                for(size_t i = 0; i < k; ++i){
+                  ostr << "      {" << endl;
+                  
+                  ParmVarDecl* p = md->getParamDecl(i);
+                  nstr rawType = p->getType().getAsString();
+                  
+                  ostr << "        mi.pushBack(neu::nvar());" << endl;
+                  ostr << "        neu::nvar& pi = mi.back();" << endl;
+                  ostr << "        pi = \"" << p->getName().str() << "\";" << endl;
+                  
+                  nvec m;
+                  if(_pointerRegex.match(rawType, m)){
+                    ostr << "        pi(\"type\") = \"" << m[1].str() << "\";" << endl;
+                  }
+                  
+                  ostr << "        pi(\"const\") = ";
+                  
+                  if(rawType.find("const") == 0){
+                    ostr << "true";
+                  }
+                  else{
+                    ostr << "false";
+                  }
+                  
+                  ostr << ";" << endl;
+                  
+                  ostr << "      }" << endl;
+                }
+                ostr << "    }" << endl;
+              }
+            }
+          }
+        }
+      }
+      
+      ostr << "    return ret;" << endl;
+      
+      ostr << "  }" << endl;
+    }
+
   private:
     NMetaGenerator* o_;
     ostream* ostr_;
