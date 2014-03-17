@@ -3067,13 +3067,7 @@ namespace neu{
     
     nvar& operator()(const nvar& key);
     
-    nvar& operator()(const char* k){
-      if(nstr::isSymbol(k)){
-        return (*this)(nvar(k, Sym));
-      }
-      
-      return (*this)(nvar(k));
-    }
+    nvar& operator()(const char* k);
     
     nvar& operator()(const nstr& k){
       if(nstr::isSymbol(k)){

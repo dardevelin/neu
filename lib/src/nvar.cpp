@@ -16160,6 +16160,14 @@ nvar& nvar::get(const nvar& key, nvar& def){
   }
 }
 
+nvar& nvar::operator()(const char* k){
+  if(nstr::isSymbol(k)){
+    return (*this)(nvar(k, Sym));
+  }
+  
+  return (*this)(nvar(k));
+}
+
 nvar& nvar::operator()(const nvar& key){
   switch(t_){
     case None:
