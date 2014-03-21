@@ -51,6 +51,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_N_SCOPE_H
 #define NEU_N_SCOPE_H
 
+#include <unordered_map>
+
 #include <neu/NObjectBase.h>
 #include <neu/NVar.h>
 #include <neu/NRWMutex.h>
@@ -179,13 +181,30 @@ namespace neu{
     }
     
   private:
-    bool limiting_ : 1;
+    struct SymHash_{
+      size_t operator()(const nstr& k) const{
+        return std::hash<std::string>()(k.str());
+      }
+    };
+
+    typedef std::unordered_map<nstr, nvar, SymHash_> SymbolMap_;
     
-    typedef NMap<nstr, nvar> SymbolMap_;
-    typedef NMap<std::pair<nstr, size_t>, std::pair<nvar, nvar>> FunctionMap_;
+    typedef std::pair<nstr, int16_t> FuncKey_;
+    
+    struct FuncHash_{
+      size_t operator()(const FuncKey_& k) const{
+        return std::hash<std::string>()(k.first.str()) ^
+        std::hash<int16_t>()(k.second);
+      }
+    };
+
+    typedef std::unordered_map<FuncKey_,
+    std::pair<nvar, nvar>, FuncHash_> FunctionMap_;
     
     SymbolMap_ symbolMap_;
     FunctionMap_ functionMap_;
+
+    bool limiting_ : 1;
     
     struct Shared_{
       mutable NRWMutex symbolMutex_;
