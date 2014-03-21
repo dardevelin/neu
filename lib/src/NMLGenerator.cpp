@@ -169,10 +169,10 @@ namespace neu{
     
     FunctionKey getFunctionKey(const nvar& f){
       FunctionMap::const_iterator itr =
-      _functionMap.find(make_pair(f.str(), f.size()));
+      _functionMap.find({f.str(), f.size()});
       
       if(itr == _functionMap.end()){
-        itr = _functionMap.find(make_pair(f.str(), -1));
+        itr = _functionMap.find({f.str(), -1});
       }
       
       if(itr == _functionMap.end()){

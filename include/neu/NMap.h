@@ -233,7 +233,7 @@ namespace neu{
     
     NMap<Key,T,Compare,Allocator>&
     add(const Key& k, const T& t){
-      map_.insert(std::make_pair(k, t));
+      map_.insert({k, t});
       return *this;
     }
     

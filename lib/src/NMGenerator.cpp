@@ -122,10 +122,10 @@ namespace neu{
     
     FunctionKey getFunctionKey(const nvar& f){
       FunctionMap::const_iterator itr =
-      _functionMap.find(make_pair(f.str(), f.size()));
+      _functionMap.find({f.str(), f.size()});
       
       if(itr == _functionMap.end()){
-        itr = _functionMap.find(make_pair(f.str(), -1));
+        itr = _functionMap.find({f.str(), -1});
       }
       
       if(itr == _functionMap.end()){
@@ -242,10 +242,10 @@ void NMGenerator::generate(std::ostream& ostr, const nvar& v){
 }
 
 NMGenerator::Type NMGenerator::type(const nvar& v){
-  auto itr = _functionMap.find(make_pair(v.str(), v.size()));
+  auto itr = _functionMap.find({v.str(), v.size()});
   
   if(itr == _functionMap.end()){
-    itr = _functionMap.find(make_pair(v.str(), -1));
+    itr = _functionMap.find({v.str(), -1});
   }
   
   if(itr == _functionMap.end()){

@@ -16202,7 +16202,7 @@ nvar& nvar::operator()(const nvar& key){
     case Map:
       return (*h_.m)[key];
     case Multimap:{
-      auto itr = h_.mm->insert(std::make_pair(key, nvar()));
+      auto itr = h_.mm->insert({key, nvar()});
       return itr->second;
     }
     case HeadMap:
@@ -16525,7 +16525,7 @@ void nvar::touchMap(){
       for(auto& itr : mm){
         auto itr2 = m->find(itr.first);
         if(itr2 == m->end()){
-          m->insert(make_pair(itr.first, nvec(1, itr.second)));
+          m->insert({itr.first, nvec(1, itr.second)});
         }
         else{
           itr2->second.pushBack(itr.second);

@@ -145,20 +145,18 @@ namespace neu{
     void setFunction(const nvar& s, const nvar& b){
       if(shared_){
         shared_->functionMutex_.writeLock();
-        functionMap_.insert(std::make_pair(std::make_pair(s.str(), s.size()),
-                                           std::make_pair(s, b)));
+        functionMap_.insert({{s.str(), s.size()}, {s, b}});
         shared_->functionMutex_.unlock();
         return;
       }
       
-      functionMap_.insert(std::make_pair(std::make_pair(s.str(), s.size()),
-                                         std::make_pair(s, b)));
+      functionMap_.insert({{s.str(), s.size()}, {s, b}});
     }
     
     bool getFunction(const nstr& f, size_t arity, nvar& s, nvar& b){
       if(shared_){
         shared_->functionMutex_.readLock();
-        auto itr = functionMap_.find(std::make_pair(f, arity));
+        auto itr = functionMap_.find({f, arity});
         if(itr == functionMap_.end()){
           shared_->functionMutex_.unlock();
           return false;
@@ -170,7 +168,7 @@ namespace neu{
         return true;
       }
       
-      auto itr = functionMap_.find(std::make_pair(f, arity));
+      auto itr = functionMap_.find({f, arity});
       if(itr == functionMap_.end()){
         return false;
       }

@@ -177,10 +177,10 @@ void NMParser_::translate(nvar& v){
   size_t size = v.size();
   
   FunctionMap::const_iterator itr =
-  _functionMap.find(make_pair(v.str(), size));
+  _functionMap.find({v.str(), size});
   
   if(itr == _functionMap.end()){
-    itr = _functionMap.find(make_pair(v.str(), -1));
+    itr = _functionMap.find({v.str(), -1});
   }
   
   if(itr == _functionMap.end()){

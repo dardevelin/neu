@@ -201,7 +201,7 @@ namespace neu{
         obj->initContext_(context);
         
         contextMutex_.writeLock();
-        contextMap_.insert(std::make_pair(threadId, context));
+        contextMap_.insert({threadId, context});
         contextMutex_.unlock();
         
         return context;
