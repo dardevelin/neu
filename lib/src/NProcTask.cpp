@@ -50,6 +50,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NProcTask.h>
 
+#include <vector>
+#include <queue>
+
 using namespace std;
 using namespace neu;
 
@@ -59,6 +62,18 @@ namespace neu{
   
   class NProcTask_{
   public:
+    struct Item{
+      double p;
+      nvar r;
+      NProc* np;
+    };
+    
+    struct Compare{
+      bool operator()(const Item& i1, const Item& i2) const{
+        return i1.p > i2.p;
+      }
+    };
+    
     NProcTask_(NProcTask* o)
     : o_(o){
       
@@ -74,6 +89,7 @@ namespace neu{
     
   private:
     NProcTask* o_;
+    priority_queue<Item, vector<Item>, Compare> pq;
   };
   
 } // end namespace neu
