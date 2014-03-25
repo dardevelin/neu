@@ -1976,7 +1976,7 @@ namespace{
         return 0;
       }
       
-      v2 = convert(v1, "double");
+      v2 = convert(v2, "double");
       if(!v2){
         return 0;
       }
@@ -3870,6 +3870,22 @@ namespace{
             return error("invalid operand[0]", n);
           }
           
+          if(isVar(r)){
+            Value* ret = createVar("cos");
+            
+            return globalCall("void nvar::cos(nvar*, nvar*, void*)",
+                              {ret, r, null()});
+          }
+          
+          Type* t = r->getType();
+          
+          if(t->isDoubleTy()){
+            return globalCall("double cos(double)", {r});
+          }
+          else if(t->isFloatTy()){
+            return globalCall("float cos(float)", {r});
+          }
+          
           Value* rv = toVar(r);
           if(!rv){
             error("not a var[0]", n);
@@ -3877,8 +3893,8 @@ namespace{
           
           Value* ret = createVar("cos");
           
-          return globalCall("void nvar::cos(nvar*, nvar*, void*)", {ret, rv, null()});
-        }
+          return globalCall("void nvar::cos(nvar*, nvar*, void*)",
+                            {ret, rv, null()});        }
         case FKEY_Acos_1:{
           Value* r = compile(n[0]);
           if(!r){
@@ -3915,6 +3931,22 @@ namespace{
             return error("invalid operand[0]", n);
           }
           
+          if(isVar(r)){
+            Value* ret = createVar("sin");
+            
+            return globalCall("void nvar::sin(nvar*, nvar*, void*)",
+                              {ret, r, null()});
+          }
+          
+          Type* t = r->getType();
+          
+          if(t->isDoubleTy()){
+            return globalCall("double sin(double)", {r});
+          }
+          else if(t->isFloatTy()){
+            return globalCall("float sin(float)", {r});
+          }
+          
           Value* rv = toVar(r);
           if(!rv){
             error("not a var[0]", n);
@@ -3922,7 +3954,8 @@ namespace{
           
           Value* ret = createVar("sin");
           
-          return globalCall("void nvar::sin(nvar*, nvar*, void*)", {ret, rv, null()});
+          return globalCall("void nvar::sin(nvar*, nvar*, void*)",
+                            {ret, rv, null()});
         }
         case FKEY_Asin_1:{
           Value* r = compile(n[0]);
@@ -4387,8 +4420,62 @@ namespace{
     createFunction("double log(double)",
                    "llvm.sqrt.f64");
     
+    createFunction("float log10(float)",
+                   "llvm.log10.f32");
+    
+    createFunction("double log10(double)",
+                   "llvm.log10.f64");
+    
+    createFunction("float log2(float)",
+                   "llvm.log2.f32");
+    
+    createFunction("double log2(double)",
+                   "llvm.log2.f64");
+    
     createFunction("double exp(double)",
                    "llvm.sqrt.f64");
+
+    createFunction("float sin(float)",
+                   "llvm.sin.f32");
+    
+    createFunction("double sin(double)",
+                   "llvm.sin.f64");
+    
+    createFunction("float cos(float)",
+                   "llvm.cos.f32");
+    
+    createFunction("double cos(double)",
+                   "llvm.cos.f64");
+
+    createFunction("float pow(float, float)",
+                   "llvm.pow.f32");
+    
+    createFunction("double pow(double, double)",
+                   "llvm.pow.f64");
+    
+    createFunction("float fabs(float)",
+                   "llvm.fabs.f32");
+    
+    createFunction("double fabs(double)",
+                   "llvm.fabs.f64");
+    
+    createFunction("float floor(float)",
+                   "llvm.floor.f32");
+    
+    createFunction("double floor(double)",
+                   "llvm.floor.f64");
+    
+    createFunction("float ceil(float)",
+                   "llvm.ceil.f32");
+    
+    createFunction("double ceil(double)",
+                   "llvm.ceil.f64");
+    
+    createFunction("float round(float)",
+                   "llvm.round.f32");
+    
+    createFunction("double round(double)",
+                   "llvm.round.f64");
     
     createFunction("void nvar::nvar(nvar*, nvar*)",
                    "_ZN3neu4nvarC1ERKS0_");
