@@ -30,7 +30,7 @@ COMPILE += $(CXX_OPTS)
 
 C_MODULES = compress.o
 
-CPP_MODULES = global.o nreal.o nstr.o nvar.o NError.o NThread.o NRegex.o NClass.o NObjectBase.o NObject.o NCommand.o NResourceManager.o NSys.o NProgram.o NMObject.o NMLGenerator.o NMGenerator.o NRandom.o NMetaGenerator.o NPQueue.o
+CPP_MODULES = global.o nreal.o nstr.o nvar.o NError.o NThread.o NRegex.o NClass.o NObjectBase.o NObject.o NCommand.o NResourceManager.o NSys.o NProgram.o NMObject.o NMLGenerator.o NMGenerator.o NRandom.o NMetaGenerator.o NPQueue.o NProcTask.o NProc.o
 
 CORE_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o npl/NPLModule.o
 
