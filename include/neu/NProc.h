@@ -55,6 +55,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace neu{
   
+  class NProcTask;
+  
   class NProc{
   public:
     NProc();
@@ -65,7 +67,9 @@ namespace neu{
     
     virtual void run(nvar& r) = 0;
     
-    void signal(NProc* proc, const nvar& v, double priority=0);
+    void signal(NProc* proc, const nvar& v=none, double priority=0);
+    
+    void setTask(NProcTask* task);
     
     NProc& operator=(const NProc&) = delete;
     NProc(const NProc&) = delete;

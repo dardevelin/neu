@@ -52,6 +52,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
+#include <neu/NBasicMutex.h>
+#include <neu/NProcTask.h>
+
 using namespace std;
 using namespace neu;
 
@@ -60,7 +63,8 @@ namespace neu{
   class NProc_{
   public:
     NProc_(NProc* o)
-    : o_(o){
+    : o_(o),
+    task_(0){
       
     }
     
@@ -68,12 +72,23 @@ namespace neu{
       
     }
     
-    void signal(NProc* proc, const nvar& v, double priority){
+    void signal(NProc_* proc, const nvar& v, double priority){
+      assert(proc->task_ && "NProc has no task");
       
+      nvar r;
+      if(proc->o_->handle(v, r)){
+        proc->task_->queue(proc->o_, r, priority);
+      }
+    }
+    
+    void setTask(NProcTask* task){
+      task_ = task;
     }
     
   private:
     NProc* o_;
+    NProcTask* task_;
+    NBasicMutex taskMutex_;
   };
   
 } // end namespace neu
@@ -87,5 +102,9 @@ NProc::~NProc(){
 }
 
 void NProc::signal(NProc* proc, const nvar& v, double priority){
-  x_->signal(proc, v, priority);
+  x_->signal(proc->x_, v, priority);
+}
+
+void NProc::setTask(NProcTask* task){
+  x_->setTask(task);
 }

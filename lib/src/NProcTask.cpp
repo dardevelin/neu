@@ -53,6 +53,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <queue>
 
+#include <neu/NVSemaphore.h>
+#include <neu/NBasicMutex.h>
+#include <neu/NThread.h>
+#include <neu/NProc.h>
+
 using namespace std;
 using namespace neu;
 
@@ -62,21 +67,87 @@ namespace neu{
   
   class NProcTask_{
   public:
-    struct Item{
+    class Item{
+    public:
+      Item(double p, nvar& r, NProc* np)
+      : p(p),
+      r(move(r)),
+      np(np){
+        
+      }
+      
       double p;
       nvar r;
       NProc* np;
     };
     
-    struct Compare{
-      bool operator()(const Item& i1, const Item& i2) const{
-        return i1.p > i2.p;
+    class Queue{
+    public:
+      Queue()
+      : sem_(0){
+        
       }
+ 
+      void put(Item* item){
+        mutex_.lock();
+        queue_.push(item);
+        mutex_.unlock();
+
+        sem_.release();
+      }
+      
+      Item* get(){
+        sem_.acquire();
+        
+        mutex_.lock();
+        Item* item = queue_.top();
+        queue_.pop();
+        mutex_.unlock();
+        
+        return item;
+      }
+      
+    private:
+      struct Compare_{
+        bool operator()(const Item* i1, const Item* i2) const{
+          return i1->p < i2->p;
+        }
+      };
+      
+      typedef priority_queue<Item*, vector<Item*>, Compare_> Queue_;
+      
+      Queue_ queue_;
+      NVSemaphore sem_;
+      NBasicMutex mutex_;
+    };
+
+    class Thread : public NThread{
+    public:
+      Thread(Queue& queue)
+      : queue_(queue){
+        
+      }
+      
+      void run(){
+        for(;;){
+          Item* item = queue_.get();
+          item->np->run(item->r);
+          delete item;
+        }
+      }
+      
+    private:
+      Queue& queue_;
     };
     
-    NProcTask_(NProcTask* o)
+    NProcTask_(NProcTask* o, size_t threads)
     : o_(o){
-      
+    
+      for(size_t i = 0; i < threads; ++i){
+        Thread* thread = new Thread(q_);
+        threadVec_.push_back(thread);
+        thread->start();
+      }
     }
     
     ~NProcTask_(){
@@ -84,18 +155,22 @@ namespace neu{
     }
     
     void queue(NProc* proc, nvar& r, double priority){
-      
+      Item* item = new Item(priority, r, proc);
+      q_.put(item);
     }
     
   private:
+    typedef NVector<Thread*> ThreadVec_;
+    
     NProcTask* o_;
-    priority_queue<Item, vector<Item>, Compare> pq;
+    Queue q_;
+    ThreadVec_ threadVec_;
   };
   
 } // end namespace neu
 
-NProcTask::NProcTask(){
-  x_ = new NProcTask_(this);
+NProcTask::NProcTask(size_t threads){
+  x_ = new NProcTask_(this, threads);
 }
 
 NProcTask::~NProcTask(){

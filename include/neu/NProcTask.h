@@ -59,7 +59,7 @@ namespace neu{
   
   class NProcTask{
   public:
-    NProcTask();
+    NProcTask(size_t threads);
     
     ~NProcTask();
     
