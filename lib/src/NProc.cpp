@@ -52,7 +52,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <neu/NBasicMutex.h>
 #include <neu/NProcTask.h>
 
 using namespace std;
@@ -88,7 +87,6 @@ namespace neu{
   private:
     NProc* o_;
     NProcTask* task_;
-    NBasicMutex taskMutex_;
   };
   
 } // end namespace neu

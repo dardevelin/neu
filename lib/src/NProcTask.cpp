@@ -52,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <queue>
+#include <atomic>
 
 #include <neu/NVSemaphore.h>
 #include <neu/NBasicMutex.h>
@@ -67,6 +68,7 @@ namespace neu{
   
   class NProcTask_{
   public:
+
     class Item{
     public:
       Item(double p, nvar& r, NProc* np)
@@ -107,6 +109,12 @@ namespace neu{
         return item;
       }
       
+      void finish(){
+        mutex_.lock();
+        
+        mutex_.unlock();
+      }
+      
     private:
       struct Compare_{
         bool operator()(const Item* i1, const Item* i2) const{
@@ -124,20 +132,26 @@ namespace neu{
     class Thread : public NThread{
     public:
       Thread(Queue& queue)
-      : queue_(queue){
+      : queue_(queue),
+      active_(true){
         
       }
       
       void run(){
-        for(;;){
+        while(active_.load()){
           Item* item = queue_.get();
           item->np->run(item->r);
           delete item;
         }
       }
       
+      void setActive(bool flag){
+        active_.store(flag);
+      }
+      
     private:
       Queue& queue_;
+      atomic_bool active_;
     };
     
     NProcTask_(NProcTask* o, size_t threads)
@@ -151,7 +165,11 @@ namespace neu{
     }
     
     ~NProcTask_(){
-      
+      for(Thread* t : threadVec_){
+        t->setActive(false);
+        t->join();
+        delete t;
+      }
     }
     
     void queue(NProc* proc, nvar& r, double priority){
