@@ -71,16 +71,16 @@ namespace neu{
 
     class Item{
     public:
-      Item(double p, nvar& r, NProc* np)
-      : p(p),
+      Item(NProc* np, nvar& r, double p)
+      : np(np),
       r(move(r)),
-      np(np){
+      p(p){
         
       }
       
-      double p;
-      nvar r;
       NProc* np;
+      nvar r;
+      double p;
     };
     
     class Queue{
@@ -107,12 +107,6 @@ namespace neu{
         mutex_.unlock();
         
         return item;
-      }
-      
-      void finish(){
-        mutex_.lock();
-        
-        mutex_.unlock();
       }
       
     private:
@@ -173,7 +167,7 @@ namespace neu{
     }
     
     void queue(NProc* proc, nvar& r, double priority){
-      Item* item = new Item(priority, r, proc);
+      Item* item = new Item(proc, r, priority);
       q_.put(item);
     }
     
