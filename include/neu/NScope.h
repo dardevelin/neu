@@ -54,7 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unordered_map>
 
 #include <neu/NObjectBase.h>
-#include <neu/NVar.h>
+#include <neu/nvar.h>
 #include <neu/NRWMutex.h>
 
 namespace neu{

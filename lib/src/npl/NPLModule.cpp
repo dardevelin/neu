@@ -4823,10 +4823,7 @@ namespace neu{
       
       initGlobal();
       
-      engine_ = EngineBuilder(&module_).create();
-      //engine_ = EngineBuilder(&module_)
-      //.setUseMCJIT(true)
-      //.create();
+      engine_ = EngineBuilder(&module_).setUseMCJIT(true).create();
     }
     
     ~NPLModule_(){

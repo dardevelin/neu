@@ -2346,27 +2346,27 @@ namespace neu{
     
     void clear();
     
-    double inf(){
+    static double inf(){
       return std::numeric_limits<double>::infinity();
     }
     
-    double negInf(){
+    static double negInf(){
       return -std::numeric_limits<double>::infinity();
     }
     
-    double nan(){
+    static double nan(){
       return std::numeric_limits<double>::quiet_NaN();
     }
     
-    double min(){
+    static double min(){
       return -std::numeric_limits<double>::max();
     }
     
-    double max(){
+    static double max(){
       return std::numeric_limits<double>::max();
     }
     
-    double epsilon(){
+    static double epsilon(){
       return std::numeric_limits<double>::epsilon();
     }
     
