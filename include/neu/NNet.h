@@ -463,7 +463,8 @@ namespace neu{
         }
       }
       
-      for(size_t l = 2; l < numLayers(); ++l){
+      size_t n = numLayers();
+      for(size_t l = 2; l < n; ++l){
         ValueVec d1(l1->size(), 0);
         
         for(size_t j = 0; j < l1->size(); ++j){
@@ -483,11 +484,13 @@ namespace neu{
         l2 = l1;
         l1 = backLayer(l);
         d2 = d1;
-        
-        for(size_t j = 0; j < l2->size(); ++j){
+      
+        size_t size2 = l2->size();
+        for(size_t j = 0; j < size2; ++j){
           Neuron* nj = l2->neuron(j);
           
-          for(size_t i = 0; i < l1->size(); ++i){
+          size_t size1 = l1->size();
+          for(size_t i = 0; i < size1; ++i){
             Neuron* ni = l1->neuron(i);
             
             double dw = eta * d2[j] * ni->output();
@@ -499,10 +502,12 @@ namespace neu{
     
   private:
     void connect_(Layer* l1, Layer* l2, double wmin, double wmax){
-      for(size_t i = 0; i < l2->size(); ++i){
+      size_t size2 = l2->size();
+      for(size_t i = 0; i < size2; ++i){
         Neuron* ni = l2->neuron(i);
         
-        for(size_t j = 0; j < l1->size(); ++j){
+        size_t size1 = l1->size();
+        for(size_t j = 0; j < size1; ++j){
           Neuron* nj = l1->neuron(j);
           ni->receive(nj, random_.uniform(wmin, wmax));
         }
