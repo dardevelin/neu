@@ -70,7 +70,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NThread.h>
 #include <neu/NBasicMutex.h>
 #include <neu/NVSemaphore.h>
-#include <neu/NNetwork.h>
+#include <neu/NNet.h>
 
 using namespace std;
 using namespace llvm;
@@ -418,11 +418,11 @@ public:
     return itr->second;
   }
 
-  Value* getActivationOutput(NNeuron* n, Value* v){
-    const NNeuron::Func* activationFunc = &n->activationFunc();
+  Value* getActivationOutput(NNet::Neuron* n, Value* v){
+    const NNet::Func* activationFunc = &n->activationFunc();
     
-    if(const NNeuron::SigmoidFunc* f =
-       dynamic_cast<const NNeuron::SigmoidFunc*>(activationFunc)){
+    if(const NNet::SigmoidFunc* f =
+       dynamic_cast<const NNet::SigmoidFunc*>(activationFunc)){
 
       double a = f->a();
       Function* expFunc = getExtern("llvm.exp.f64");
@@ -492,12 +492,12 @@ public:
   }
   
   bool compile(const nstr& name,
-               NNetwork& network,
+               NNet& network,
                size_t threads){
 
     RunNetwork* runNetwork = new RunNetwork;
 
-    NNetwork::Layer* inputLayer = network.layer(0);
+    NNet::Layer* inputLayer = network.layer(0);
 
     size_t numLayers = network.numLayers();
 
@@ -509,7 +509,7 @@ public:
 
       size_t inputLayerSize = inputLayer->size();
 
-      NNetwork::Layer* layer = network.layer(l);
+      NNet::Layer* layer = network.layer(l);
 
       size_t layerSize  = layer->size();
 
@@ -595,7 +595,7 @@ public:
         engine_->getPointerToFunction(f);
 
       for(size_t j = 0; j < layerSize; ++j){
-        NNeuron* nj = layer->neuron(j);
+        NNet::Neuron* nj = layer->neuron(j);
 
         RunNeuron* runNeuron = new RunNeuron;
         runNeuron->layer = runLayer;
@@ -608,7 +608,7 @@ public:
         runNeuron->weightVec = weightVecPtr;
 
         for(size_t i = 0; i < inputLayerSize; ++i){
-          NNeuron* ni = inputLayer->neuron(i);
+          NNet::Neuron* ni = inputLayer->neuron(i);
           weightVecPtr[i] = nj->weight(ni);
         }
 
@@ -697,7 +697,7 @@ NNModule::~NNModule(){
 }
 
 bool NNModule::compile(const nstr& name,
-                       NNetwork& network,
+                       NNet& network,
                        size_t threads){
   return x_->compile(name, network, threads);
 }

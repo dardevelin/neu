@@ -55,7 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace neu{
 
-class NNetwork;
+class NNet;
 
 class NNModule{
 public:
@@ -63,7 +63,7 @@ public:
 
   ~NNModule();
   
-  bool compile(const nstr& name, NNetwork& network, size_t threads);
+  bool compile(const nstr& name, NNet& network, size_t threads);
 
   void run(const nstr& name, void* inputVec, void* outputVec);
 

@@ -48,11 +48,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#include <neu/NNeuron.h>
+#include <neu/NNet.h>
 
 using namespace std;
 using namespace neu;
 
-NNeuron::LinearFunc* NNeuron::linearFunc = new NNeuron::LinearFunc;
-NNeuron::SigmoidFunc* NNeuron::sigmoidFunc = new NNeuron::SigmoidFunc(1.0);
-NNeuron::SignumFunc* NNeuron::signumFunc = new NNeuron::SignumFunc(0);
+NNet::LinearFunc* NNet::linearFunc = new NNet::LinearFunc;
+NNet::SigmoidFunc* NNet::sigmoidFunc = new NNet::SigmoidFunc(1.0);
+NNet::SignumFunc* NNet::signumFunc = new NNet::SignumFunc(0);
