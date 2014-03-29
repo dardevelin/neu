@@ -55,7 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace neu{
 
-class NConcept : public MObject{
+class NConcept : public NObject{
 public:
   enum NConceptType{
     NConceptPrototype
@@ -77,7 +77,7 @@ public:
 
   virtual NConcept* copy() const = 0;
 
-  virtual NFunc* handle(const nvar& n, uint32_t flags);
+  virtual NFunc handle(const nvar& n, uint32_t flags);
 
   virtual nstr name() const = 0;
 

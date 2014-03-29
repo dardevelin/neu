@@ -136,7 +136,9 @@ public:
       c.Directory = ".";
         
       c.CommandLine = {"clang-tool", "-std=c++11"};
-        
+      
+      c.CommandLine.push_back("-DNEU_META");
+
 #ifdef __APPLE__
       c.CommandLine.push_back("-stdlib=libc++");
         
@@ -195,7 +197,8 @@ public:
   MetaGenerator()
   : enableHandles_(true),
     enableClasses_(true),
-    enableMetadata_(true){
+    enableMetadata_(true),
+    enableOuters_(true){
     
     nstr h;
     if(!NSys::getEnv("NEU_HOME", h)){
@@ -322,7 +325,11 @@ public:
   void enableMetadata(bool flag){
     enableMetadata_ = flag;
   }
-    
+
+  void enableOuters(bool flag){
+    enableOuters_ = flag;
+  }    
+
   void addInclude(const nstr& path){
     includes_.push_back(path);
   }
@@ -331,7 +338,8 @@ public:
     files_.push_back(path);
   }
     
-  bool generate(ostream& ostr){
+  bool generate(ostream& ostr, const nstr& className){
+    ostr << "#ifndef NEU_META" << endl;
     ostr << "#include <neu/nvar.h>" << endl;
       
     if(enableHandles_){
@@ -343,22 +351,28 @@ public:
     }
 
     ostr << endl;
-      
+    
+    /*
     for(const nstr& f : files_){
       ostr << "#include \"" << f << "\"" << endl;
     }
       
     ostr << endl;
+    */
       
     ostr_ = &ostr;
-      
+
     Database db(includes_);
       
     ClangTool tool(db, files_);
       
     Factory factory(this);
 
-    return tool.run(&factory) == 0;
+    int status = tool.run(&factory);
+
+    ostr << "#endif // NEU_META" << endl;
+
+    return status == 0;
   }
     
   CXXRecordDecl* getSuperClass(CXXRecordDecl* rd, const string& className){
@@ -434,9 +448,13 @@ public:
         if(enableClasses_){
           generateClass(d);
         }
+
+        if(enableOuters_){
+          generateOuter(d);
+        }
       }
     }
-
+    
     return true;
   }
     
@@ -548,10 +566,12 @@ public:
           
         nstr methodName = md->getNameAsString();
           
-        if(methodName.empty() || methodName == "handle"){
+        if(methodName.empty() ||
+           methodName == "handle" ||
+           methodName.beginsWith("operator ")){
           continue;
         }
-          
+        
         int m = isNCallable(md);
           
         if(m > 0 && m < 3){
@@ -575,7 +595,7 @@ public:
         
       for(size_t j = md->getMinRequiredArguments(); 
           j <= md->param_size(); ++j){
-        ostr << "    add(\"" << md->getName().str() << "\", " << j <<
+        ostr << "    add(\"" << md->getNameAsString() << "\", " << j <<
           ", " << endl;
         ostr << "      [](void* o, const neu::nvar& n) -> neu::nvar{" << endl;
         ostr << "        ";
@@ -617,7 +637,7 @@ public:
         ostr << ");" << endl;
           
         if(isVoid){
-          ostr << "    return neu::none;" << endl;
+          ostr << "      return neu::none;" << endl;
         }
         ostr << "    });" << endl;
       }
@@ -680,65 +700,69 @@ public:
       ostr << "}";
     }
       
-    ostr << endl << endl;
+    ostr << endl;
+
+    if(!rd->isAbstract()){
+      ostr << endl;
+
+      ostr << "  neu::NObjectBase* construct(const neu::nvar& f){" << endl;
       
-    ostr << "  neu::NObjectBase* construct(const neu::nvar& f){" << endl;
-      
-    for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
-          mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
+      for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
+            mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
         
-      CXXMethodDecl* md = *mitr;
+        CXXMethodDecl* md = *mitr;
         
-      if(md->isUserProvided() && isa<CXXConstructorDecl>(md)){
-        int m = isNCallable(md);
+        if(md->isUserProvided() && isa<CXXConstructorDecl>(md)){
+          int m = isNCallable(md);
           
-        if(m != 1 && m != 2){
-          continue;
-        }
-          
-        for(size_t k = md->getMinRequiredArguments();
-            k <= md->param_size(); ++k){
-            
-          ostr << "    if(f.size() == " << k << "){" << endl;
-          ostr << "      return new " << fullName << "(";
-            
-          for(size_t i = 0; i < k; ++i){
-            if(i > 0){
-              ostr << ", ";
-            }
-              
-            ParmVarDecl* p = md->getParamDecl(i);
-              
-            const Type* t = p->getType().getTypePtr();
-              
-            if((t->isPointerType() || t->isReferenceType()) &&
-               isBaseType(t->getPointeeType(), "neu::NObjectBase")){
-                
-              nstr cn = t->getPointeeType().getAsString();
-                
-              nstr c = cn.substr(0, 6);
-                
-              assert(c == "class ");
-              nstr name = cn.substr(6);
-                
-              if(!t->isPointerType()){
-                ostr << "*";
-              }
-                
-              ostr << "static_cast<" << fullName << 
-                "*>(f[" << i << "].obj())";
-            }
-            else{
-              ostr << "f[" << i << "]";
-            }
+          if(m != 1 && m != 2){
+            continue;
           }
-          ostr << ");" << endl;
-          ostr << "    }" << endl;
+          
+          for(size_t k = md->getMinRequiredArguments();
+              k <= md->param_size(); ++k){
+            
+            ostr << "    if(f.size() == " << k << "){" << endl;
+            ostr << "      return new " << fullName << "(";
+            
+            for(size_t i = 0; i < k; ++i){
+              if(i > 0){
+                ostr << ", ";
+              }
+              
+              ParmVarDecl* p = md->getParamDecl(i);
+              
+              const Type* t = p->getType().getTypePtr();
+              
+              if((t->isPointerType() || t->isReferenceType()) &&
+                 isBaseType(t->getPointeeType(), "neu::NObjectBase")){
+                
+                nstr cn = t->getPointeeType().getAsString();
+                
+                nstr c = cn.substr(0, 6);
+                
+                assert(c == "class ");
+                nstr name = cn.substr(6);
+                
+                if(!t->isPointerType()){
+                  ostr << "*";
+                }
+                
+                ostr << "static_cast<" << fullName << 
+                  "*>(f[" << i << "].obj())";
+              }
+              else{
+                ostr << "f[" << i << "]";
+              }
+            }
+            ostr << ");" << endl;
+            ostr << "    }" << endl;
+          }
         }
       }
+      ostr << "    return 0;" << endl;
+      ostr << "  }" << endl;
     }
-    ostr << "    return 0;" << endl;
-    ostr << "  }" << endl;
 
     if(enableMetadata_){
       ostr << endl;
@@ -747,7 +771,7 @@ public:
       
     ostr << "};" << endl << endl;
       
-    ostr << name << "_Class* _" << name << "Class = new " <<
+    ostr << name << "_Class* _" << name << "_Class = new " <<
       name << "_Class;" << endl << endl;
 
     ostr << "} // end namespace" << endl << endl;
@@ -784,7 +808,160 @@ public:
       
     return "";
   }
+
+  bool hasOuter(CXXRecordDecl* rd){
+    for(CXXRecordDecl::field_iterator itr = rd->field_begin(),
+          itrEnd = rd->field_end(); itr != itrEnd; ++itr){
+      FieldDecl* fd = *itr;
+      if(fd->getNameAsString() == "x_"){
+        return true;
+      }
+    }
     
+    return false;
+  }
+  
+  nstr cleanType(const nstr& type){
+    if(type == "_Bool"){
+      return "bool";
+    }
+  
+    return type;
+  }
+
+  void generateOuter(CXXRecordDecl* rd){
+    if(!hasOuter(rd)){
+      return;
+    }
+
+    nstr name = rd->getNameAsString();
+    nstr fullName = rd->getQualifiedNameAsString();
+
+    stringstream ostr;
+  
+    for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
+          mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
+      CXXMethodDecl* md = *mitr;
+
+      nstr methodName = md->getNameAsString();
+    
+      if(md->isStatic() ||
+         md->hasInlineBody() ||
+         md->hasBody() ||
+         !md->isUserProvided() ||
+         md->isPure()){
+        continue;
+      }
+      else if(isa<CXXDestructorDecl>(md)){
+        ostr << fullName << "::~" << name << "(){" << endl;
+        ostr << "  delete x_;" << endl;
+        ostr << "}" << endl;
+      }
+      else{
+        bool isDist = false;
+
+        if(isa<CXXConstructorDecl>(md)){
+          ostr << fullName << "::" << name << "(";
+        }
+        else{
+          QualType qrt = md->getResultType();
+          QualType crt = context_->getCanonicalType(qrt);
+        
+          nstr rts = cleanType(crt.getAsString());
+        
+          ostr << rts << " " << fullName << "::" << methodName << "(";
+        
+          if(qrt.getAsString() == "ndist" &&
+             crt.getAsString() == "class neu::nvar"){
+          
+            if(CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject")){
+              int m = isNCallable(md);
+              if(m == 1){
+                isDist = true;
+              }
+            }
+          }
+        }
+    
+        stringstream pstr;
+        bool first = true;
+      
+        for(FunctionDecl::param_iterator itr = md->param_begin(),
+              itrEnd = md->param_end(); itr != itrEnd; ++itr){
+          ParmVarDecl* p = *itr;
+          if(first){
+            if(isa<CXXConstructorDecl>(md)){
+              pstr << ", ";
+            }
+            first = false;
+          }
+          else{
+            ostr << ", ";
+            pstr << ", ";
+          }
+          QualType ct = context_->getCanonicalType(p->getType());
+          nstr ts = ct.getAsString();
+          ts = cleanType(ts);
+        
+          ostr << ts << " " << p->getName().str();
+          pstr << p->getName().str();
+        }
+        ostr << ")";
+      
+        if(md->getTypeQualifiers() & Qualifiers::Const){
+          ostr << " const";
+        }
+      
+        ostr << "{" << endl;
+      
+        if(isDist){
+          ostr << "  if(isRemote()){" << endl;
+          ostr << "    return remoteProcess(nfunc(\"" << methodName <<
+            "\")";
+          for(FunctionDecl::param_iterator itr = md->param_begin(),
+                itrEnd = md->param_end(); itr != itrEnd; ++itr){
+            ParmVarDecl* p = *itr;
+            QualType qt = p->getType();
+            QualType ct = context_->getCanonicalType(qt);
+            nstr ts = ct.getAsString();
+          
+            ostr << " << mnode(";
+          
+            if(ts == "const class neu::nvar &" ||
+               ts == "class neu::nvar &" ||
+               ts == "class neu::nstr &"){
+              ostr << "&";
+            }
+          
+            ostr << p->getName().str() << ")";
+          }
+          ostr << ");" << endl;
+          ostr << "  }" << endl;
+        }
+      
+        ostr << "  ";
+      
+        if(isa<CXXConstructorDecl>(md)){
+          ostr << "x_ = new class " << name << "_(this" << pstr.str() << 
+            ");" << endl;
+        }
+        else{
+          if(!md->getResultType().getTypePtr()->isVoidType()){
+            ostr << "return ";
+          }
+          ostr << "x_->" << md->getName().str() << "(";
+      
+          ostr << pstr.str() << ");" << endl;
+        }
+      
+        ostr << "}" << endl << endl;
+      }
+    }
+
+    *ostr_ << ostr.str();
+  }
+
+   
   void generateMetadata(ostream& ostr, CXXRecordDecl* rd){
     nstr className = rd->getNameAsString();
       
@@ -825,11 +1002,13 @@ public:
          !md->isOverloadedOperator()){
           
         nstr methodName = md->getNameAsString();
-          
-        if(methodName.empty()){
+
+        if(methodName.empty() ||
+           methodName == "handle" ||
+           methodName.beginsWith("operator ")){
           continue;
-        }
-          
+        }          
+
         int m = isNCallable(md);
           
         if(m > 0 && m < 3){
@@ -940,6 +1119,7 @@ private:
   bool enableHandles_;
   bool enableClasses_;
   bool enableMetadata_;
+  bool enableOuters_;
 };
 
 int main(int argc, char** argv){
@@ -953,7 +1133,7 @@ int main(int argc, char** argv){
     gen.addFile(ai);
   }
   
-  gen.generate(cout);
+  gen.generate(cout, "NConcept");
   
   return 0;
 }

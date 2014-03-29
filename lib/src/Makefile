@@ -23,7 +23,7 @@ export LINK = clang++ -L../ -fPIC $(STD_LIB)
 
 COMPILE += -I$(NEU_HOME)/include -I$(NEU_HOME)/lib/src -I/usr/local/include -pthread -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$(HOME)/llvm-3.4/build-release/include -I$(HOME)/llvm-3.4/llvm/include
 
-CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o
+CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o NConcept.o
 
 SUB_MODULES = nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o npl/NPLModule.o
 

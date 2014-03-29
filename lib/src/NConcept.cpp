@@ -257,7 +257,7 @@ public:
   }
 
   void error_(const nstr& key, const nvar& value){
-    throw MError("NConcept: invalid attribute for key '" + key + 
+    throw NError("NConcept: invalid attribute for key '" + key +
                  "' value: " + value.toStr());
   }
   
@@ -286,14 +286,14 @@ public:
         }
       }
       
-      str = value.join("; ");
+      str = nstr::join(value.vec(), "; ");
     }
 
     attrs_(key) = str;
   }
 
   void setStringMapAttribute_(const nstr& key, const nvar& value){
-    mvec values;
+    nvec values;
 
     if(value.isString()){
       values.push_back(value); 
@@ -320,7 +320,7 @@ public:
 
   const nvar& getAttribute_(const nstr& key) const{
     if(!attrs_.hasKey(key)){
-      throw MError("NConcept::getAttribute: undefined attribute: " + key);
+      throw NError("NConcept::getAttribute: undefined attribute: " + key);
     }
 
     return attrs_[key];
@@ -338,12 +338,12 @@ public:
     //cout << "attrs is: " << attrs_ << endl;
     //cout << "v is: " << v << endl;
 
-    if(attrs_.in != v.in){
+    if(attrs_["in"] != v["in"]){
       //cout << "f1" << endl;
       return -1;
     }
 
-    if(attrs_.out && !v.out){
+    if(attrs_["out"] && !v["out"]){
       //cout << "a is: " << attrs_.out << endl;
       //cout << "b is: " << v.out << endl;
 
@@ -352,7 +352,7 @@ public:
     }
 
     if(attrs_.hasKey("vec")){
-      if(!v.hasKey("vec") && attrs_.vec != undef){
+      if(!v.hasKey("vec") && attrs_["vec"] != undef){
         return -1;
       }
     }
@@ -361,7 +361,7 @@ public:
     }
 
     if(attrs_.hasKey("set")){
-      if(!v.hasKey("set") && attrs_.set != undef){
+      if(!v.hasKey("set") && attrs_["set"] != undef){
         return -1;
       }
     }
@@ -376,7 +376,7 @@ public:
           return -1;
         }
         
-        if(attrs_.takeCloneOf != v.cloneOf){
+        if(attrs_["takeCloneOf"] != v["cloneOf"]){
           //cout << "f6" << endl;
           return -1;
         }
@@ -389,11 +389,11 @@ public:
     // no age bias for right now
     return 1;
 
-    if(v.age > 100){
+    if(v["age"] > 100){
       return -1;
     }
 
-    double m = pow((100.0 - v.age)/50.0, 2.0);
+    double m = pow((100.0 - v["age"])/50.0, 2.0);
 
     //cout << "m is: " << m << endl;
 
@@ -412,11 +412,11 @@ NConcept::NConcept(const NConcept& c){
   x_ = new NConcept_(this, *c.x_);
 }
 
-NConcept::NConcept(NConceptType p, const nvar& metadata){
+NConcept::NConcept(PrototypeFlag*, const nvar& metadata){
   x_ = new NConcept_(this);
 
-  Ontology* ontology = Ontology::get();
-  ontology->addNConcept(this, metadata);
+  NCOntology* ontology = NCOntology::get();
+  ontology->addConcept(this, metadata);
 }
 
 bool NConcept::isNumeric(const nvar& v, bool allowNegative){
@@ -485,3 +485,4 @@ bool NConcept::isInteger(const nvar& v, bool allowNegative){
   return false;
 }
 
+#include "NConcept_meta.h"
