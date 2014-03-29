@@ -74,5 +74,6 @@ clean:
 
 spotless: clean
 	rm -f ../libneu.*
+	rm -f ../libneu-static.a	
 	(cd nm; $(MAKE) spotless)
 	(cd npl; $(MAKE) spotless)

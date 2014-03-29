@@ -75,4 +75,5 @@ clean:
 
 spotless: clean
 	rm -f ../libneu_core.*
+	rm -f ../libneu_core-static.a
 	(cd nml; $(MAKE) spotless)
