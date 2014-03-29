@@ -62,7 +62,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NThread.h>
 #include <neu/NResourceManager.h>
 #include <neu/global.h>
-#include <neu/NMObject.h>
 #include <neu/NMutex.h>
 
 #include <sys/resource.h>
@@ -269,12 +268,6 @@ namespace neu{
       nstr h;
       if(!NSys::getEnv("NEU_HOME", h)){
         NERROR("NEU_HOME environment variable is undefined");
-      }
-      
-      nstr p = h + "/bin/MathKernel";
-      
-      if(NSys::exists(p)){
-        NMObject::setMathKernelPath(p);
       }
     }
     

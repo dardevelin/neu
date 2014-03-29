@@ -4,7 +4,7 @@ TARGET = $(NEU_HOME)/bin/neu
 MODULES = main.o
 
 COMPILE = clang++ -g -std=c++11 -stdlib=libc++ -I$(NEU_HOME)/include -I/usr/local/include
-LINK = clang++ -stdlib=libc++ -L$(NEU_HOME)/lib -lneu -ledit
+LINK = clang++ -stdlib=libc++ -L$(NEU_HOME)/lib -lneu -lneu_core -ledit
 
 all: $(TARGET)
 

@@ -13,23 +13,28 @@ else
   export PLATFORM_NAME = Linux64
 endif
 
-all: libs neu neu-meta
+all: neu
 
-neu: libs
+neu: libneu
 	(cd src/neu; $(MAKE))
 
-neu-meta: libs
+neu-meta: libneu_core
 	(cd src/neu-meta; $(MAKE))
 
-libs:
+libneu_core:
+	(cd lib/core-src; $(MAKE))
+
+libneu: libneu_core neu-meta
 	(cd lib/src; $(MAKE))
 
 spotless:
 	(cd src/neu; $(MAKE) spotless)
+	(cd lib/core-src; $(MAKE) spotless)
 	(cd lib/src; $(MAKE) spotless)
 
 clean:
 	(cd src/neu; $(MAKE) clean)
+	(cd lib/core-src; $(MAKE) clean)
 	(cd lib/src; $(MAKE) clean)
 
 fast:
