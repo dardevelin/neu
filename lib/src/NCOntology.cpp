@@ -69,6 +69,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NCommand.h>
 #include <neu/NMLGenerator.h>
 #include <neu/NScope.h>
+#include <neu/NEncoder.h>
 
 using namespace std;
 using namespace neu;
@@ -318,7 +319,7 @@ public:
     for(size_t i = 0; i < vs.size(); ++i){
       const nvar& vi = vs[i];
 
-      nvar f = nfunc("Idx") << nsym(paramVec_[i].first) <<
+      nvar f = nfunc("Idx") << nsym(paranvec_[i].first) <<
       (nfunc("Call") + (nfunc("setObj") + nsym(vi)));
       
       code << f;
@@ -437,11 +438,11 @@ public:
     for(size_t i = 1; i < vs.size(); ++i){
       const nvar& vi = vs[i];
 
-      NConcept* pi = paramVec_[i - 1].second;
+      NConcept* pi = paranvec_[i - 1].second;
 
       NConcept* po;
 
-      auto itr = paramOutMap_.find(paramVec_[i - 1].first);
+      auto itr = paramOutMap_.find(paranvec_[i - 1].first);
       if(itr != paramOutMap_.end()){
         po = itr->second;
       }
@@ -461,7 +462,7 @@ public:
       nvar& vv = vt[vi];
 
       if(obj){
-        obj->Def(nsym(paramVec_[i - 1].first), &vv);
+        obj->Def(nsym(paranvec_[i - 1].first), &vv);
       }
 
       if(pi->getOut()){
@@ -548,7 +549,7 @@ public:
     }
     
     paraNMap_.insert({name, param});
-    paramVec_.push_back({name, param});
+    paranvec_.push_back({name, param});
 
     return true;
   }
@@ -852,7 +853,7 @@ public:
 
     bool first = true;
 
-    for(auto& itr : paramVec_){
+    for(auto& itr : paranvec_){
       if(first){
         first = false;
       }
@@ -895,7 +896,7 @@ public:
     
     ostr << "self: " << this_->attributes() << endl << endl;
 
-    for(auto& itr : paramVec_){
+    for(auto& itr : paranvec_){
       NConcept* pc = itr.second;
 
       ostr << itr.first << ": " << pc->attributes() << endl << endl;
@@ -926,7 +927,7 @@ public:
   
 private:
   typedef NMap<nstr, NConcept*> ParamMap_;
-  typedef NVector<pair<nstr, NConcept*>> ParamVec_;
+  typedef NVector<pair<nstr, NConcept*>> Paranvec_;
 
   NConcept* concept_;
   nstr name_;
@@ -934,7 +935,7 @@ private:
   nvar data_;
   ParamMap_ paraNMap_;
   ParamMap_ paramOutMap_;
-  ParamVec_ paramVec_;
+  Paranvec_ paranvec_;
   NConcept* return_;
   NConcept* this_;
   NConcept* thisOut_;
@@ -1211,7 +1212,7 @@ public:
 
     remapState(rm, state_);
 
-    checksum_ = MEncoder::checksum(solution_.toStr());
+    checksum_ = NEncoder::md5(solution_.toStr());
 
     //cout << "final seq is: " << seq << endl;
 
@@ -1359,14 +1360,13 @@ public:
       auto itr = solutionMap_.end();
       --itr;
       if(fitness > itr->first){
-        // ndm - create ref to itr->second
-        totalFitness_ -= itr->second->fitness();
-        totalTemps_ -= itr->second->numTemps();
-        totalSize_ -= itr->second->size();
-        totalStartSize_ -= itr->second->startSize();
-        totalReduction_ -= itr->second->reduction();
         Solution* s = itr->second;
-        checksuNMap_.erase(s->checksum());
+        totalFitness_ -= s->fitness();
+        totalTemps_ -= s->numTemps();
+        totalSize_ -= s->size();
+        totalStartSize_ -= s->startSize();
+        totalReduction_ -= s->reduction();
+        checksumMap_.erase(s->checksum());
         delete s;
         solutionMap_.erase(itr);
       }
@@ -1395,7 +1395,7 @@ public:
   }
 
   Solution* get(size_t i){
-    MGuard guard(solutionMutex_);
+    NGuard guard(solutionMutex_);
 
     if(i > solutionMap_.size()){
       return 0;
@@ -1407,8 +1407,8 @@ public:
     return itr->second;
   }
   
-  mvec getStats() const{
-    MGuard guard(solutionMutex_);
+  nvec getStats() const{
+    NGuard guard(solutionMutex_);
 
     size_t size = solutionMap_.size();
 
@@ -1416,42 +1416,43 @@ public:
       return [0,0,0,0];
     }
 
-    mvec r;
+    nvec r;
 
     auto itr = solutionMap_.begin();
-
+    Solution* s = itr->second;
+    
     r.push_back(size);
 
-    r.push_back(itr->second->fitness());
+    r.push_back(s->fitness());
     
     itr = solutionMap_.end();
     --itr;
 
-    r.push_back(itr->second->fitness());
+    r.push_back(s->fitness());
 
     r.push_back(totalFitness_ / size);
 
-    r.push_back(double(totalTemps_)/solutionMap_.size());
+    r.push_back(double(totalTemps_)/size);
 
-    r.push_back(double(totalSize_)/solutionMap_.size());
+    r.push_back(double(totalSize_)/size);
 
-    r.push_back(double(totalStartSize_)/solutionMap_.size());
+    r.push_back(double(totalStartSize_)/size);
 
-    r.push_back(totalReduction_/solutionMap_.size());
+    r.push_back(totalReduction_/size);
 
     return r;
   }
 
 private:
   typedef NMultimap<double, Solution*, greater<double>> SolutionMap_;
-  typedef NMap<nstr, bool> ChecksuNMap_;
+  typedef NMap<nstr, bool> ChecksumMap_;
 
   SolutionMap_ readyMap_;
   SolutionMap_ solutionMap_;
-  ChecksuNMap_ checksuNMap_;
-  MMutex readyMutex_;
-  mutable MMutex solutionMutex_;
-  MVSemaphore readySem_;
+  ChecksumMap_ checksumMap_;
+  NMutex readyMutex_;
+  mutable NMutex solutionMutex_;
+  NVSemaphore readySem_;
   size_t maxSize_;
   double totalFitness_;
   size_t totalTemps_;
@@ -1460,7 +1461,7 @@ private:
   double totalReduction_;
 };
 
-class Proc : public MProc{
+class Proc : public NProc{
 public:
   Proc(CodeGen_* codeGen, Method* method)
     : codeGen_(codeGen),
@@ -1487,11 +1488,11 @@ public:
     return method_;
   }
 
-  bool activate(SignalMap& signalMap){
+  bool handle(const nvar& v, nvar& r){
     return true;
   }
-
-  nvar run(SignalMap& signalMap);
+  
+  void run(nvar& r);
 
   int chooseOut(nvar& state, bool initial);
 
@@ -1507,17 +1508,28 @@ public:
     mutex_.unlock();
   }
 
-  bool multiChooseVars(const ParanvarVec& ps, mvec& pv, ostream* matchLog);
+  bool multiChooseVars(const ParamVarVec& ps, nvec& pv, ostream* matchLog);
 
-  bool chooseVars(ParanvarVec& ps, mvec& pv, ostream* matchLog);
+  bool chooseVars(ParamVarVec& ps, nvec& pv, ostream* matchLog);
 
+  void mapProc(Proc* proc, int id){
+    idMap_[id] = proc;
+  }
+  
+  void signal(int id, const nvar& v){
+    signal(idMap_[id], v);
+  }
+  
 private:
+  NMap<int, Proc*> IdMap_;
+  
   Method* method_;
-  MRandom random_;
-  MMutex randomMutex_;
+  NRandom random_;
+  NMutex randomMutex_;
   CodeGen_* codeGen_;
-  MMutex mutex_;
+  NMutex mutex_;
   size_t type_;
+  IdMap_ idMap_;
 };
 
 } // end namespace
@@ -1538,7 +1550,7 @@ public:
     }
   }
 
-  void mapMethods(MethodParaNMap& inMap,
+  void mapMethods(MethodParamMap& inMap,
                   ParamMethodMap& outMap){
     for(auto& itr : conceptMap_){
       itr.second->mapMethods(inMap, outMap);
@@ -1550,9 +1562,8 @@ public:
       return;
     }
 
-    MMLParser parser;
+    NMLParser parser;
     stringstream estr;
-    parser.setFusedMaps(true);
     parser.setErrorStream(estr);
     Processor processor;
     parser.addProcessor(&processor);
@@ -1565,10 +1576,8 @@ public:
     for(auto& itr : conceptMap_){
       ConceptDef* concept = itr.second;
 
-      // ndm - this could be improved for better performance with
-      // larger ontologies - there is some redundancy
-      mvec extends = concept->getExtends();
-      mlist front(extends.begin(), extends.end());
+      nvec extends = concept->getExtends();
+      nlist front(extends.begin(), extends.end());
       NameMap visited;
       while(!front.empty()){
         nstr c = front.popFront();
@@ -1579,11 +1588,10 @@ public:
 
         auto itr = conceptMap_.find(c);
         if(itr == conceptMap_.end()){
-          throw MError("Ontology: invalid extends field '" + c + 
-                       "' on: " + concept->name());
+          NERROR("Invalid extends field '" + c + "' on: " + concept->name());
         }
 
-        mvec ei = itr->second->getExtends();
+        nvec ei = itr->second->getExtends();
 
         for(size_t i = 0; i < ei.size(); ++i){
           const nstr& ci = ei[i];
@@ -1593,8 +1601,7 @@ public:
           }
 
           if(!conceptMap_.hasKey(ci)){
-            throw MError("Ontology: invalid extends field '" + ci + 
-                         "' on: " + ci);
+            NERROR("invalid extends field '" + ci + "' on: " + ci);
           }
 
           if(!visited.hasKey(ci)){
@@ -1613,107 +1620,104 @@ public:
       const nvar& metadata = concept->metadata();
 
       if(!metadata.hasKey("data")){
-        throw MError("Ontology: missing data field on: " + concept->name());
+        NERROR("Missing data field on: " + concept->name());
       }
 
-      const nvar& data = metadata.data;
+      const nvar& data = metadata["data"];
 
       if(!data.isString()){
-        throw MError("Ontology: [1] invalid data field on: " + concept->name());
+        NERROR("[1] invalid data field on: " + concept->name());
       }
 
       nstr code = data;
       code += ";\n";
 
-      if(parser.parse(code) != 0){
-        throw MError("Ontology: parse error on data field in: " + 
-                     concept->name());
+      nvar n = parser.parse(code);
+      
+      if(n == none){
+        NERROR("Parse error on data field in: " + concept->name());
       }
 
-      mnode n = processor.node();
-
       if(n.isSymbolic()){
-        throw MError("Ontology: [2] invalid data field on: " + concept->name());
+        NERROR("[2] invalid data field on: " + concept->name());
       }
 
       concept->setData(n);
 
       if(!metadata.hasKey("methods")){
-        throw MError("Ontology: missing methods on: " + concept->name());
+        NERROR("Missing methods on: " + concept->name());
       }
 
-      const nvar& methods = metadata.methods;
-      mvec keys;
+      const nvar& methods = metadata["methods"];
+      nvec keys;
       methods.keys(keys);
 
       for(const nstr& k : keys){
-        mvec keys2;
+        nvec keys2;
         methods[k].keys(keys2);
         if(keys2.size() < 1){
-          throw MError("Ontology: invalid method definition for '" + 
-                       k + "' on class: " + concept->name());
+          NERROR("Invalid method definition for '" +
+                 k + "' on class: " + concept->name());
         }
         else if(keys2.size() > 1){
-          throw MError("Ontology: duplicate methods for '" + 
-                       k + "' on class: " + concept->name());          
+          NERROR("Duplicate methods for '" +
+                 k + "' on class: " + concept->name());
         }
 
         const nvar& mi = methods[k][keys2[0]];
         
         if(!mi.hasKey("data")){
-          throw MError("Ontology: missing data field on concept: '" + 
-                       concept->name() + "' on method: " + k);
+          NERROR("Missing data field on concept: '" +
+                 concept->name() + "' on method: " + k);
         }
         
-        const nvar& data = mi.data;
+        const nvar& data = mi["data"];
         
         if(!data.isString()){
-          throw MError("Ontology: [1] invalid data field on concept: '" + 
-                       concept->name() + "' on method: " + k);
+          NERROR("[1] invalid data field on concept: '" +
+                 concept->name() + "' on method: " + k);
         }
         
         nstr code = data;
         code += ";\n";
         
-        if(parser.parse(code) != 0){
-          throw MError("Ontology: parse error on data field on concept: '" + 
-                       concept->name() + "' on method: " + k);
+        nvar n = parser.parse(code);
+        
+        if(n == none){
+          NERROR("Parse error on data field on concept: '" +
+                 concept->name() + "' on method: " + k);
         }
 
-        mnode n = processor.node();
-
-        //cout << "n is: " << n << endl;
-
         if(n.isSymbolic()){
-          throw MError("Ontology: [2] invalid data field on concept: '" + 
-                       concept->name() + "' on method: " + k);
+          NERROR("[2] invalid data field on concept: '" +
+                 concept->name() + "' on method: " + k);
         }
 
         Method* method = new Method(concept->concept(), k, methodId++);
         method->setData(n);
 
-        mnode pt;
+        nvar pt;
         try{
-          pt = method->New_(nfunc(concept->name()));
+          pt = method->New(nfunc(concept->name()));
         }
         catch(MError& e){
-          throw MError("Ontology: unable to create concept 'this' " 
-                       "on concept: '" + concept->name() + 
-                       "' on method: " + k);
+          NERROR("Unable to create concept 'this' "
+                 "on concept: '" + concept->name() +
+                 "' on method: " + k);
         }
 
         NConcept* ct = dynamic_cast<NConcept*>(pt.obj());
 
         if(!ct){
-          throw MError("Ontology: unable to create concept 'this' " 
-                       "on concept: '" + concept->name() + 
-                       "' on method: " + k);
+          NERROR("Unable to create concept 'this' "
+                 "on concept: '" + concept->name() +
+                 "' on method: " + k);
         }
 
         if(!mi.hasKey("const")){
-          throw MError("Ontology: missing const field " 
-                       "on concept: '" + concept->name() + 
-                       "' on method: " + k);
+          NERROR("Missing const field "
+                 "on concept: '" + concept->name() +
+                 "' on method: " + k);
         }
 
         ct->setParamName("self");
@@ -1726,8 +1730,8 @@ public:
           const nvar& r = mi["return"];
 
           if(!r.hasKey("type")){
-            throw MError("Ontology: invalid return type on concept: '" + 
-                         concept->name() + "' on method: " + k);
+            NERROR("Invalid return type on concept: '" +
+                   concept->name() + "' on method: " + k);
           }
 
           nstr type = r.type;
@@ -1741,28 +1745,28 @@ public:
             poly = false;
           }
 
-          mnode p;
+          nvar p;
           try{
-            p = method->New_(nfunc(type));
+            p = method->New(nfunc(type));
           }
-          catch(MError& e){
-            throw MError("Ontology: unable to create concept '" + 
-                         r.type.str() + "' on concept: '" + concept->name() + 
-                         "' on method: " + k);
+          catch(NError& e){
+            NERROR("Unable to create concept '" +
+                   r.type.str() + "' on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
           
           NConcept* rc = dynamic_cast<NConcept*>(p.obj());
 
           if(!rc){
-            throw MError("Ontology: unable to create concept '" + 
-                         r.type.str() + "' on concept: '" + concept->name() + 
-                         "' on method: " + k);
+            NERROR("Ontology: unable to create concept '" +
+                   r.type.str() + "' on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
 
           if(!r.hasKey("const")){
-            throw MError("Ontology: missing const field on return " 
-                         "on concept: '" + concept->name() + 
-                         "' on method: " + k);
+            NERROR("Missing const field on return "
+                   "on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
 
           rc->setParamName("ret");
@@ -1778,24 +1782,24 @@ public:
           const nvar& pi = mi[i];
 
           if(!pi.isString()){
-            throw MError("Ontology: [1] invalid parameter " + nstr::toStr(i) + 
-                         "' on concept: '" + concept->name() + 
-                         "' on method: " + k);
+            NERROR("[1] invalid parameter " + nstr::toStr(i) +
+                   "' on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
 
-          if(MMLParser::isReservedName(pi)){
-            throw MError("Ontology: [2] invalid parameter " + nstr::toStr(i) + 
-                         "' on concept: '" + concept->name() + 
-                         "' on method: " + k);
+          if(NMLParser::isReservedName(pi)){
+            NERROR("[2] invalid parameter " + nstr::toStr(i) +
+                   "' on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
 
           if(!pi.hasKey("type")){
-            throw MError("Ontology: [3] invalid parameter '" + pi.str() + 
-                         "' on concept: '" + concept->name() + 
-                         "' on method: " + k);
+            NERROR("[3] invalid parameter '" + pi.str() +
+                   "' on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
 
-          mnode p;
+          nvar p;
 
           nstr type = pi.type;
 
@@ -1809,26 +1813,26 @@ public:
           }
 
           try{
-            p = method->New_(nfunc(type));
+            p = method->New(nfunc(type));
           }
-          catch(MError& e){
-            throw MError("Ontology: unable to create concept '" + 
-                         pi.type.str() + "' on concept: '" + concept->name() + 
-                         "' on method: " + k);
+          catch(NError& e){
+            NERROR("Unable to create concept '" +
+                   pi.type.str() + "' on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
           
           NConcept* ci = dynamic_cast<NConcept*>(p.obj());
 
           if(!ci){
-            throw MError("Ontology: unable to create concept '" + 
-                         pi.type.str() + "' on concept: '" + concept->name() + 
-                         "' on method: " + k);
+            NERROR("Unable to create concept '" +
+                   pi.type.str() + "' on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
 
           if(!pi.hasKey("const")){
-            throw MError("Ontology: missing const field on parameter '" + 
-                         pi.str() + " on concept: '" + concept->name() + 
-                         "' on method: " + k);
+            NERROR("Missing const field on parameter '" +
+                   pi.str() + " on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
           
           ci->setParamName(pi);
@@ -1837,9 +1841,9 @@ public:
           ci->setPoly(poly);
 
           if(!method->addParam(pi.str(), ci)){
-            throw MError("Ontology: duplicate parameter " + nstr::toStr(i) + 
-                         " on concept: '" + concept->name() + 
-                         "' on method: " + k);
+            NERROR("Duplicate parameter " + nstr::toStr(i) +
+                   " on concept: '" + concept->name() +
+                   "' on method: " + k);
           }
         }
 
@@ -1865,7 +1869,7 @@ public:
   }
 
   void addConcept(NConcept* concept, const nvar& metadata){
-    mvec keys;
+    nvec keys;
     metadata.keys(keys);
 
     if(keys.size() != 1){
@@ -1875,16 +1879,16 @@ public:
     const nstr& name = keys[0];
 
     if(conceptMap_.hasKey(name)){
-      throw MError("Ontology::addConcept: found duplicate concept: " + name);
+      NERROR("Found duplicate concept: " + name);
     }
 
     if(!metadata[name].hasKey("extends")){
-      throw MError("Ontology::addConcept: missing extends field on: " + name);
+      NERROR("Missing extends field on: " + name);
     }
 
     const nvar& extends = metadata[name].extends;
     if(!extends.isString()){
-      throw MError("Ontology::addConcept: invalid extends field on: " + name);
+      NERROR("Invalid extends field on: " + name);
     }
 
     conceptMap_.insert(make_pair(name, new ConceptDef(name, 
@@ -1914,49 +1918,6 @@ private:
   size_t totalMethods_;
 };
 
-class CodeGen_;
-
-class ServerProc : public MNetProc{
-public:
-  ServerProc(CodeGen_* codeGen);
-
-  ~ServerProc(){
-    
-  }
-
-  nvar run(){
-    return 0;
-  }
-
-  void init(){
-
-  }
-
-  void onClose(bool manual);
-
-private:
-  CodeGen_* codeGen_;
-};
-
-
-class PushServer : public MServer{
-public:
-  PushServer(CodeGen_* codeGen);
-
-  ~PushServer(){
-    
-  }
-
-  MNetProc* serverSpawn(){
-    return new ServerProc(codeGen_);
-  }
-  
-  bool onAuthSuccess(MNetProc* proc);
-  
- private:
-  CodeGen_* codeGen_;
-};
-
 class CodeGen_{
 public:
   CodeGen_(CodeGen* o, size_t population)
@@ -1976,58 +1937,22 @@ public:
     resetInterval_(0),
     iteration_(0),
     round_(0),
-    runStartTime_(mtime::now()),
-    roundStartTime_(mtime::now()),
+    runStartTime_(NSys::now()),
+    roundStartTime_(NSys::now()),
     initialized_(false),
     solution_(0),
-    port_(0),
-    broker_(0),
-    pushServer_(0),
-    serverTask_(0),
     matchLog_(0),
     errorLog_(0),
     disableAll_(false){
 
     resetStats();
 
-    task_ = new MProcTask(1);
+    task_ = new NProcTask(1);
     solutions_ = new Solutions(population);
 
     _ontology->init();
 
     random_.timeSeed();
-  }
-
-  CodeGen_(CodeGen* o, MBrokerBase* broker)
-    : o_(0),
-      mergeRate_(0.5),
-      restartRate_(1.0),
-      selectionPressure_(0.5),
-      unusedBias_(5.0),
-      minComplexity_(0),
-      maxComplexity_(999999),
-      complexity_(10),
-      numProcs_(0),
-      numEdges_(0),
-      backtrack_(true),
-      fill_(false),
-      resetInterval_(0),
-      iteration_(0),
-      round_(0),
-      runStartTime_(mtime::now()),
-      roundStartTime_(mtime::now()),
-      initialized_(false),
-      solution_(0),
-      port_(0),
-      broker_(0),
-      pushServer_(0),
-      serverTask_(0),
-      matchLog_(0),
-      errorLog_(0),
-      disableAll_(false){
-
-    resetStats();
-    
   }
 
   ~CodeGen_(){
@@ -2051,26 +1976,6 @@ public:
       delete errorLog_;
       errorLog_ = 0;
     }
-
-    MGuard guard(serverMutex_);
-
-    if(broker_){
-      broker_->revoke(o_);
-
-      for(const auto& itr : serverProcMap_){
-        itr.first->terminate(true);
-        delete itr.first;
-      }
-
-      delete pushServer_;
-      pushServer_ = 0;
-
-      delete broker_;
-      broker_ = 0;
-      
-      delete serverTask_;
-      serverTask_ = 0;
-    }
   }
 
   void resetStats(){
@@ -2082,8 +1987,8 @@ public:
     totalDuplicates_ = 0;
   }
 
-  mdist reset(){
-    roundStartTime_ = mtime::now();
+  nvar reset(){
+    roundStartTime_ = NSys::now();
     ++round_;
     iteration_ = 0;
     solutions_->clear();
@@ -2091,39 +1996,39 @@ public:
     return true;
   }
 
-  mdist setResetInterval(size_t interval){
+  nvar setResetInterval(size_t interval){
     resetInterval_ = interval;
 
     return true;
   }
 
-  mdist iteration() const{
+  nvar iteration() const{
     return iteration_;
   }
 
-  mdist round() const{
+  nvar round() const{
     return round_;
   }
 
-  mdist elapsedRoundTime() const{
-    double dt = mtime::now() - roundStartTime_;
+  nvar elapsedRoundTime() const{
+    double dt = NSys::now() - roundStartTime_;
     return dt;
   }
 
-  mdist elapsedRunTime() const{
-    double dt = mtime::now() - runStartTime_;
+  nvar elapsedRunTime() const{
+    double dt = NSys::now() - runStartTime_;
     return dt;
   }
 
-  mdist population() const{
+  nvar population() const{
     return population_;
   }
 
-  mdist numSolutions() const{
+  nvar numSolutions() const{
     return solutions_->size();
   }
 
-  mdist getCGG(nvar& cgg) const{
+  nvar getCGG(nvar& cgg) const{
     for(auto& itr : graphMap_){
       const nstr& from = itr.first;
       const nstr& to = itr.second;
@@ -2191,11 +2096,11 @@ public:
     connect(endMethod, inMap, outMap);
 
     if(!start_){
-      throw MError("CodeGen: [1] failed to generate");
+      NERROR("[1] failed to generate");
     }
 
     if(numEdges_ < 2){
-      throw MError("CodeGen: [1] the CGG contains no edges");
+      NERROR("[1] the CGG contains no edges");
     }
     
     initialized_ = true;
@@ -2291,14 +2196,14 @@ public:
   void enableMatchLog(){
     matchLog_ = new ofstream("match.log");
     if(matchLog_->fail()){
-      throw MError("CodeGen::enableMatchLog: failed to create match.log");
+      NERROR("Failed to create match.log");
     }
   }
 
   void enableErrorLog(){
     errorLog_ = new ofstream("error.log");
     if(errorLog_->fail()){
-      throw MError("CodeGen::enableErrorLog: failed to create error.log");
+      NERROR("Failed to create error.log");
     }
   }
 
@@ -2311,9 +2216,10 @@ public:
   }
 
   Proc* connect(Method* method,
-                const MethodParaNMap& inMap,
+                const MethodParamMap& inMap,
                 const ParamMethodMap& outMap){
     Proc* proc = new Proc(this, method);
+    proc->setTask(task_);
     ++numProcs_; 
 
     methodMap_[method->id()] = method;
@@ -2369,7 +2275,7 @@ public:
         NConcept* output = itr2->second.second;
 
         nvar attrs = output->attributes();
-        attrs.in = true;
+        attrs("in") = true;
 
         //cout << "evaluating from: " << m->name() << endl;
         //cout << "evaluating to: " << proc->method()->name() << endl << endl;
@@ -2392,7 +2298,7 @@ public:
         }
 
         if(proc2 != start_ || proc->method()->name() != "<<end>>"){
-          proc2->connect(proc->id(), proc2->id(), proc, 1);
+          proc2->mapProc(proc, proc->id());
           ++numEdges_;
 
           NConcept* fromConcept = proc2->method()->concept();
@@ -2433,7 +2339,7 @@ public:
 
   void addInput(const nstr& name, NConcept* input){
     if(inputMap_.hasKey(name)){
-      throw MError("CodeGen::addInput: duplicate input: " + name);
+      NERROR("Duplicate input: " + name);
     }
 
     input->setIn(true);
@@ -2456,7 +2362,7 @@ public:
 
   void addOutput(const nstr& name, NConcept* output){
     if(outputMap_.hasKey(name)){
-      throw MError("CodeGen::addOutput: duplicate output: " + name);
+      NERROR("Duplicate output: " + name);
     }
 
     output->setIn(false);
@@ -2490,27 +2396,25 @@ public:
 
   void queue(nvar& state, size_t methodId){
     Proc* proc = procMap_[methodMap_[methodId]];
-    MProc::SignalMap* m = new MProc::SignalMap;
-    m->insert(make_pair(0, move(state)));
-    proc->queue(task_, m);
+    task_->queue(proc, state);
   }
 
   bool run(){
     if(!solution_){
-      throw MError("CodeGen::run: no solution has been selected");
+      NERROR("No solution has been selected");
     }
 
-    mnode f = solution_->solution();
+    nvar f = solution_->solution();
 
     obj_.Reset_();
 
     for(auto& itr : inputMap_){
-      obj_.Def_(nsym(itr.first), itr.second);
+      obj_.Def(nsym(itr.first), itr.second);
     }
 
     for(auto& itr : outputMap_){
       if(!inputMap_.hasKey(itr.first)){
-        obj_.Def_(nsym(itr.first), itr.second);
+        obj_.Def(nsym(itr.first), itr.second);
       }
     }
 
@@ -2519,14 +2423,14 @@ public:
     try{
       obj_.process(f);
     }
-    catch(MError& e){
+    catch(NError& e){
       if(errorLog_){
         ostream& ostr = *errorLog_;
 
-        nstr mml = MMLGenerator::toStr(f);
+        nstr nml = NMLGenerator::toStr(f);
 
         ostr << "-----------------------" << endl;
-        ostr << mml << endl << endl;
+        ostr << nml << endl << endl;
         ostr << e << endl;
       }
 
@@ -2540,17 +2444,17 @@ public:
     return true;
   }
 
-  mnode getSolution(){
+  nvar getSolution(){
     if(!solution_){
-      throw MError("CodeGen::getSolution: no solution has been selected");
+      NERROR("No solution has been selected");
     }
 
     return solution_->solution();
   }
 
-  mnode getFinalSolution(){
+  nvar getFinalSolution(){
     if(!solution_){
-      throw MError("CodeGen::getSolution: no solution has been selected");
+      NERROR("No solution has been selected");
     }
     
     normalizeSolution(solution_);
@@ -2562,7 +2466,7 @@ public:
     return finalSolution.solution();
   }
 
-  mdist getSolution(size_t rank, nvar& solution){
+  nvar getSolution(size_t rank, nvar& solution){
     Solution* s = solutions_->get(rank);
 
     if(!s){
@@ -2579,7 +2483,7 @@ public:
     nvar& vars = state.vars;
     NMap& tm = vars;
     for(auto& itr : tm){
-      mvec ek;
+      nvec ek;
       NMap& vm = itr.second;
       for(auto& itr2 : vm){
         auto mitr = m.find(itr2.first);
@@ -2601,19 +2505,19 @@ public:
       return;
     }
 
-    mvec& seq = state.seq;
+    nvec& seq = state["seq"];
 
     //cout << "in seq: " << seq << endl;
 
     NameMap m;
 
-    mvec newSeq;
+    nvec newSeq;
 
     for(nvar& si : seq){
       if(si["static"]){
         bool found = false;
-        mnode code;
-        const NMap& om = si.outs;
+        nvar code;
+        const NMap& om = si["outs"];
 
         for(auto& itr : om){
           if(m.hasKey(itr.first)){
@@ -2623,18 +2527,18 @@ public:
 
           if(si.hasKey("ins")){
             NConcept* c = 
-              static_cast<NConcept*>(obj_.Get_(nsym(itr.first)).obj());
+              static_cast<NConcept*>(obj_.Get(nsym(itr.first)).obj());
 
-            if(code == mnull){
+            if(code == none){
               code = nfunc("Block");
             }
             
-            code.add(nfunc("Type") + nsym(itr.first) + nsym(c->name()) + 
-                     mnode([ptr:true, shared:true]) + 
-                     (nfunc("New") + nfunc(c->name())));
+            code << nfunc("Type") << nsym(itr.first) << nsym(c->name()) <<
+            nvar()("ptr", true, "shared", true) <<
+            (nfunc("New") << nfunc(c->name()));
             
-            code.add(nfunc("Idx") + nsym(itr.first) + 
-                     (nfunc("Call") + (nfunc("set") + mnode(c->val()))));
+            code << (nfunc("Idx") << nsym(itr.first) <<
+                     (nfunc("Call") << (nfunc("set") << c->val()));
           }
 
           m[itr.first] = true;
@@ -2643,7 +2547,7 @@ public:
         if(!found){
           si.erase("ins");
           if(code != mnull){
-            si.code = code;
+            si("code") = code;
           }
           newSeq.push_back(move(si));
         }
@@ -2705,21 +2609,17 @@ public:
       Solution* s1 = solutions_->get(i);
       Solution* s2 = solutions_->get(j);
 
-      MProc::SignalMap* m = new MProc::SignalMap;
-      m->insert(make_pair(0, undef));
-      nvar& state = m->begin()->second;
-
-      state = s1->state();
+      nvar state = s1->state();
       nvar state2 = s2->state();
       
-      state.solutionId = _getUId();
-      state.solutionTag = nstr::getB62Id(state.solutionId);
-      state.temp = 0;
+      state("solutionId") = _getUId();
+      state("solutionTag") = nstr::getB62Id(state["solutionId"]);
+      state("temp") = 0;
       state.erase("sequence");
 
       RenameMap rm;
       RenameMap rm2;
-      mvec& seq = state.seq;
+      nvec& seq = state["seq"];
       seq.pop_back();
 
       size_t temp = 0;
@@ -2728,7 +2628,7 @@ public:
       bool firstEmpty;
 
       for(nvar& si : seq){
-        mnode n = si.code;
+        nvar n = si["code"];
 
         if(first){
           firstEmpty = n.isFunction("Block", 0);
@@ -2736,11 +2636,11 @@ public:
         }
 
         remapCode(rm, temp, n);
-        si.code = n;
+        si("code") = n;
         remapInOuts(rm, si);
       }
 
-      mvec& seq2 = state2.seq;
+      nvec& seq2 = state2["seq"];
       seq2.pop_back();
 
       //cout << "---------------------------" << endl;
@@ -2752,7 +2652,7 @@ public:
       first = true;
 
       for(nvar& si : seq2){
-        mnode n = si.code;
+        nvar n = si["code"];
 
         if(first){
           first = false;
@@ -2762,7 +2662,7 @@ public:
         }
 
         remapCode(rm2, temp, n);
-        si.code = n;
+        si("code") = n;
         remapInOuts(rm2, si);
         seq.push_back(si);
       }
@@ -2770,26 +2670,16 @@ public:
       remapState(rm, state);
       remapState(rm2, state2);
 
-      state.vars.fuse(state2.vars, nvar::FuseGreater);
+      // ndm - how to handle this?
+      //state["vars"].fuse(state2.vars, nvar::FuseGreater);
 
-      mvec choices = state.lastChoices;
-      choices.append(state2.lastChoices);
+      nvec choices = state["lastChoices"];
+      choices.append(state2["lastChoices"]);
 
       size_t id = choices[random_.equilikely(0, choices.size() - 1)];
 
       Proc* proc = procMap_[methodMap_[id]];
-
-      proc->queue(task_, m);
-
-      serverMutex_.lock();
-      if(pushServer_){
-        mvec msg = {"entered"};
-        msg.push_back(iteration_);
-        msg.push_back(pos);
-        msg.append(solutions_->getStats());
-        sendMessage(msg);
-      }
-      serverMutex_.unlock();
+      task_->queue(proc, state);
     }
     else{
       queue();
@@ -2811,68 +2701,8 @@ public:
     solutions_->submit(solution);
   }
 
-  void listen(int port){
-    if(!initialized_){
-      throw MError("CodeGen::listen: generate() has not been called");
-    }
-
-    serverTask_ = new MProcTask(SERVER_THREADS);
-    broker_ = new MBroker(serverTask_, 0);
-    broker_->distribute(o_, "CodeGen", "codeGen");
-
-    if(!broker_->listen(port)){
-      throw MError("CodeGen: failed to listen on port: " + nstr::toStr(port));
-    }
-
-    pushServer_ = new PushServer(this);
-
-    int pushPort = port + 1;
-
-    if(!pushServer_->listen(pushPort)){
-      throw MError("CodeGen: failed to listen on port: " + nstr::toStr(pushPort));
-    }
-
-    port_ = port;
-    
-    cout << "CodeGen listening on port: " << port << endl;
-  }
-
-  void startGUI(){
-    if(port_ == 0){
-      throw MError("CodeGen::startGUI: not listening");
-    }
-
-    MCommand 
-      command("'/Users/nickm/Desktop/Concepts/Meta Concepts GUI.app/"
-              "Contents/MacOS/Meta Concepts GUI' -port " + 
-              nstr::toStr(port_), MCommand::Persistent);
-  }
-
-  MProcTask* serverTask(){
-    return serverTask_;
-  }
-  
-  void addServerProc(ServerProc* serverProc){
-    serverProcMutex_.lock();
-    serverProcMap_.insert(make_pair(serverProc, true));
-    serverProcMutex_.unlock();
-  }
-  
-  void removeServerProc(ServerProc* serverProc){
-    serverProcMutex_.lock();
-    serverProcMap_.erase(serverProc);
-    serverProcMutex_.lock();
-  }
-
-  // assumes serverMutex_ is locked
-  void sendMessage(const nvar& msg){
-    for(const auto& itr : serverProcMap_){
-      itr.first->send(msg);
-    }
-  }
-
-  mvec getStats() const{
-    mvec s = solutions_->getStats();
+  nvec getStats() const{
+    nvec s = solutions_->getStats();
     s.push_back(totalSolutions_);
     s.push_back(totalMisses_);
     s.push_back(totalAccepted_);
@@ -2890,14 +2720,13 @@ public:
     ConceptDef* c = _ontology->getConceptDef(concept);
 
     if(!c){
-      throw MError("CodeGen::enable: invalid concept: " + concept);
+      NERROR("Invalid concept: " + concept);
     }
 
     Method* m = c->getMethod(method);
 
     if(!m){
-      throw MError("CodeGen::enable: invalid method: " + 
-                   concept + "::" + method);
+      NERROR("Invalid method: " + concept + "::" + method);
     }
     
     enableMethodMap_.insert(make_pair(make_pair(concept, method), flag));
@@ -2907,7 +2736,7 @@ public:
     ConceptDef* c = _ontology->getConceptDef(concept);
 
     if(!c){
-      throw MError("CodeGen::enable: invalid concept: " + concept);
+      NERROR("Invalid concept: " + concept);
     }
 
     enableConceptMap_.insert(make_pair(concept, flag));
@@ -2942,21 +2771,14 @@ private:
   MethodMap_ methodMap_;
   ProcMap_ procMap_;
   bool initialized_;
-  ParaNMap_ inputMap_;
-  ParaNMap_ outputMap_;
+  ParamMap_ inputMap_;
+  ParamMap_ outputMap_;
   Proc* start_;
   Solution* solution_;
-  MProcTask* task_;
-  MObject obj_;
+  NProcTask* task_;
+  NObject obj_;
   MRandom random_;
-  MMage mage_;
   Name2Map_ graphMap_;
-  MProcTask* serverTask_;
-  PushServer* pushServer_;
-  MBroker* broker_;
-  MMutex serverMutex_;
-  MMutex serverProcMutex_;
-  ServerProcMap_ serverProcMap_;
   ofstream* matchLog_;
   ofstream* errorLog_;
   int port_;
@@ -2985,7 +2807,7 @@ int Proc::chooseOut(nvar& state, bool initial){
   assert(!outs.empty());
 
   if(codeGen_->backtrack() && state.hasKey("lastChoices")){
-    const mvec& lastChoices = state.lastChoices;
+    const nvec& lastChoices = state["lastChoices"];
     for(int i : lastChoices){
       s += 1;
       m.insert(make_pair(s, -i));
@@ -2993,7 +2815,7 @@ int Proc::chooseOut(nvar& state, bool initial){
   }
 
   if(!initial){
-    const mvec& firstChoices = state.firstChoices;
+    const nvec& firstChoices = state["firstChoices"];
     for(int i : firstChoices){
       s += codeGen_->restartRate();
       m.insert(make_pair(s, -i));
@@ -3013,7 +2835,7 @@ int Proc::chooseOut(nvar& state, bool initial){
   }
 
   if(foundEnd){
-    size_t length = state.seq.size();
+    size_t length = state["seq"].size();
     size_t maxComplexity = codeGen_->maxComplexity();
 
     if(length >= maxComplexity){
@@ -3040,9 +2862,9 @@ int Proc::chooseOut(nvar& state, bool initial){
   
   int j = itr->second;
 
-  state.lastChoices = mvec();
+  state("lastChoices") = nvec();
   if(j > 0){
-    mvec& lastChoices = state.lastChoices;
+    nvec& lastChoices = state["lastChoices"];
     for(int i : outs){
       if(i != j && i != END_METHOD_ID){
         lastChoices.push_back(i);
@@ -3050,8 +2872,8 @@ int Proc::chooseOut(nvar& state, bool initial){
     }
   }
   else{
-    mvec newLastChoices;
-    mvec& lastChoices = state.lastChoices;
+    nvec newLastChoices;
+    nvec& lastChoices = state["lastChoices"];
     for(int i : lastChoices){
       if(i != method_->id()){
         newLastChoices.push_back(i);
@@ -3061,15 +2883,15 @@ int Proc::chooseOut(nvar& state, bool initial){
   }
 
   if(initial){
-    state.firstChoices = state.lastChoices;
+    state("firstChoices") = state["lastChoices"];
   }
 
   return j;
 }
 
-bool Proc::multiChooseVars(const ParanvarVec& ps, mvec& pv, ostream* matchLog){
+bool Proc::multiChooseVars(const ParanvarVec& ps, nvec& pv, ostream* matchLog){
   for(size_t i = 0; i < MULTI_CHOOSE_ATTEMPTS; ++i){
-    ParanvarVec ips(ps);
+    ParamVarVec ips(ps);
     if(chooseVars(ips, pv, matchLog)){
       return true;
     }
@@ -3091,7 +2913,7 @@ bool Proc::multiChooseVars(const ParanvarVec& ps, mvec& pv, ostream* matchLog){
   return false;
 }
 
-bool Proc::chooseVars(ParanvarVec& ps, mvec& pv, ostream* matchLog){
+bool Proc::chooseVars(ParanvarVec& ps, nvec& pv, ostream* matchLog){
   NConcept* tc = method_->getThis();
 
   for(size_t i = 0; i < ps.size(); ++i){
@@ -3130,8 +2952,8 @@ bool Proc::chooseVars(ParanvarVec& ps, mvec& pv, ostream* matchLog){
 
           break;
         }
-        else if((!pj.p || pj.t == pv[0]["t"]) &&
-           (pj.h || pj.str() != pv[0])){
+        else if((!pj["p"] || pj["t"] == pv[0]["t"]) &&
+           (pj["h"] || pj.str() != pv[0])){
           pv.push_back(pj);
           match = true;
 
@@ -3149,7 +2971,7 @@ bool Proc::chooseVars(ParanvarVec& ps, mvec& pv, ostream* matchLog){
         ParanvarMap pm2;
         for(auto& itr2 : pm){
           nvar& p2 = itr2.second;
-          s += p2.m.toDouble();
+          s += p2["m"].toDouble();
           pm2.insert(make_pair(s, move(p2))); 
         }
 
@@ -3176,7 +2998,7 @@ bool Proc::chooseVars(ParanvarVec& ps, mvec& pv, ostream* matchLog){
   return true;
 }
 
-nvar Proc::run(SignalMap& signalMap){
+void Proc::run(nvar& r){
   MGuard guard(mutex_);
 
   if(type_ == 0){
@@ -3191,26 +3013,26 @@ nvar Proc::run(SignalMap& signalMap){
   else if(type_ == 1){
     //cout << "-------------- running: " << method_->name() << endl;
 
-    nvar& state = signalMap.begin()->second;
+    nvar& state = r;
 
     ostream* matchLog = codeGen_->matchLog();
     if(matchLog){
       method_->logMethodAndVariables(*matchLog, state);
     }
 
-    ParanvarVec ps;
-    mvec vs;
-    if(!method_->getParanvars(state, ps, matchLog, codeGen_->unusedBias()) || 
+    ParamVarVec ps;
+    nvec vs;
+    if(!method_->getParamVars(state, ps, matchLog, codeGen_->unusedBias()) ||
        !multiChooseVars(ps, vs, matchLog)){
 
-      mvec& choices = state.lastChoices;
+      nvec& choices = state["lastChoices"];
 
       if(choices.empty()){
         if(matchLog){
           *matchLog << "STARTING OVER" << endl;
         }
 
-        const mvec& firstChoices = state.firstChoices;
+        const nvec& firstChoices = state["firstChoices"];
         size_t j = random_.equilikely(0, firstChoices.size() - 1);
         size_t id = firstChoices[j];
         codeGen_->miss();
@@ -3257,18 +3079,18 @@ nvar Proc::run(SignalMap& signalMap){
       method_->logMethodAndVariables(*matchLog, state);
     }
 
-    ParanvarVec ps;
-    mvec vs;
-    if(!method_->getParanvars(state, ps, matchLog, codeGen_->unusedBias()) || 
+    ParamVarVec ps;
+    nvec vs;
+    if(!method_->getParamVars(state, ps, matchLog, codeGen_->unusedBias()) ||
        !multiChooseVars(ps, vs, matchLog)){
-      mvec& choices = state.lastChoices;
+      nvec& choices = state["lastChoices"];
 
       if(choices.empty()){
         if(matchLog){
           *matchLog << "END STARTING OVER" << endl;
         }
 
-        const mvec& firstChoices = state.firstChoices;
+        const nvec& firstChoices = state["firstChoices"];
         size_t j = random_.equilikely(0, firstChoices.size() - 1);
         size_t id = firstChoices[j];
         codeGen_->miss();
@@ -3303,19 +3125,17 @@ nvar Proc::run(SignalMap& signalMap){
 
     //codeGen_->queue();
   }
+}
 
-  return 0;
-} 
-
-bool Method::getParanvars(const nvar& state,
+bool Method::getParamVars(const nvar& state,
                           ParanvarVec& ps,
                           ostream* matchLog,
                           double unusedBias){
-  const nvar& vars = state.vars;
+  const nvar& vars = state["vars"];
   
   if(this_){
-    ps.push_back(ParanvarMap());
-    ParanvarMap& pm = ps.back();
+    ps.push_back(ParamVarMap());
+    ParamVarMap& pm = ps.back();
 
     ConceptDef* c = _ontology->getConceptDef(concept_->name());
     assert(c);
@@ -3341,13 +3161,13 @@ bool Method::getParanvars(const nvar& state,
           double m = this_->match(attrs, true);
           
           if(m > 0){
-            m *= 1.0/(attrs.inputUses.toDouble() + 1.0/unusedBias);
+            m *= 1.0/(attrs["inputUses"].toDouble() + 1.0/unusedBias);
 
             nvar pi = mitr.first;
-            pi.m = m * attrs["weight"];
-            pi.s = attrs["static"];
-            pi.p = this_->getPoly();
-            pi.t = ei;
+            pi("m") = m * attrs["weight"];
+            pi("s") = attrs["static"];
+            pi("p") = this_->getPoly();
+            pi("t") = ei;
             s += m;
             pm.insert(make_pair(s, pi));
           }
@@ -3383,7 +3203,7 @@ bool Method::getParanvars(const nvar& state,
     }
   }
 
-  for(auto& itr : paramVec_){
+  for(auto& itr : paranvec_){
     ps.push_back(ParanvarMap());
     ParanvarMap& pm = ps.back();
 
@@ -3419,14 +3239,14 @@ bool Method::getParanvars(const nvar& state,
           double m = param->match(attrs, true);
           
           if(m > 0){
-            m *= 1.0/(attrs.inputUses.toDouble() + 1.0/unusedBias);
+            m *= 1.0/(attrs["inputUses"].toDouble() + 1.0/unusedBias);
 
             nvar pi = mitr.first;
-            pi.m = m * attrs["weight"];
-            pi.s = attrs["static"];
-            pi.p = param->getPoly();
-            pi.t = ei;
-            pi.h = param->getTakeThis();
+            pi("m") = m * attrs["weight"];
+            pi("s") = attrs["static"];
+            pi("p") = param->getPoly();
+            pi("t") = ei;
+            pi("h") = param->getTakeThis();
             s += m;
             pm.insert(make_pair(s, pi));
           }
@@ -3465,9 +3285,9 @@ bool Method::getParanvars(const nvar& state,
   return true;
 }
 
-void Method::mapMethod(MethodParaNMap& inMap,
+void Method::mapMethod(MethodParamMap& inMap,
                        ParamMethodMap& outMap){
-  mvec ev;
+  nvec ev;
   if(concept_){
     ConceptDef* c = _ontology->getConceptDef(concept_->name());
     assert(c);
@@ -3475,7 +3295,7 @@ void Method::mapMethod(MethodParaNMap& inMap,
     c->getExtendedByMap(em);
     em(concept_->name()) = true;
 
-    mvec keys;
+    nvec keys;
     em.keys(keys);
     for(const nstr& k : keys){
       ConceptDef* ce = _ontology->getConceptDef(k);
@@ -3556,49 +3376,19 @@ void Method::mapMethod(MethodParaNMap& inMap,
   }
 }
 
-ServerProc::ServerProc(CodeGen_* codeGen)
-  : codeGen_(codeGen), 
-    MNetProc(codeGen->serverTask()){
-  
-}
-
-void ServerProc::onClose(bool manual){
-  codeGen_->removeServerProc(this);
-}
-
-  
-bool PushServer::onAuthSuccess(MNetProc* proc){
-  ServerProc* serverProc = static_cast<ServerProc*>(proc);
-  codeGen_->addServerProc(serverProc);
-  return true;
-}
-
-PushServer::PushServer(CodeGen_* codeGen)
-  : codeGen_(codeGen),
-    MServer(codeGen->serverTask(), 0){
-  
-}
-
-Ontology* Ontology::get(){
+NCOntology* NCOntology::get(){
   if(!_outerOntology){
-    _outerOntology = new Ontology;
+    _outerOntology = new NCOntology;
     _ontology = _outerOntology->x_;
   }
 
   return _outerOntology;
 }
 
-Ontology::Ontology(){
-  x_ = new Ontology_(this);
+NCOntology::NCOntology(){
+  x_ = new NCOntology_(this);
 }
 
-CodeGen::CodeGen(MBrokerBase* broker)
-  : MObject(broker){
-  x_ = new CodeGen_(this, broker);
-}
-
-autogenerate Method handle;
-autogenerate Ontology outer;
-autogenerate CodeGen handle;
-autogenerate CodeGen outer;
-autogenerate CodeGen factory;
+#include "Method_meta.h"
+#include "NCOntology_meta.h"
+#include "NCCodeGen_meta.h"

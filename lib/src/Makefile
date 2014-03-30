@@ -35,6 +35,9 @@ all: $(META_MODULES) .depend libneu
 
 meta:
 	neu-meta NConcept.cpp
+	neu-meta --class Method NCOntology.cpp
+	neu-meta --class NCOntology NCOntology.cpp
+	neu-meta --class NCCodeGen NCOntology.cpp
 
 neu_m:
 	(cd nm; $(MAKE))
