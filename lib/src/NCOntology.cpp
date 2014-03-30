@@ -243,14 +243,14 @@ public:
     state("temp") = 0;
     state("seq").pushBack(0);
 
-    nvar& seq = state.seq.back();
+    nvar& seq = state["seq"].back();
     seq("static") = false;
     nvar& outs = seq("outs");
     nvar& vars = state("vars");
 
-    mnode code = mfunc("Block");
+    nvar code = nfunc("Block");
 
-    for(auto& itr : paraNMap_){
+    for(auto& itr : paramMap_){
       const nstr& pn = itr.first;
 
       NConcept* param = itr.second;
@@ -262,15 +262,15 @@ public:
         nvar& vv = vt(pn);
         vv = param->attributes();
         removeParamAttrs(vv);
-        vv.in = true;
-        vv.out = !vv["const"];
-        vv.age = 0;
-        vv.given = true;
-        vv.inputUses = 0;
-        vv.outputUses = 0;
+        vv("in") = true;
+        vv("out") = !vv["const"];
+        vv("age") = 0;
+        vv("given") = true;
+        vv("inputUses") = 0;
+        vv("outputUses") = 0;
 
         if(!vv.hasKey("weight")){
-          vv.weight = 1.0;
+          vv("weight") = 1.0;
         }
 
         outs(pn) = 2;          
@@ -278,78 +278,80 @@ public:
       else{
         nstr temp = getTemp(state, type);
           
-        code.add(mfunc("Type") + msym(temp) + msym(type) + 
-                 mnode([ptr:true, shared:true]) + 
-                 (mfunc("Idx") + msym(pn) + 
-                  (mfunc("Call") + mfunc("copy"))));
+        code.add(nfunc("Type") << nsym(temp) << nsym(type) +
+                 nvar()("ptr", true, "shared", true) <<
+                 nvar()("ptr", true, "shared", true) <<
+                 (nfunc("Idx") + nsym(pn) +
+                  (nfunc("Call") + nfunc("copy"))));
     
         nvar& vv = vt(temp);
         vv = param->attributes();
         removeParamAttrs(vv);
-        vv.in = true;
-        vv.out = true;
-        vv.age = 0;
-        vv.inputUses = 0;
-        vv.outputUses = 0;
-        vv.given = true;
-        vv.cloneOf = pn;
+        vv("in") = true;
+        vv("out") = true;
+        vv("age") = 0;
+        vv("inputUses") = 0;
+        vv("outputUses") = 0;
+        vv("given") = true;
+        vv("cloneOf") = pn;
 
         if(!vv.hasKey("weight")){
-          vv.weight = 1.0;
+          vv("weight") = 1.0;
         }
 
         outs(temp) = 2;
       }
     }
 
-    seq.code = code;
+    seq("code") = code;
   }
 
   void getFinalState(const nvec& vs, nvar& state){
-    state.seq.pushBack(id_);
-    nvar& seq = state.seq.back();
+    state["seq"].pushBack(id_);
+    nvar& seq = state["seq"].back();
     seq("static") = false;
 
     nvar& ins = seq("ins");
 
-    mnode code = mfunc("Block");
+    nvar code = nfunc("Block");
 
     for(size_t i = 0; i < vs.size(); ++i){
       const nvar& vi = vs[i];
 
-      mnode f = mfunc("Idx") + 
-        msym(paramVec_[i].first) + (mfunc("Call") + 
-                                    (mfunc("setObj") + msym(vi)));
-      code.add(f);
+      nvar f = nfunc("Idx") << nsym(paramVec_[i].first) <<
+      (nfunc("Call") + (nfunc("setObj") + nsym(vi)));
+      
+      code << f;
+      
       ins(vi) = true;
     }
     
-    seq.code = code;
+    seq("code") = code;
   }
 
   void run(const nvec& vs, nvar& state){
-    state.seq.pushBack(id_);
-    nvar& seq = state.seq.back();
+    state["seq"].pushBack(id_);
+    nvar& seq = state["seq"].back();
 
     nvar& outs = seq("outs");
     nvar& ins = seq("ins");
 
-    nvar& vars = state.vars;
+    nvar& vars = state["vars"];
 
     NMap& tm = vars;
     for(auto& itr : tm){
       NMap& vm = itr.second;
       for(auto& itr2 : vm){
         nvar& v = itr2.second;
-        if(!v.given){
-          ++v.age;
+        if(!v["given"]){
+          ++v["age"];
         }
       }
     }
 
-    MObject* obj;
-    if(post_ != mnull){
-      obj = new MObject;
+    NObject* obj;
+    if(post_ != none){
+      obj = new NObject;
     }
     else{
       obj = 0;
@@ -382,22 +384,22 @@ public:
       nvar& vv = vt(returnTemp);
 
       if(obj){
-        obj->Def_(msym("ret"), mnode(&vv));
+        obj->Def_(nsym("ret"), &vv);
       }
 
       vv = return_->attributes();
 
       removeParamAttrs(vv);
-      vv.in = true;
-      vv.out = !vv["const"];
-      vv.age = 0;
-      vv.given = false;
-      vv.inputUses = 1;
-      vv.outputUses = 1;
+      vv("in") = true;
+      vv("out") = !vv["const"];
+      vv("age") = 0;
+      vv("given") = false;
+      vv("inputUses") = 1;
+      vv("outputUses") = 1;
       vv("static") = isStatic;
 
       if(!vv.hasKey("weight")){
-        vv.weight = 1.0;
+        vv("weight") = 1.0;
       }
 
       outs(returnTemp) = 2;
@@ -408,11 +410,11 @@ public:
     nvar& vv = vt[v0];
 
     if(obj){
-      obj->Def_(msym("self"), mnode(&vv));
+      obj->Def(nsym("self"), &vv);
     }
 
-    vv.in = true;
-    ++vv.inputUses;
+    vv("in") = true;
+    ++vv["inputUses"];
     ins(v0) = true;
     
     if(!this_->getConst()){
@@ -422,15 +424,15 @@ public:
         vv.outerMerge(vn);
       }
 
-      vv.out = true;
-      ++vv.outputUses;
+      vv("out") = true;
+      ++vv["outputUses"];
       vv("static") = isStatic;
       outs(v0) = 1;
     }
 
-    mnode call = mfunc(name_);
+    nvar call = nfunc(name_);
 
-    mnode code = mfunc("Block");
+    nvar code = nfunc("Block");
 
     for(size_t i = 1; i < vs.size(); ++i){
       const nvar& vi = vs[i];
@@ -455,11 +457,11 @@ public:
         type = pi->name();
       }
 
-      nvar& vt = vars(vi.t);
+      nvar& vt = vars(vi["t"]);
       nvar& vv = vt[vi];
 
       if(obj){
-        obj->Def_(msym(paramVec_[i - 1].first), mnode(&vv));
+        obj->Def(nsym(paramVec_[i - 1].first), &vv);
       }
 
       if(pi->getOut()){
@@ -470,10 +472,10 @@ public:
             vv.outerMerge(vn);
           }
 
-          vv.in = true;
-          vv.out = true;
-          ++vv.inputUses;
-          ++vv.outputUses;
+          vv("in") = true;
+          vv("out") = true;
+          ++vv["inputUses"];
+          ++vv["outputUses"];
           vv("static") = isStatic;
           ins(vi) = true;
           outs(vi) = 1;
@@ -488,45 +490,45 @@ public:
             vn = pi->attributes();
           }
           removeParamAttrs(vn);
-          vv.in = true;
-          vv.out = true;
-          vv.age = 0;
-          vv.given = false;
-          vv.inputUses = 0;
-          vv.outputUses = 1;
+          vv("in") = true;
+          vv("out") = true;
+          vv("age") = 0;
+          vv("given") = false;
+          vv("inputUses") = 0;
+          vv("outputUses") = 1;
           vv("static") = isStatic;
 
           if(!vv.hasKey("weight")){
-            vv.weight = 1.0;
+            vv("weight") = 1.0;
           }
 
           outs(vi) = 2;
 
-          code.add(mfunc("Type") + msym(temp) + msym(type) + 
-                   mnode([ptr:true, shared:true]));
+          code.add(nfunc("Type") << nsym(temp) << nsym(type) <<
+                   nvar()("ptr", true, "shared", true));
         }
       }
       else{
-        ++vv.inputUses;
+        ++vv["inputUses"];
         ins(vi) = true;
       }
       
-      call.add(msym(vi));
+      call << nsym(vi);
     }
 
-    mnode mc = mfunc("Idx") + msym(v0) + (mfunc("Call") + call);
+    nvar mc = nfunc("Idx") << nsym(v0) + (nfunc("Call") << call);
 
-    mnode f;
+    nvar f;
     if(returnTemp.empty()){
       f = mc;
     }
     else{
-      f = mfunc("Type") + msym(returnTemp) + msym(returnType) + 
-        mnode([ptr:true, shared:true]) + mc;
+      f = nfunc("Type") << nsym(returnTemp) << nsym(returnType) <<
+        nvar()("ptr", true, "shared", true) << mc;
     }
 
-    code.add(f);
-    seq.code = code;
+    code << f;
+    seq("code") = code;
     seq("static") = isStatic;
 
     if(obj){
@@ -535,8 +537,8 @@ public:
     }
   }
 
-  bool getParanvars(const nvar& state,
-                    ParanvarVec& ps,
+  bool getParamVars(const nvar& state,
+                    ParamVarVec& ps,
                     ostream* matchLog,
                     double unusedBias);
 
@@ -545,14 +547,14 @@ public:
       return false;
     }
     
-    paraNMap_.insert(make_pair(name, param));
-    paramVec_.push_back(make_pair(name, param));
+    paraNMap_.insert({name, param});
+    paramVec_.push_back({name, param});
 
     return true;
   }
 
   void init(){
-    mvec keys;
+    nvec keys;
     data_.keys(keys);
 
     for(const nstr& k : keys){
@@ -565,9 +567,9 @@ public:
 
         if(nk == "self"){
           if(this_->getConst()){
-            throw MError("Ontology: on concept '" + concept_->name() + 
-                         "' on method '" + name_ +
-                         "' self_out given for const method"); 
+            NERROR("On concept '" + concept_->name() +
+                   "' on method '" + name_ +
+                   "' self_out given for const method");
           }
 
           if(!thisOut_){
@@ -582,15 +584,15 @@ public:
             auto itr2 = paraNMap_.find(nk);
 
             if(itr2 == paraNMap_.end()){
-              throw MError("Ontology: on concept '" + concept_->name() + 
-                           "' on method '" + name_ +
-                           "' invalid attribute '" + k); 
+              NERROR("On concept '" + concept_->name() +
+                     "' on method '" + name_ +
+                     "' invalid attribute '" + k);
             }
             
             if(itr2->second->getConst()){
-              throw MError("Ontology: on concept '" + concept_->name() + 
-                           "' on method '" + name_ +
-                           "' '" + k + "' given for const parameter"); 
+              NERROR("On concept '" + concept_->name() +
+                     "' on method '" + name_ +
+                     "' '" + k + "' given for const parameter");
             }
             
             c = itr2->second->copy();
@@ -601,82 +603,80 @@ public:
           }
         }
 
-        mvec keys2;
+        nvec keys2;
         data_[k].keys(keys2);
 
         for(const nstr& k2 : keys2){
           const nvar& value = data_[k][k2];
 
-          mnode n;
+          nvar n;
 
           if(value == undef){
-            n = mfunc("Call") + mfunc("undef" + k2.uppercase());
+            n = nfunc("Call") << nfunc("undef" + k2.uppercase());
           }
           else{
-            n = mfunc("Call") + (mfunc("set" + k2.uppercase()) + 
-                                 mnode(value));
+            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) +
+                                  mnode(value));
           }
 
           try{
             c->process(n);
           }
-          catch(MError& e){
-            throw MError("Ontology: on concept '" + concept_->name() + 
-                         "' on method '" + name_ +
-                         "' invalid attribute '" + k2 +
-                         "' for parameter '" + k + 
-                         "' value: " + value.toStr());   
+          catch(NError& e){
+            NERROR("On concept '" + concept_->name() +
+                   "' on method '" + name_ +
+                   "' invalid attribute '" + k2 +
+                   "' for parameter '" + k +
+                   "' value: " + value.toStr());
           }
         }
 
         continue;
       }
 
-      auto itr = paraNMap_.find(k);
-      if(itr != paraNMap_.end()){
-        mvec keys2;
+      auto itr = paramMap_.find(k);
+      if(itr != paramMap_.end()){
+        nvec keys2;
         data_[k].keys(keys2);
 
         for(const nstr& k2 : keys2){
           const nvar& value = data_[k][k2];
 
-          mnode n;
+          nvar n;
 
           if(value == undef){
-            n = mfunc("Call") + (mfunc("undef" + k2.uppercase()));   
+            n = nfunc("Call") << (nfunc("undef" + k2.uppercase()));
           }
           else{
-            n = mfunc("Call") + (mfunc("set" + k2.uppercase()) + 
-                                 mnode(value));            
+            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) << value;
           }
           
           try{
             itr->second->process(n);
           }
-          catch(MError& e){
-            throw MError("Ontology: on concept '" + concept_->name() + 
-                         "' on method '" + name_ +
-                         "' invalid attribute '" + k2 +
-                         "' for parameter '" + k + 
-                         "' value: " + value.toStr());   
+          catch(NError& e){
+            NERROR("On concept '" + concept_->name() +
+                   "' on method '" + name_ +
+                   "' invalid attribute '" + k2 +
+                   "' for parameter '" + k +
+                   "' value: " + value.toStr());
           }
         }
       }
       else if(k == "self" || k == "ret"){
-        mvec keys2;
+        nvec keys2;
         data_[k].keys(keys2);
 
         for(const nstr& k2 : keys2){
           const nvar& value = data_[k][k2];
 
-          mnode n;
+          nvar n;
 
           if(value == undef){
-            n = mfunc("Call") + (mfunc("undef" + k2.uppercase()));            
+            n = nfunc("Call") << (nfunc("undef" + k2.uppercase()));
           }
           else{
-            n = mfunc("Call") + (mfunc("set" + k2.uppercase()) + 
-                                 mnode(value));
+            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) << value;
           }
 
           try{
@@ -687,29 +687,28 @@ public:
               return_->process(n);
             }
           }
-          catch(MError& e){
-            throw MError("Ontology: on concept '" + concept_->name() + 
-                         "' on method '" + name_ +
-                         "' invalid attribute '" + k2 +
-                         "' for parameter '" + k + 
-                         "' value: " + value.toStr());   
+          catch(NError& e){
+            NERROR("On concept '" + concept_->name() +
+                   "' on method '" + name_ +
+                   "' invalid attribute '" + k2 +
+                   "' for parameter '" + k +
+                   "' value: " + value.toStr());
           }
         }
       }
       else{
         const nvar& value = data_[k];
 
-        mnode n = mfunc("Call") + (mfunc("set" + k.uppercase()) + 
-                                   mnode(value));
+        nvar n = nfunc("Call") << (nfunc("set" + k.uppercase()) << value;
         
         try{
           process(n);
         }
-        catch(MError& e){
-          throw MError("Ontology: on concept '" + concept_->name() + 
-                       "' on method '" + name_ +
-                       "' invalid attribute '" + k +
-                       "' value: " + value.toStr());   
+        catch(NError& e){
+          NERROR("On concept '" + concept_->name() +
+                 "' on method '" + name_ +
+                 "' invalid attribute '" + k +
+                 "' value: " + value.toStr());
         }
       }
     }
@@ -720,15 +719,15 @@ public:
     }
 
     if(post_ != mnull){
-      MObject o;
-      o.Def_(msym("self"), true);
+      NObject o;
+      o.Def(nsym("self"), true);
 
       if(return_){
-        o.Def_(msym("ret"), true);
+        o.Def(nsym("ret"), true);
       }
       
       for(auto& itr : paraNMap_){
-        o.Def_(msym(itr.first), true);
+        o.Def(nsym(itr.first), true);
       }
       
       validatePost(o, post_);
@@ -742,10 +741,10 @@ public:
   }
 
   void error_(const nstr& key, const nvar& value){
-    throw MError("Ontology: on concept '" + concept_->name() + 
-                 "' on method '" + name_ +
-                 "' invalid attribute for key '" + key + 
-                 "' value: " + value.toStr());    
+    NERROR("On concept '" + concept_->name() +
+           "' on method '" + name_ +
+           "' invalid attribute for key '" + key +
+           "' value: " + value.toStr());
   }
   
   void setAttribute_(const nstr& key, const nvar& value){
@@ -800,22 +799,22 @@ public:
   }
 
   void setPost(const nvar& v){
-    post_ = v.toNode(nvar::ToNodeAll);
+    post_ = v;
   }
 
-  void mapMethod(MethodParaNMap& inMap,
+  void mapMethod(MethodParamMap& inMap,
                  ParamMethodMap& mapOut);
 
   void validatePost(MObject& o, mnode n){
     if(n.isFunction()){
       if(n.isFunction("Scoped", 1)){
-        M2Scope s;
-        o.PushScope_(mnode(&s));
+        NScope s;
+        o.PushScope(&s);
         validatePost(o, n[0]);
-        o.PopScope_();
+        o.PopScope();
       }
-      else if(n.isFunction("VSet", 2)){
-        o.Def_(n[0], true);
+      else if(n.isFunction("VarSet", 2)){
+        o.Def(n[0], true);
         validatePost(o, n[1]);
       }
       else{
@@ -825,18 +824,19 @@ public:
       }
     }
     else if(n.isSymbol()){
-      mnode g = o.Get_(n);
-      if(g == mnull){
-        throw MError("Ontology: on concept '" + concept_->name() + 
-                     "' on method '" + name_ +
-                     "' on postcondition 'post' "
-                     "undefined symbol: '" + n.str() + "'");          
+      nvar g = o.Get(n);
+      if(g == none){
+        NERROR("On concept '" + concept_->name() +
+               "' on method '" + name_ +
+               "' on postcondition 'post' "
+               "undefined symbol: '" + n.str() + "'");
       }
     }
   }
 
   void writeMethodSignature(ostream& ostr){
     ostr << "--------------------------" << endl;
+   
     if(return_){
       if(return_->getConst()){
         ostr << "const ";
@@ -903,9 +903,9 @@ public:
 
     ostr << endl;
 
-    const nvar& vars = state.vars;
+    const nvar& vars = state["vars"];
 
-    mvec keys;
+    nvec keys;
     vars.keys(keys);
 
     for(const nstr& k : keys){
@@ -913,7 +913,7 @@ public:
 
       const nvar& vk = vars[k];
 
-      mvec keys2;
+      nvec keys2;
       vk.keys(keys2);
 
       for(const nstr& k2 : keys2){
@@ -925,21 +925,21 @@ public:
   }
   
 private:
-  typedef NMap<nstr, NConcept*> ParaNMap_; 
-  typedef MVector<pair<nstr, NConcept*>> ParamVec_; 
+  typedef NMap<nstr, NConcept*> ParamMap_;
+  typedef NVector<pair<nstr, NConcept*>> ParamVec_;
 
   NConcept* concept_;
   nstr name_;
   size_t id_;
   nvar data_;
-  ParaNMap_ paraNMap_;
-  ParaNMap_ paramOutMap_;
+  ParamMap_ paraNMap_;
+  ParamMap_ paramOutMap_;
   ParamVec_ paramVec_;
   NConcept* return_;
   NConcept* this_;
   NConcept* thisOut_;
   nvar attributes_;
-  mnode post_;
+  nvar post_;
 };
 
 class ConceptDef{
@@ -991,8 +991,8 @@ public:
     return extendedByMap_.hasKey(concept);
   }
 
-  mvec getExtends() const{
-    mvec ret;
+  nvec getExtends() const{
+    nvec ret;
     for(auto& itr : extendsMap_){
       ret.push_back(itr.first);
     }
@@ -1019,19 +1019,17 @@ public:
   }
 
   void init(){
-    mvec keys;
+    nvec keys;
     data_.keys(keys);
 
     for(const nstr& k : keys){
-      mnode n = mfunc("Call") + (mfunc("set" + k.uppercase()) + 
-                                 mnode(data_[k]));
+      nvar n = nfunc("Call") << (nfunc("set" + k.uppercase())) << data_[k];
 
       try{
         concept_->process(n);
       }
       catch(MError& e){
-        throw MError("Ontology: error handling field '" + k + 
-                     "' on concept: " + name_); 
+        NERROR("Error handling field '" + k + "' on concept: " + name_);
       }
     }
 
@@ -1048,7 +1046,7 @@ public:
     return concept_;
   }
 
-  void mapMethods(MethodParaNMap& inMap,
+  void mapMethods(MethodParamMap& inMap,
                   ParamMethodMap& outMap){
     if(!concept_->getEnabled()){
       cout << "disabled: " << name_ << endl;
@@ -1103,14 +1101,14 @@ public:
       startSize_(0),
       reduction_(0){
 
-    mvec& seq = state_.seq;
+    nvec& seq = state_["seq"];
 
     //cout << "seq length: " << seq.size() << endl;
 
     //cout << "seq is: " << seq << endl;
 
     NameMap outMap;
-    mlist newSeq;
+    nlist newSeq;
 
     bool usesStatic = false;
 
@@ -1131,7 +1129,7 @@ public:
       bool matched = false;
 
       if(si.hasKey("outs")){
-        const nvar& outs = si.outs;
+        const nvar& outs = si["outs"];
         const NMap& m = outs;
 
         for(auto& itr : m){
@@ -1147,7 +1145,7 @@ public:
 
       if(matched){
         if(si.hasKey("ins")){
-          const nvar& ins = si.ins;
+          const nvar& ins = si["ins"];
           const NMap& m = ins;
 
           for(auto& itr : m){
@@ -1159,7 +1157,7 @@ public:
       }
     }
 
-    NMap& tm = state_.vars;
+    NMap& tm = state_["vars"];
     auto itr = tm.begin();
     while(itr != tm.end()){
       NMap& vm = itr->second;
@@ -1182,21 +1180,21 @@ public:
       }
     }
 
-    solution_ = mfunc("Block");
+    solution_ = nfunc("Block");
     
     startSize_ = seq.size();
 
     seq.clear();
-    state_.sequence = mvec();
-    state_.usesStatic = usesStatic;
+    state_("sequence") = nvec();
+    state_("usesStatic") = usesStatic;
     
     RenameMap rm;
     size_t temp = 0;
 
     for(nvar& si : newSeq){
-      mnode n = si.code;
+      nvar n = si["code"];
       remapCode(rm, temp, n);
-      si.code = n;
+      si("code") = n;
       remapInOuts(rm, si);
       seq.push_back(si);
       solution_.add(n);
@@ -1239,7 +1237,7 @@ public:
     fitness_ = fitness;
   }
 
-  mnode solution(){
+  nvar solution(){
     return solution_;
   }
   
@@ -1272,7 +1270,7 @@ public:
   }
 
 private:
-  mnode solution_;
+  nvar solution_;
   nvar state_;
   double priority_;
   double fitness_;
@@ -1307,7 +1305,7 @@ public:
   }
 
   void clear(){
-    MGuard guard(solutionMutex_);
+    NGuard guard(solutionMutex_);
 
     auto itr = solutionMap_.begin();
     while(itr != solutionMap_.end()){
@@ -1315,7 +1313,7 @@ public:
       solutionMap_.erase(itr++);
     }
 
-    checksuNMap_.clear();
+    checksumMap_.clear();
 
     totalFitness_ = 0;
     totalTemps_ = 0;
@@ -1346,11 +1344,11 @@ public:
   }
 
   int enter(Solution* solution, bool& full){
-    MGuard guard(solutionMutex_);
+    NGuard guard(solutionMutex_);
 
     full = solutionMap_.size() >= maxSize_;
 
-    if(checksuNMap_.hasKey(solution->checksum())){
+    if(checksumMap_.hasKey(solution->checksum())){
       delete solution;
       return -2;
     }
@@ -1361,6 +1359,7 @@ public:
       auto itr = solutionMap_.end();
       --itr;
       if(fitness > itr->first){
+        // ndm - create ref to itr->second
         totalFitness_ -= itr->second->fitness();
         totalTemps_ -= itr->second->numTemps();
         totalSize_ -= itr->second->size();
@@ -1384,13 +1383,13 @@ public:
     totalReduction_ += solution->reduction();
     auto itr = solutionMap_.insert(make_pair(fitness, solution));
 
-    checksuNMap_.insert(make_pair(solution->checksum(), true));
+    checksumMap_.insert(make_pair(solution->checksum(), true));
 
     return distance(solutionMap_.begin(), itr);
   }
   
   size_t size() const{
-    MGuard guard(solutionMutex_);
+    NGuard guard(solutionMutex_);
 
     return solutionMap_.size();
   }
@@ -1695,7 +1694,7 @@ public:
 
         mnode pt;
         try{
-          pt = method->New_(mfunc(concept->name()));
+          pt = method->New_(nfunc(concept->name()));
         }
         catch(MError& e){
           throw MError("Ontology: unable to create concept 'this' " 
@@ -1744,7 +1743,7 @@ public:
 
           mnode p;
           try{
-            p = method->New_(mfunc(type));
+            p = method->New_(nfunc(type));
           }
           catch(MError& e){
             throw MError("Ontology: unable to create concept '" + 
@@ -1810,7 +1809,7 @@ public:
           }
 
           try{
-            p = method->New_(mfunc(type));
+            p = method->New_(nfunc(type));
           }
           catch(MError& e){
             throw MError("Ontology: unable to create concept '" + 
@@ -2506,12 +2505,12 @@ public:
     obj_.Reset_();
 
     for(auto& itr : inputMap_){
-      obj_.Def_(msym(itr.first), itr.second);
+      obj_.Def_(nsym(itr.first), itr.second);
     }
 
     for(auto& itr : outputMap_){
       if(!inputMap_.hasKey(itr.first)){
-        obj_.Def_(msym(itr.first), itr.second);
+        obj_.Def_(nsym(itr.first), itr.second);
       }
     }
 
@@ -2624,18 +2623,18 @@ public:
 
           if(si.hasKey("ins")){
             NConcept* c = 
-              static_cast<NConcept*>(obj_.Get_(msym(itr.first)).obj());
+              static_cast<NConcept*>(obj_.Get_(nsym(itr.first)).obj());
 
             if(code == mnull){
-              code = mfunc("Block");
+              code = nfunc("Block");
             }
             
-            code.add(mfunc("Type") + msym(itr.first) + msym(c->name()) + 
+            code.add(nfunc("Type") + nsym(itr.first) + nsym(c->name()) + 
                      mnode([ptr:true, shared:true]) + 
-                     (mfunc("New") + mfunc(c->name())));
+                     (nfunc("New") + nfunc(c->name())));
             
-            code.add(mfunc("Idx") + msym(itr.first) + 
-                     (mfunc("Call") + (mfunc("set") + mnode(c->val()))));
+            code.add(nfunc("Idx") + nsym(itr.first) + 
+                     (nfunc("Call") + (nfunc("set") + mnode(c->val()))));
           }
 
           m[itr.first] = true;

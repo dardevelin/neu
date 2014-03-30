@@ -343,6 +343,17 @@ nstr NSys::fileExtension(const nstr& filePath){
   return "";
 }
 
+nstr NSys::fileName(const nstr& filePath){
+  nstr bn = basename(filePath);
+
+  size_t pos = bn.find(".");
+  if(pos == nstr::npos){
+    return bn;
+  }
+
+  return bn.substr(0, pos);
+}
+
 nstr NSys::normalizePath(const nstr& path){
   nstr ret = path;
   ret.findReplace(" ", "\\ ");

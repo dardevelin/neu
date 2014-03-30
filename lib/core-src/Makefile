@@ -27,7 +27,7 @@ COMPILE += -I$(NEU_HOME)/include -I$(NEU_HOME)/lib/src -I/usr/local/include -pth
 
 C_MODULES = compress.o
 
-CPP_MODULES = global.o nreal.o nstr.o nvar.o NError.o NThread.o NRegex.o NClass.o NObjectBase.o NObject.o NCommand.o NResourceManager.o NSys.o NProgram.o NMLGenerator.o NRandom.o NProcTask.o NProc.o 
+CPP_MODULES = global.o nreal.o nstr.o nvar.o NError.o NThread.o NRegex.o NClass.o NObjectBase.o NObject.o NCommand.o NResourceManager.o NSys.o NProgram.o NMLGenerator.o NRandom.o NProcTask.o NProc.o NEncoder.o 
 
 SUB_MODULES = nml/parse.tab.o nml/NMLParser.o nml/parse.l.o
 

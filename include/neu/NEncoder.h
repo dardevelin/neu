@@ -48,63 +48,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#ifndef NEU_N_SYS_H
-#define NEU_N_SYS_H
+#ifndef NEU_N_ENCODER_H
+#define NEU_N_ENCODER_H
 
 #include <neu/nvar.h>
 
 namespace neu{
-  
-  class NSys{
+
+  class NEncoder{
   public:
-    static nvar sysInfo();
-    
-    static nstr hostname();
-    
-    static nstr basename(const nstr& path);
-    
-    static nstr parentDirectory(const nstr& path);
-    
-    static bool makeDir(const nstr& path);
-    
-    static nstr tempPath();
-    
-    static nstr tempFilePath(const nstr& extension="");
-    
-    static long processId();
-    
-    static bool exists(const nstr& path);
-    
-    static nstr currentDir();
-    
-    static bool getEnv(const nstr& key, nstr& value);
-    
-    static bool setEnv(const nstr& key, const nstr& value, bool redef=true);
-    
-    static void setTimeZone(const nstr& zone);
-    
-    static nstr hiddenInput();
-    
-    static bool rename(const nstr& sourcePath, const nstr& destPath);
-    
-    static nstr fileExtension(const nstr& filePath);
+    static void sha256(const char* buf, nvar& out);
 
-    static nstr fileName(const nstr& filePath);
+    static void sha256(const nstr& buf, nvar& out){
+      sha256(buf.c_str(), out);
+    }
+    
+    static nvar sha256(const char* buf){
+      nvar ret;
+      sha256(buf, ret);
+      return ret;
+    }
+    
+    static nvar sha256(const nstr& buf){
+      nvar ret;
+      sha256(buf, ret);
+      return ret;
+    }
 
-    static nstr normalizePath(const nstr& path);
-    
-    static nstr stripPath(const nstr& path);
-    
-    static bool dirFiles(const nstr& dirPath, nvec& files);
-    
-    static nstr fileToStr(const nstr& path);
-    
-    static double now();
-    
-    static void sleep(double dt);
-    
   };
   
 } // end namespace neu
 
-#endif // NEU_N_SYS_H
+#endif // NEU_N_ENCODER_H

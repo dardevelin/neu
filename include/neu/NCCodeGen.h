@@ -85,9 +85,9 @@ public:
 
   void reject();
 
-  mnode getSolution();
+  nvar getSolution();
   
-  mnode getFinalSolution();
+  nvar getFinalSolution();
 
   nvar getSolution(size_t rank, nvar& solution);
 
@@ -160,4 +160,3 @@ private:
 } // end namespace neu
 
 #endif // NEU_C_CODE_GEN_H
-

@@ -29,7 +29,12 @@ SUB_MODULES = nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLP
 
 ALL_MODULES = $(CPP_MODULES) $(C_MODULES) $(SUB_MODULES)
 
-all: .depend libneu
+META_MODULES = NConcept_meta.h
+
+all: $(META_MODULES) .depend libneu
+
+meta:
+	neu-meta NConcept.cpp
 
 neu_m:
 	(cd nm; $(MAKE))

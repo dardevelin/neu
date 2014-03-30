@@ -1105,6 +1105,10 @@ namespace neu{
     template<typename T>
     T* ptr() const{
       switch(t_){
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return static_cast<T*>(h_.o);
         case RawPointer:
           return static_cast<T*>(h_.p);
         case HeadSequence:

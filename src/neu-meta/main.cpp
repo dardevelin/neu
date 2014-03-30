@@ -49,6 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
+#include <fstream>
 
 #include "clang/Driver/Options.h"
 #include "clang/AST/AST.h"
@@ -136,8 +137,6 @@ public:
       c.Directory = ".";
         
       c.CommandLine = {"clang-tool", "-std=c++11"};
-      
-      c.CommandLine.push_back("-DNEU_META");
 
 #ifdef __APPLE__
       c.CommandLine.push_back("-stdlib=libc++");
@@ -339,7 +338,9 @@ public:
   }
     
   bool generate(ostream& ostr, const nstr& className){
-    ostr << "#ifndef NEU_META" << endl;
+    className_ = className;
+    fullClassName_ = className_.find("::") != nstr::npos;
+
     ostr << "#include <neu/nvar.h>" << endl;
       
     if(enableHandles_){
@@ -369,8 +370,6 @@ public:
     Factory factory(this);
 
     int status = tool.run(&factory);
-
-    ostr << "#endif // NEU_META" << endl;
 
     return status == 0;
   }
@@ -436,25 +435,42 @@ public:
   bool isInMainFile(Decl* d){
     return sema_->SourceMgr.isInMainFile(d->getLocStart());
   }
-    
+
   bool VisitCXXRecordDecl(CXXRecordDecl* d){
-    if(isInMainFile(d)){
-      CXXRecordDecl* s = getSuperClass(d, "neu::NObject");
-      if(s){
-        if(enableHandles_){
-          generateHandler(s, d);
-        }
-
-        if(enableClasses_){
-          generateClass(d);
-        }
-
-        if(enableOuters_){
-          generateOuter(d);
-        }
-      }
+    if(!d->isCompleteDefinition()){
+      return true;
     }
     
+    nstr className;
+    if(fullClassName_){
+      className = d->getQualifiedNameAsString();
+    }
+    else{
+      className = d->getNameAsString();
+    }
+
+    if(className != className_){
+      return true;
+    }
+
+    CXXRecordDecl* s = getSuperClass(d, "neu::NObject");
+    
+    if(!s){
+      return true;
+    }
+    
+    if(enableHandles_){
+      generateHandler(s, d);
+    }
+    
+    if(enableClasses_){
+      generateClass(d);
+    }
+    
+    if(enableOuters_){
+      generateOuter(d);
+    }
+
     return true;
   }
     
@@ -628,7 +644,7 @@ public:
               
             name.findReplace("<anonymous>::", "");
               
-            ostr << "static_cast<" << name << "*>(n[" << k << "].obj())";
+            ostr << "n[" << k << "].ptr<" << name << ">()";
           }
           else{
             ostr << "n[" << k << "]";
@@ -849,7 +865,8 @@ public:
          md->hasInlineBody() ||
          md->hasBody() ||
          !md->isUserProvided() ||
-         md->isPure()){
+         md->isPure() ||
+         methodName == "handle"){
         continue;
       }
       else if(isa<CXXDestructorDecl>(md)){
@@ -1120,20 +1137,56 @@ private:
   bool enableClasses_;
   bool enableMetadata_;
   bool enableOuters_;
+  nstr className_;
+  bool fullClassName_;
 };
+
+void printUsage(){
+  cout << NProgram::usage("neu-meta [OPTIONS] <source file>") << endl;
+}
 
 int main(int argc, char** argv){
   NProgram program(argc, argv);
 
+  program.argDefault("class", "",
+                     "Class name to generate metadata for. "
+                     "Defaults to the name of the source file.");
+
   const nvar& args = program.args();
 
-  MetaGenerator gen;
-
-  for(const nstr& ai : args){
-    gen.addFile(ai);
+  if(args.size() != 1){
+    printUsage();
+    program.exit(1);
   }
-  
-  gen.generate(cout, "NConcept");
+
+  const nstr& filePath = args[0];
+
+  nstr className = args["class"];
+  if(className.empty()){
+    className = NSys::fileName(filePath);
+  }
+
+  nstr metaPath = className + "_meta.h";
+
+  ofstream out(metaPath.c_str());
+  if(out.fail()){
+    cerr << "failed to open output file: " << metaPath << endl;
+    program.exit(1);
+  }
+  out.close();
+
+  stringstream ostr;
+  MetaGenerator gen;
+  gen.addFile(filePath);
+  gen.generate(ostr, className);
+
+  ofstream out2(metaPath.c_str());
+  if(out2.fail()){
+    cerr << "failed to open output file: " << metaPath << endl;
+    program.exit(1);
+  }
+  out2 << ostr.str();
+  out2.close();
   
   return 0;
 }
