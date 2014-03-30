@@ -74,6 +74,12 @@ namespace neu{
       sha256(buf, ret);
       return ret;
     }
+    
+    static nstr md5(const char* buf);
+    
+    static nstr md5(const nstr& buf){
+      return md5(buf.c_str());
+    }
 
   };
   
