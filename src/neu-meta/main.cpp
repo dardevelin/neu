@@ -336,11 +336,7 @@ public:
     includes_.push_back(path);
   }
     
-  void addFile(const nstr& path){
-    files_.push_back(path);
-  }
-    
-  bool generate(ostream& ostr, const nstr& className){
+  bool generate(ostream& ostr, const nstr& filePath, const nstr& className){
     className_ = className;
     fullClassName_ = className_.find("::") != nstr::npos;
 
@@ -354,21 +350,12 @@ public:
       ostr << "#include <neu/NClass.h>" << endl;
     }
 
-    ostr << endl;
-    
-    /*
-    for(const nstr& f : files_){
-      ostr << "#include \"" << f << "\"" << endl;
-    }
-      
-    ostr << endl;
-    */
-      
     ostr_ = &ostr;
 
     Database db(includes_);
-      
-    ClangTool tool(db, files_);
+
+    StringVec files = {filePath};
+    ClangTool tool(db, files);
       
     Factory factory(this);
 
@@ -1150,7 +1137,6 @@ private:
   Sema* sema_;
   ASTContext* context_;
   nvec includes_;
-  StringVec files_;
   bool enableHandle_;
   bool enableClass_;
   bool enableMetadata_;
@@ -1213,8 +1199,7 @@ int main(int argc, char** argv){
   gen.enableMetadata(args["metadata"]);
   gen.enableOuter(args["outer"]);
   
-  gen.addFile(filePath);
-  if(!gen.generate(ostr, className)){
+  if(!gen.generate(ostr, filePath, className)){
     return 1;
   }
 
