@@ -51,6 +51,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_N_GUARD_H
 #define NEU_N_GUARD_H
 
+#include <neu/NMutex.h>
+#include <neu/NBasicMutex.h>
+#include <neu/NRecMutex.h>
+
 namespace neu{
   
   template <class T>

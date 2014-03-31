@@ -138,6 +138,9 @@ public:
         
       c.CommandLine = {"clang-tool", "-std=c++11"};
 
+      c.CommandLine.push_back("-DMETA_GUARD");
+      c.CommandLine.push_back("-Wno-undefined-internal");
+      
 #ifdef __APPLE__
       c.CommandLine.push_back("-stdlib=libc++");
         
@@ -194,10 +197,10 @@ public:
   };
     
   MetaGenerator()
-  : enableHandles_(true),
-    enableClasses_(true),
+  : enableHandle_(true),
+    enableClass_(true),
     enableMetadata_(true),
-    enableOuters_(true){
+    enableOuter_(true){
     
     nstr h;
     if(!NSys::getEnv("NEU_HOME", h)){
@@ -313,20 +316,20 @@ public:
     return nTypeMap_.hasKey(t);
   }    
 
-  void enableHandles(bool flag){
-    enableHandles_ = flag;
+  void enableHandle(bool flag){
+    enableHandle_ = flag;
   }
     
-  void enableClasses(bool flag){
-    enableClasses_ = flag;
+  void enableClass(bool flag){
+    enableClass_ = flag;
   }
     
   void enableMetadata(bool flag){
     enableMetadata_ = flag;
   }
 
-  void enableOuters(bool flag){
-    enableOuters_ = flag;
+  void enableOuter(bool flag){
+    enableOuter_ = flag;
   }    
 
   void addInclude(const nstr& path){
@@ -343,11 +346,11 @@ public:
 
     ostr << "#include <neu/nvar.h>" << endl;
       
-    if(enableHandles_){
+    if(enableHandle_){
       ostr << "#include <neu/NFuncMap.h>" << endl;
     }
       
-    if(enableClasses_){
+    if(enableClass_){
       ostr << "#include <neu/NClass.h>" << endl;
     }
 
@@ -443,7 +446,7 @@ public:
     
     nstr className;
     if(fullClassName_){
-      className = d->getQualifiedNameAsString();
+      className = getQualifiedName(d);
     }
     else{
       className = d->getNameAsString();
@@ -453,22 +456,22 @@ public:
       return true;
     }
 
+    if(enableOuter_){
+      generateOuter(d);
+    }
+    
     CXXRecordDecl* s = getSuperClass(d, "neu::NObject");
     
     if(!s){
       return true;
     }
     
-    if(enableHandles_){
+    if(enableHandle_){
       generateHandler(s, d);
     }
     
-    if(enableClasses_){
+    if(enableClass_){
       generateClass(d);
-    }
-    
-    if(enableOuters_){
-      generateOuter(d);
     }
 
     return true;
@@ -559,7 +562,7 @@ public:
     stringstream ostr;
       
     nstr className = rd->getNameAsString();
-    nstr fullClassName = rd->getQualifiedNameAsString();
+    nstr fullClassName = getQualifiedName(rd);
       
     ostr << "namespace{" << endl << endl;
 
@@ -629,8 +632,9 @@ public:
           }
             
           ParmVarDecl* p = md->getParamDecl(k);
-            
-          const Type* t = p->getType().getTypePtr();
+          
+          QualType qt = p->getType();
+          const Type* t = qt.getTypePtr();
             
           if(t->isPointerType() &&
              isBaseType(t->getPointeeType(), "neu::NObjectBase")){
@@ -645,6 +649,15 @@ public:
             name.findReplace("<anonymous>::", "");
               
             ostr << "n[" << k << "].ptr<" << name << ">()";
+          }
+          else if(t->isReferenceType()){
+            nstr qs = qt.getAsString();
+            
+            if(qs == "class neu::nvar &"){
+              ostr << "*";
+            }
+
+            ostr << "n[" << k << "]";
           }
           else{
             ostr << "n[" << k << "]";
@@ -667,7 +680,7 @@ public:
       "_FuncMap;" << endl << endl;
       
     ostr << "} // end namespace" << endl << endl;
-      
+    
     ostr << "neu::NFunc " << fullClassName << 
       "::handle(const neu::nvar& n, uint32_t flags){" << endl;
 
@@ -682,7 +695,7 @@ public:
     }
       
     ostr << "}" << endl;
-      
+    
     *ostr_ << ostr.str() << endl;
   }
 
@@ -693,10 +706,16 @@ public:
       
     return ret;
   }
-    
+  
+  // ndm - is there a better way to do this?
+  bool isInUnnamedNamespace(NamedDecl* decl){
+    nstr ret = decl->getQualifiedNameAsString();
+    return ret.find("<anonymous namespace>::") != nstr::npos;
+  }
+  
   void generateClass(CXXRecordDecl* rd){
     nstr name = rd->getName().str();
-    nstr fullName = rd->getQualifiedNameAsString();
+    nstr fullName = getQualifiedName(rd);
       
     stringstream ostr;
       
@@ -764,8 +783,7 @@ public:
                   ostr << "*";
                 }
                 
-                ostr << "static_cast<" << fullName << 
-                  "*>(f[" << i << "].obj())";
+                ostr << "f[" << i << "].ptr<" << fullName << ">()";
               }
               else{
                 ostr << "f[" << i << "]";
@@ -851,7 +869,7 @@ public:
     }
 
     nstr name = rd->getNameAsString();
-    nstr fullName = rd->getQualifiedNameAsString();
+    nstr fullName = getQualifiedName(rd);
 
     stringstream ostr;
   
@@ -1133,10 +1151,10 @@ private:
   ASTContext* context_;
   nvec includes_;
   StringVec files_;
-  bool enableHandles_;
-  bool enableClasses_;
+  bool enableHandle_;
+  bool enableClass_;
   bool enableMetadata_;
-  bool enableOuters_;
+  bool enableOuter_;
   nstr className_;
   bool fullClassName_;
 };
@@ -1152,6 +1170,18 @@ int main(int argc, char** argv){
                      "Class name to generate metadata for. "
                      "Defaults to the name of the source file.");
 
+  program.argDefault("handle", true,
+                     "True to generate handler.");
+  
+  program.argDefault("create", true,
+                     "True to generate class.");
+  
+  program.argDefault("metadata", true,
+                     "True to generate class metadata.");
+  
+  program.argDefault("outer", true,
+                     "True to generate outer.");
+  
   const nvar& args = program.args();
 
   if(args.size() != 1){
@@ -1177,8 +1207,16 @@ int main(int argc, char** argv){
 
   stringstream ostr;
   MetaGenerator gen;
+  
+  gen.enableHandle(args["handle"]);
+  gen.enableClass(args["create"]);
+  gen.enableMetadata(args["metadata"]);
+  gen.enableOuter(args["outer"]);
+  
   gen.addFile(filePath);
-  gen.generate(ostr, className);
+  if(!gen.generate(ostr, className)){
+    return 1;
+  }
 
   ofstream out2(metaPath.c_str());
   if(out2.fail()){

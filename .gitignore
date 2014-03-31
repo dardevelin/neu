@@ -6,3 +6,4 @@ parse.tab.*
 parse.output
 parse.l.c
 .DS_Store
+*_meta.h

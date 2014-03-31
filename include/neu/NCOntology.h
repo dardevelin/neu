@@ -51,6 +51,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_NC_ONTOLOGY_H
 #define NEU_NC_ONTOLOGY_H
 
+#include <neu/nvar.h>
+
 namespace neu{
   
   class NConcept;

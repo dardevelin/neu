@@ -429,6 +429,17 @@ namespace neu{
       return 0;
     }
     
+    nvar Reset(){
+      if(sharedScope_){
+        mainContext_.getScope(2)->clear();
+      }
+      else{
+        mainContext_.getScope(1)->clear();
+      }
+      
+      return none;
+    }
+    
     nvar Add(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       nvar p2 = process(v2);
@@ -929,6 +940,27 @@ namespace neu{
       return r;
     }
     
+    nvar PushScope(const nvar& v){
+      nvar p = process(v);
+      
+      NScope* scope = toScope(p);
+      if(!scope){
+        return Throw(v, "PushScope[0] is not a scope");
+      }
+      
+      ThreadContext* context = getContext();
+      context->pushScope(scope);
+
+      return none;
+    }
+    
+    nvar PopScope(){
+      ThreadContext* context = getContext();
+      context->popScope();
+      
+      return none;
+    }
+    
     void foo(nvar& x){
       cout << "called foo" << endl;
       
@@ -970,6 +1002,12 @@ namespace neu{
 } // end namespace neu
 
 FuncMap::FuncMap(){
+  add("Reset", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Reset();
+      });
+  
   add("Add", 2,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
@@ -1318,6 +1356,18 @@ FuncMap::FuncMap(){
         Block_n(v);
       });
   
+  add("PushScope", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        PushScope(v[0]);
+      });
+  
+  add("PopScope", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        PopScope();
+      });
+  
   add("foo", 1,
       [](void* o, const nvar& v) -> nvar{
         NObject_::inner(static_cast<NObject*>(o))->
@@ -1359,6 +1409,10 @@ void NObject::setStrict(bool flag){
 
 void NObject::setExact(bool flag){
   x_->setExact(flag);
+}
+
+nvar NObject::Reset(){
+  return x_->Reset();
 }
 
 nvar NObject::Throw(const nvar& v1, const nvar& v2){
@@ -1591,6 +1645,14 @@ nvar NObject::Def(const nvar& v1, const nvar& v2, const nvar& v3){
 
 nvar NObject::New(const nvar& v){
   return x_->New(v);
+}
+
+nvar NObject::PushScope(const nvar& v){
+  return x_->PushScope(v);
+}
+
+nvar NObject::PopScope(){
+  return x_->PopScope();
 }
 
 void NObject::foo(nvar& x){

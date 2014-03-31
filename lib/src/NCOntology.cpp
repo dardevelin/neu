@@ -50,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NCOntology.h>
 #include <neu/NCCodeGen.h>
-#include <neu/Concept.h>
+#include <neu/NConcept.h>
 
 #include <iostream>
 #include <cmath>
@@ -79,7 +79,7 @@ namespace{
 class Method;
 
 typedef NMultimap<nstr, pair<Method*, NConcept*>> ParamMethodMap;
-typedef NMultimap<Method*, pair<NConcept*, nstr>> MethodParaNMap;
+typedef NMultimap<Method*, pair<NConcept*, nstr>> MethodParamMap;
 
 typedef NMap<nstr, nstr> RenameMap;
 typedef NMap<nstr, bool> NameMap;
@@ -280,8 +280,8 @@ public:
         nstr temp = getTemp(state, type);
           
         code.add(nfunc("Type") << nsym(temp) << nsym(type) +
-                 nvar()("ptr", true, "shared", true) <<
-                 nvar()("ptr", true, "shared", true) <<
+                 nvar()({"ptr", true, "shared", true}) <<
+                 nvar()({"ptr", true, "shared", true}) <<
                  (nfunc("Idx") + nsym(pn) +
                   (nfunc("Call") + nfunc("copy"))));
     
@@ -320,7 +320,7 @@ public:
       const nvar& vi = vs[i];
 
       nvar f = nfunc("Idx") << nsym(paranvec_[i].first) <<
-      (nfunc("Call") + (nfunc("setObj") + nsym(vi)));
+      (nfunc("Call") << (nfunc("setObj") << nsym(vi)));
       
       code << f;
       
@@ -339,9 +339,9 @@ public:
 
     nvar& vars = state["vars"];
 
-    NMap& tm = vars;
+    nmap& tm = vars;
     for(auto& itr : tm){
-      NMap& vm = itr.second;
+      nmap& vm = itr.second;
       for(auto& itr2 : vm){
         nvar& v = itr2.second;
         if(!v["given"]){
@@ -360,7 +360,7 @@ public:
 
     bool isStatic = true;
     for(const nvar& vi : vs){
-      if(!vi.s){
+      if(!vi["s"]){
         isStatic = false;
         break;
       }
@@ -385,7 +385,7 @@ public:
       nvar& vv = vt(returnTemp);
 
       if(obj){
-        obj->Def_(nsym("ret"), &vv);
+        obj->Def(nsym("ret"), &vv);
       }
 
       vv = return_->attributes();
@@ -506,7 +506,7 @@ public:
           outs(vi) = 2;
 
           code.add(nfunc("Type") << nsym(temp) << nsym(type) <<
-                   nvar()("ptr", true, "shared", true));
+                   nvar()({"ptr", true, "shared", true}));
         }
       }
       else{
@@ -525,7 +525,7 @@ public:
     }
     else{
       f = nfunc("Type") << nsym(returnTemp) << nsym(returnType) <<
-        nvar()("ptr", true, "shared", true) << mc;
+      nvar()({"ptr", true, "shared", true}) << mc;
     }
 
     code << f;
@@ -544,11 +544,11 @@ public:
                     double unusedBias);
 
   bool addParam(const nstr& name, NConcept* param){
-    if(paraNMap_.hasKey(name)){
+    if(paramMap_.hasKey(name)){
       return false;
     }
     
-    paraNMap_.insert({name, param});
+    paramMap_.insert({name, param});
     paranvec_.push_back({name, param});
 
     return true;
@@ -582,9 +582,9 @@ public:
           auto itr = paramOutMap_.find(nk);
 
           if(itr == paramOutMap_.end()){
-            auto itr2 = paraNMap_.find(nk);
+            auto itr2 = paramMap_.find(nk);
 
-            if(itr2 == paraNMap_.end()){
+            if(itr2 == paramMap_.end()){
               NERROR("On concept '" + concept_->name() +
                      "' on method '" + name_ +
                      "' invalid attribute '" + k);
@@ -616,8 +616,7 @@ public:
             n = nfunc("Call") << nfunc("undef" + k2.uppercase());
           }
           else{
-            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) +
-                                  mnode(value));
+            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) << value);
           }
 
           try{
@@ -649,7 +648,7 @@ public:
             n = nfunc("Call") << (nfunc("undef" + k2.uppercase()));
           }
           else{
-            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) << value;
+            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) << value);
           }
           
           try{
@@ -677,7 +676,7 @@ public:
             n = nfunc("Call") << (nfunc("undef" + k2.uppercase()));
           }
           else{
-            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) << value;
+            n = nfunc("Call") << (nfunc("set" + k2.uppercase()) << value);
           }
 
           try{
@@ -700,7 +699,7 @@ public:
       else{
         const nvar& value = data_[k];
 
-        nvar n = nfunc("Call") << (nfunc("set" + k.uppercase()) << value;
+        nvar n = nfunc("Call") << (nfunc("set" + k.uppercase()) << value);
         
         try{
           process(n);
@@ -714,12 +713,12 @@ public:
       }
     }
 
-    for(auto& itr : paraNMap_){
+    for(auto& itr : paramMap_){
       NConcept* param = itr.second;
       setParamDefaults(param);
     }
 
-    if(post_ != mnull){
+    if(post_ != none){
       NObject o;
       o.Def(nsym("self"), true);
 
@@ -727,7 +726,7 @@ public:
         o.Def(nsym("ret"), true);
       }
       
-      for(auto& itr : paraNMap_){
+      for(auto& itr : paramMap_){
         o.Def(nsym(itr.first), true);
       }
       
@@ -777,7 +776,7 @@ public:
         }
       }
       
-      str = value.join("; ");
+      str = nstr::join(value.vec(), "; ");
     }
 
     attributes_(key) = str;
@@ -806,7 +805,7 @@ public:
   void mapMethod(MethodParamMap& inMap,
                  ParamMethodMap& mapOut);
 
-  void validatePost(MObject& o, mnode n){
+  void validatePost(NObject& o, const nvar& n){
     if(n.isFunction()){
       if(n.isFunction("Scoped", 1)){
         NScope s;
@@ -933,7 +932,7 @@ private:
   nstr name_;
   size_t id_;
   nvar data_;
-  ParamMap_ paraNMap_;
+  ParamMap_ paramMap_;
   ParamMap_ paramOutMap_;
   Paranvec_ paranvec_;
   NConcept* return_;
@@ -1029,7 +1028,7 @@ public:
       try{
         concept_->process(n);
       }
-      catch(MError& e){
+      catch(NError& e){
         NERROR("Error handling field '" + k + "' on concept: " + name_);
       }
     }
@@ -1131,7 +1130,7 @@ public:
 
       if(si.hasKey("outs")){
         const nvar& outs = si["outs"];
-        const NMap& m = outs;
+        const nmap& m = outs;
 
         for(auto& itr : m){
           if(outMap.hasKey(itr.first)){
@@ -1147,7 +1146,7 @@ public:
       if(matched){
         if(si.hasKey("ins")){
           const nvar& ins = si["ins"];
-          const NMap& m = ins;
+          const nmap& m = ins;
 
           for(auto& itr : m){
             outMap[itr.first] = true;
@@ -1158,10 +1157,10 @@ public:
       }
     }
 
-    NMap& tm = state_["vars"];
+    nmap& tm = state_["vars"];
     auto itr = tm.begin();
     while(itr != tm.end()){
-      NMap& vm = itr->second;
+      nmap& vm = itr->second;
 
       auto itr2 = vm.begin();
       while(itr2 != vm.end()){
@@ -1199,7 +1198,7 @@ public:
       remapInOuts(rm, si);
       seq.push_back(si);
       solution_.add(n);
-      state_.sequence.pushBack(si.toLong());
+      state_["sequence"].pushBack(si.toLong());
     }
 
     numTemps_ = temp;
@@ -1413,7 +1412,7 @@ public:
     size_t size = solutionMap_.size();
 
     if(size == 0){
-      return [0,0,0,0];
+      return {0, 0, 0, 0};
     }
 
     nvec r;
@@ -1463,7 +1462,7 @@ private:
 
 class Proc : public NProc{
 public:
-  Proc(CodeGen_* codeGen, Method* method)
+  Proc(NCCodeGen_* codeGen, Method* method)
     : codeGen_(codeGen),
       method_(method){
 
@@ -1517,16 +1516,16 @@ public:
   }
   
   void signal(int id, const nvar& v){
-    signal(idMap_[id], v);
+    NProc::signal(idMap_[id], v);
   }
   
 private:
-  NMap<int, Proc*> IdMap_;
+  typedef NMap<int, Proc*> IdMap_;
   
   Method* method_;
   NRandom random_;
   NMutex randomMutex_;
-  CodeGen_* codeGen_;
+  NCCodeGen_* codeGen_;
   NMutex mutex_;
   size_t type_;
   IdMap_ idMap_;
@@ -1536,15 +1535,15 @@ private:
 
 namespace neu{
 
-class Ontology_{
+class NCOntology_{
 public:
-  Ontology_(Ontology* o)
+  NCOntology_(NCOntology* o)
   : o_(o),
     initialized_(false){
     
   }
 
-  ~Ontology_(){
+  ~NCOntology_(){
     for(auto& itr : conceptMap_){
       delete itr.second;
     }
@@ -1565,8 +1564,6 @@ public:
     NMLParser parser;
     stringstream estr;
     parser.setErrorStream(estr);
-    Processor processor;
-    parser.addProcessor(&processor);
 
     typedef NMultimap<nstr, nstr> ExtendedByMap;
     ExtendedByMap extendedByMap;
@@ -1700,7 +1697,7 @@ public:
         try{
           pt = method->New(nfunc(concept->name()));
         }
-        catch(MError& e){
+        catch(NError& e){
           NERROR("Unable to create concept 'this' "
                  "on concept: '" + concept->name() +
                  "' on method: " + k);
@@ -1734,7 +1731,7 @@ public:
                    concept->name() + "' on method: " + k);
           }
 
-          nstr type = r.type;
+          nstr type = r["type"];
 
           bool poly;
           if(type == "Concept"){
@@ -1751,7 +1748,7 @@ public:
           }
           catch(NError& e){
             NERROR("Unable to create concept '" +
-                   r.type.str() + "' on concept: '" + concept->name() +
+                   r["type"].str() + "' on concept: '" + concept->name() +
                    "' on method: " + k);
           }
           
@@ -1759,7 +1756,7 @@ public:
 
           if(!rc){
             NERROR("Ontology: unable to create concept '" +
-                   r.type.str() + "' on concept: '" + concept->name() +
+                   r["type"].str() + "' on concept: '" + concept->name() +
                    "' on method: " + k);
           }
 
@@ -1801,7 +1798,7 @@ public:
 
           nvar p;
 
-          nstr type = pi.type;
+          nstr type = pi["type"];
 
           bool poly;
           if(type == "Concept"){
@@ -1817,7 +1814,7 @@ public:
           }
           catch(NError& e){
             NERROR("Unable to create concept '" +
-                   pi.type.str() + "' on concept: '" + concept->name() +
+                   pi["type"].str() + "' on concept: '" + concept->name() +
                    "' on method: " + k);
           }
           
@@ -1825,7 +1822,7 @@ public:
 
           if(!ci){
             NERROR("Unable to create concept '" +
-                   pi.type.str() + "' on concept: '" + concept->name() +
+                   pi["type"].str() + "' on concept: '" + concept->name() +
                    "' on method: " + k);
           }
 
@@ -1873,7 +1870,7 @@ public:
     metadata.keys(keys);
 
     if(keys.size() != 1){
-      throw MError("Ontology::addConcept: [1] invalid metadata");
+      NERROR("[1] invalid metadata");
     }
 
     const nstr& name = keys[0];
@@ -1886,7 +1883,7 @@ public:
       NERROR("Missing extends field on: " + name);
     }
 
-    const nvar& extends = metadata[name].extends;
+    const nvar& extends = metadata[name]["extends"];
     if(!extends.isString()){
       NERROR("Invalid extends field on: " + name);
     }
@@ -1912,15 +1909,15 @@ public:
 private:
   typedef NMap<nstr, ConceptDef*> ConceptMap_;
 
-  Ontology* o_;
+  NCOntology* o_;
   ConceptMap_ conceptMap_;
   bool initialized_ : 1;
   size_t totalMethods_;
 };
 
-class CodeGen_{
+class NCCodeGen_{
 public:
-  CodeGen_(CodeGen* o, size_t population)
+  NCCodeGen_(NCCodeGen* o, size_t population)
   : o_(o),
     population_(population),
     mergeRate_(0.5),
@@ -1955,7 +1952,7 @@ public:
     random_.timeSeed();
   }
 
-  ~CodeGen_(){
+  ~NCCodeGen_(){
     if(task_){
       delete task_;
       delete solutions_;
@@ -2038,7 +2035,7 @@ public:
       }
       else{
         nvar& ci = cgg(from);
-        ci._fused = true;
+        ci("_fused") = true;
         ci.pushBack(to);
       }
     }
@@ -2075,7 +2072,7 @@ public:
       endMethod->addParam(itr.first, input);
     }
 
-    MethodParaNMap inMap;
+    MethodParamMap inMap;
     ParamMethodMap outMap;
 
     startMethod->mapMethod(inMap, outMap);
@@ -2374,7 +2371,7 @@ public:
   void generate(){
     init_();
 
-    start_->queue(task_);
+    task_->queue(start_);
   }
 
   void next(){
@@ -2391,7 +2388,7 @@ public:
       ++totalSolutions_;
     }
 
-    start_->queue(task_);
+    task_->queue(start_);
   }
 
   void queue(nvar& state, size_t methodId){
@@ -2406,7 +2403,7 @@ public:
 
     nvar f = solution_->solution();
 
-    obj_.Reset_();
+    obj_.Reset();
 
     for(auto& itr : inputMap_){
       obj_.Def(nsym(itr.first), itr.second);
@@ -2473,18 +2470,18 @@ public:
       return false;
     }
 
-    solution.solution = s->solution();
-    solution.fitness = s->fitness();
+    solution("solution") = s->solution();
+    solution("fitness") = s->fitness();
 
     return true;
   }
 
   void remapState(RenameMap& m, nvar& state){
-    nvar& vars = state.vars;
-    NMap& tm = vars;
+    nvar& vars = state["vars"];
+    nmap& tm = vars;
     for(auto& itr : tm){
       nvec ek;
-      NMap& vm = itr.second;
+      nmap& vm = itr.second;
       for(auto& itr2 : vm){
         auto mitr = m.find(itr2.first);
         if(mitr != m.end()){
@@ -2501,7 +2498,7 @@ public:
   void normalizeSolution(Solution* solution){
     nvar& state = solution->state();
 
-    if(!state.usesStatic){
+    if(!state["usesStatic"]){
       return;
     }
 
@@ -2517,7 +2514,7 @@ public:
       if(si["static"]){
         bool found = false;
         nvar code;
-        const NMap& om = si["outs"];
+        const nmap& om = si["outs"];
 
         for(auto& itr : om){
           if(m.hasKey(itr.first)){
@@ -2534,11 +2531,11 @@ public:
             }
             
             code << nfunc("Type") << nsym(itr.first) << nsym(c->name()) <<
-            nvar()("ptr", true, "shared", true) <<
+            nvar()({"ptr", true, "shared", true}) <<
             (nfunc("New") << nfunc(c->name()));
             
-            code << (nfunc("Idx") << nsym(itr.first) <<
-                     (nfunc("Call") << (nfunc("set") << c->val()));
+            code << nfunc("Idx") << nsym(itr.first) <<
+            (nfunc("Call") << (nfunc("set") << c->val()));
           }
 
           m[itr.first] = true;
@@ -2546,7 +2543,7 @@ public:
 
         if(!found){
           si.erase("ins");
-          if(code != mnull){
+          if(code != none){
             si("code") = code;
           }
           newSeq.push_back(move(si));
@@ -2746,12 +2743,11 @@ private:
   typedef NMultimap<nstr, nstr> Name2Map_;
   typedef NMap<size_t, Method*> MethodMap_;
   typedef NMap<Method*, Proc*> ProcMap_;
-  typedef NMap<nstr, NConcept*> ParaNMap_;
-  typedef NMap<ServerProc*, bool> ServerProcMap_;
+  typedef NMap<nstr, NConcept*> ParamMap_;
   typedef NMap<nstr, bool> EnableConceptMap_;
   typedef NMap<pair<nstr,nstr>, bool> EnableMethodMap_;
 
-  CodeGen* o_;
+  NCCodeGen* o_;
   size_t population_;
   double mergeRate_;
   double restartRate_;
@@ -2765,8 +2761,8 @@ private:
   size_t resetInterval_;
   size_t iteration_;
   size_t round_;
-  mtime runStartTime_;
-  mtime roundStartTime_;
+  double runStartTime_;
+  double roundStartTime_;
   Solutions* solutions_;
   MethodMap_ methodMap_;
   ProcMap_ procMap_;
@@ -2777,7 +2773,7 @@ private:
   Solution* solution_;
   NProcTask* task_;
   NObject obj_;
-  MRandom random_;
+  NRandom random_;
   Name2Map_ graphMap_;
   ofstream* matchLog_;
   ofstream* errorLog_;
@@ -2802,10 +2798,14 @@ int Proc::chooseOut(nvar& state, bool initial){
   PMap m;
   
   double s = 0;
-  const IdVec& outs = outEdges();
 
+  nvec outs;
+  for(auto& itr : idMap_){
+    outs.push_back(itr.first);
+  }
+  
   assert(!outs.empty());
-
+  
   if(codeGen_->backtrack() && state.hasKey("lastChoices")){
     const nvec& lastChoices = state["lastChoices"];
     for(int i : lastChoices){
@@ -2829,7 +2829,7 @@ int Proc::chooseOut(nvar& state, bool initial){
       foundEnd = true;
     }
     else{
-      s += edgeData(i).toDouble();
+      s += 1; // ndm - currently all edges have weight 1
       m.insert(make_pair(s, i));
     }
   }
@@ -2889,7 +2889,7 @@ int Proc::chooseOut(nvar& state, bool initial){
   return j;
 }
 
-bool Proc::multiChooseVars(const ParanvarVec& ps, nvec& pv, ostream* matchLog){
+bool Proc::multiChooseVars(const ParamVarVec& ps, nvec& pv, ostream* matchLog){
   for(size_t i = 0; i < MULTI_CHOOSE_ATTEMPTS; ++i){
     ParamVarVec ips(ps);
     if(chooseVars(ips, pv, matchLog)){
@@ -2913,11 +2913,11 @@ bool Proc::multiChooseVars(const ParanvarVec& ps, nvec& pv, ostream* matchLog){
   return false;
 }
 
-bool Proc::chooseVars(ParanvarVec& ps, nvec& pv, ostream* matchLog){
+bool Proc::chooseVars(ParamVarVec& ps, nvec& pv, ostream* matchLog){
   NConcept* tc = method_->getThis();
 
   for(size_t i = 0; i < ps.size(); ++i){
-    ParanvarMap& pm = ps[i];
+    ParamVarMap& pm = ps[i];
 
     if(pm.empty()){
       pv.push_back(undef);
@@ -2968,7 +2968,7 @@ bool Proc::chooseVars(ParanvarVec& ps, nvec& pv, ostream* matchLog){
         pm.erase(itr);
 
         s = 0;
-        ParanvarMap pm2;
+        ParamVarMap pm2;
         for(auto& itr2 : pm){
           nvar& p2 = itr2.second;
           s += p2["m"].toDouble();
@@ -2999,7 +2999,7 @@ bool Proc::chooseVars(ParanvarVec& ps, nvec& pv, ostream* matchLog){
 }
 
 void Proc::run(nvar& r){
-  MGuard guard(mutex_);
+  NGuard guard(mutex_);
 
   if(type_ == 0){
     nvar state;
@@ -3037,7 +3037,7 @@ void Proc::run(nvar& r){
         size_t id = firstChoices[j];
         codeGen_->miss();
         codeGen_->queue(state, id);
-        return 0;
+        return;
 
         /*
         codeGen_->queue(true);
@@ -3055,7 +3055,7 @@ void Proc::run(nvar& r){
         *matchLog << "BACKTRACKING" << endl;
       }
 
-      return 0;
+      return;
     }
     
     method_->run(vs, state);
@@ -3064,7 +3064,7 @@ void Proc::run(nvar& r){
 
     if(j < 0){
       codeGen_->queue(state, -j);
-      return 0;
+      return;
     }
 
     //cout << "-------- out state: " << state << endl << endl << endl;
@@ -3072,7 +3072,7 @@ void Proc::run(nvar& r){
     signal(j, state);
   }
   else if(type_ == 2){
-    nvar& state = signalMap.begin()->second;
+    nvar& state = r;
 
     ostream* matchLog = codeGen_->matchLog();
     if(matchLog){
@@ -3095,7 +3095,7 @@ void Proc::run(nvar& r){
         size_t id = firstChoices[j];
         codeGen_->miss();
         codeGen_->queue(state, id);
-        return 0;
+        return;
         
         /*
         codeGen_->queue(true);
@@ -3113,7 +3113,7 @@ void Proc::run(nvar& r){
         *matchLog << "END BACKTRACKING" << endl;
       }
 
-      return 0;
+      return;
     }
 
     method_->getFinalState(vs, state);
@@ -3128,7 +3128,7 @@ void Proc::run(nvar& r){
 }
 
 bool Method::getParamVars(const nvar& state,
-                          ParanvarVec& ps,
+                          ParamVarVec& ps,
                           ostream* matchLog,
                           double unusedBias){
   const nvar& vars = state["vars"];
@@ -3146,14 +3146,14 @@ bool Method::getParamVars(const nvar& state,
     
     double s = 0;
 
-    const NMap& me = em;
+    const nmap& me = em;
 
     for(auto& itr : me){
       const nstr& ei = itr.first;
 
       if(vars.hasKey(ei)){
         const nvar& sp = vars[ei];
-        const NMap& m = sp.map();
+        const nmap& m = sp.map();
       
         for(auto& mitr : m){
           const nvar& attrs = mitr.second;
@@ -3204,8 +3204,8 @@ bool Method::getParamVars(const nvar& state,
   }
 
   for(auto& itr : paranvec_){
-    ps.push_back(ParanvarMap());
-    ParanvarMap& pm = ps.back();
+    ps.push_back(ParamVarMap());
+    ParamVarMap& pm = ps.back();
 
     NConcept* param = itr.second;
 
@@ -3221,18 +3221,18 @@ bool Method::getParamVars(const nvar& state,
 
     double s = 0;
 
-    const NMap& me = em;
+    const nmap& me = em;
 
     for(auto itr : me){
       const nstr& ei = itr.first;
       if(vars.hasKey(ei)){
         const nvar& sp = vars[ei];
-        const NMap& m = sp.map();
+        const nmap& m = sp.map();
         
         for(auto& mitr : m){
           const nvar& attrs = mitr.second;
 
-          if(id_ == END_METHOD_ID && attrs.outputUses == 0){
+          if(id_ == END_METHOD_ID && attrs["outputUses"] == 0){
             continue;
           }
 
@@ -3339,7 +3339,7 @@ void Method::mapMethod(MethodParamMap& inMap,
     }
   }
 
-  for(auto& itr : paraNMap_){
+  for(auto& itr : paramMap_){
     NConcept* p = itr.second;
       
     if(p->getIn()){
@@ -3389,6 +3389,8 @@ NCOntology::NCOntology(){
   x_ = new NCOntology_(this);
 }
 
+#ifndef META_GUARD
 #include "Method_meta.h"
 #include "NCOntology_meta.h"
 #include "NCCodeGen_meta.h"
+#endif

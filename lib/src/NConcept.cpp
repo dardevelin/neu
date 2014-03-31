@@ -485,4 +485,6 @@ bool NConcept::isInteger(const nvar& v, bool allowNegative){
   return false;
 }
 
+#ifndef META_GUARD
 #include "NConcept_meta.h"
+#endif

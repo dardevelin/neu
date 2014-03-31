@@ -23,21 +23,15 @@ export LINK = clang++ -L../ -fPIC $(STD_LIB)
 
 COMPILE += -I$(NEU_HOME)/include -I$(NEU_HOME)/lib/src -I/usr/local/include -pthread -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$(HOME)/llvm-3.4/build-release/include -I$(HOME)/llvm-3.4/llvm/include
 
-CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o NConcept.o
+CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o
+
+META_MODULES = NConcept.o NCOntology.o
 
 SUB_MODULES = nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o npl/NPLModule.o
 
-ALL_MODULES = $(CPP_MODULES) $(C_MODULES) $(SUB_MODULES)
+ALL_MODULES = $(CPP_MODULES) $(SUB_MODULES) $(META_MODULES)
 
-META_MODULES = NConcept_meta.h
-
-all: $(META_MODULES) .depend libneu
-
-meta:
-	neu-meta NConcept.cpp
-	neu-meta --class Method NCOntology.cpp
-	neu-meta --class NCOntology NCOntology.cpp
-	neu-meta --class NCCodeGen NCOntology.cpp
+all: .depend libneu
 
 neu_m:
 	(cd nm; $(MAKE))
@@ -46,13 +40,13 @@ neu_pl:
 	(cd npl; $(MAKE))
 
 .depend: $(CPP_MODULES:.o=.cpp)
-	$(COMPILE) -MM $(CPP_MODULES:.o=.cpp) > .depend
+	$(COMPILE) -MM $(CPP_MODULES:.o=.cpp) $(META_MODULES:.o=.cpp) -DMETA_GUARD > .depend
 
 -include .depend
 
 LLVM_LINK = -L$(HOME)/llvm-3.4/build-release/lib -lLLVMAsmParser -lLLVMInstrumentation -lLLVMLinker -lLLVMBitReader -lLLVMDebugInfo -lLLVMJIT -lLLVMipo -lLLVMVectorize -lLLVMBitWriter -lLLVMTableGen -lLLVMX86Disassembler -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMX86AsmParser -lLLVMX86Desc -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCDisassembler -lLLVMMCParser -lLLVMInterpreter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipa -lLLVMAnalysis -lLLVMMCJIT -lLLVMRuntimeDyld -lLLVMExecutionEngine -lLLVMTarget -lLLVMMC -lLLVMObject -lLLVMCore -lLLVMSupport -lLLVMOption -lcurses
 
-libneu: $(CPP_MODULES) neu_m neu_pl
+libneu: $(CPP_MODULES) $(META_MODULES) neu_m neu_pl
 
 ifeq ($(PLATFORM), Darwin)
 	$(LINK) -single_module -dynamiclib -o ../libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
@@ -73,8 +67,20 @@ endif
 $(CPP_MODULES): $(@.o=.cpp)
 	$(COMPILE) -c $< -o $@
 
+NConcept.o: $(@.o=.cpp)
+	neu-meta NConcept.cpp
+	$(COMPILE) -c $< -o $@
+
+NCOntology.o: $(@.o=.cpp)
+	neu-meta --class Method --create false NCOntology.cpp
+	neu-meta --class NCOntology --create false NCOntology.cpp
+	neu-meta --class NCCodeGen --create false NCOntology.cpp
+	$(COMPILE) -c $< -o $@
+
 clean:
 	rm -f .depend
+	rm -f *_meta.h
+	rm -f $(META_MODULES)
 	rm -f $(CPP_MODULES)
 	rm -f $(C_MODULES)
 	(cd nm; $(MAKE) clean)

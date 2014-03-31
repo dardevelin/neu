@@ -77,6 +77,11 @@ namespace neu{
       return limiting_;
     }
     
+    void clear(){
+      symbolMap_.clear();
+      functionMap_.clear();
+    }
+    
     // warning: does not protect for shared scope
     void setSymbolFast(const nstr& s, const nvar& v){
       symbolMap_[s] = v;

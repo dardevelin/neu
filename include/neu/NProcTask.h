@@ -65,6 +65,11 @@ namespace neu{
     
     void queue(NProc* proc, nvar& r, double priority=0);
     
+    void queue(NProc* proc){
+      nvar r;
+      queue(proc, r);
+    }
+    
   private:
     class NProcTask_* x_;
   };

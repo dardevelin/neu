@@ -61,19 +61,15 @@ class NCCodeGen : public NObject{
 public:
   NCCodeGen(size_t population);
 
-  ~CodeGen();
+  ~NCCodeGen();
 
   NFunc handle(const nvar& n, uint32_t flags);
 
   void shutdown();
 
-  void listen(int port);
+  void addInput(const nstr& name, NConcept* input);
 
-  void startGUI();
-
-  void addInput(const nstr& name, Concept* input);
-
-  void addOutput(const nstr& name, Concept* output);
+  void addOutput(const nstr& name, NConcept* output);
 
   void generate();
 
@@ -141,7 +137,7 @@ public:
 
   nvar numSolutions() const;
 
-  mvec getStats() const;
+  nvec getStats() const;
 
   void enableMatchLog();
   

@@ -2759,6 +2759,10 @@ namespace neu{
       return *this = int64_t(x);
     }
     
+    nvar& operator=(unsigned long long x){
+      return *this = int64_t(x);
+    }
+    
     nvar& operator=(long long x);
     
     nvar& operator=(bool x);
@@ -3608,12 +3612,20 @@ namespace neu{
     return new nvar(f, nvar::Func);
   }
   
+  inline nvar nfunc(const nvar& f){
+    return nfunc(f.str());
+  }
+  
   inline nvar nsym(const nstr& s){
     return new nvar(s, nvar::Sym);
   }
   
   inline nvar nsym(const char* s){
     return new nvar(s, nvar::Sym);
+  }
+  
+  inline nvar nsym(const nvar& s){
+    return nsym(s.str());
   }
   
   inline nvar nref(const nvar& v){

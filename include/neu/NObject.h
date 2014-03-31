@@ -92,6 +92,8 @@ namespace neu{
     
     NScope* objectScope();
     
+    nvar Reset();
+    
     nvar Throw(const nvar& v1, const nvar& v2);
     
     nvar Add(const nvar& v1, const nvar& v2);
@@ -207,6 +209,10 @@ namespace neu{
     nvar Def(const nvar& v1, const nvar& v2);
     
     nvar New(const nvar& v);
+    
+    nvar PushScope(const nvar& v);
+    
+    nvar PopScope();
     
     friend class NObject_;
     
