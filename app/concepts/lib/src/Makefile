@@ -32,22 +32,24 @@ all: .depend libconcepts
 
 -include .depend
 
+LIB = $(NEU_HOME)/lib
+
 libconcepts: $(ALL_MODULES)
 
 ifeq ($(PLATFORM), Darwin)
-	$(LINK) -single_module -dynamiclib -o ../libconcepts.$(VERSION).dylib $(ALL_MODULES) -L/usr/local/lib -lneu_core -lneu -install_name $(NEU_HOME)/lib/libconcepts.$(VERSION).dylib
-	(cd ..; ln -f -s libconcepts.$(VERSION).dylib libconcepts.dylib)
-	(cd ..; ln -f -s libconcepts.$(VERSION).dylib libconcepts.$(MAJOR).dylib)
-	(cd ..; ln -f -s libconcepts.$(VERSION).dylib libconcepts.$(MAJOR).$(MINOR).dylib)
-	rm -f ../libconcepts-static.a
-	ar rcs ../libconcepts-static.a $(ALL_MODULES)
+	$(LINK) -single_module -dynamiclib -o $(LIB)/libconcepts.$(VERSION).dylib $(ALL_MODULES) -L/usr/local/lib -lneu_core -lneu -install_name $(NEU_HOME)/lib/libconcepts.$(VERSION).dylib
+	(cd $(LIB); ln -f -s libconcepts.$(VERSION).dylib libconcepts.dylib)
+	(cd $(LIB); ln -f -s libconcepts.$(VERSION).dylib libconcepts.$(MAJOR).dylib)
+	(cd $(LIB); ln -f -s libconcepts.$(VERSION).dylib libconcepts.$(MAJOR).$(MINOR).dylib)
+	rm -f $(LIB)/libconcepts-static.a
+	ar rcs $(LIB)/libconcepts-static.a $(ALL_MODULES)
 else
-	$(LINK) -shared -Wl,-soname,libconcepts.so -o ../libconcepts.so.$(VERSION) $(ALL_MODULES) -L/usr/local/lib -lneu
-	(cd ..; ln -f -s libconcepts.so.$(VERSION) libconcepts.so)
-	(cd ..; ln -f -s libconcepts.so.$(VERSION) libconcepts.so.$(MAJOR))
-	(cd ..; ln -f -s libconcepts.so.$(VERSION) libconcepts.so.$(MAJOR).$(MINOR))
-	rm -f ../libconcepts-static.a
-	ar rcs ../libconcepts-static.a $(ALL_MODULES)
+	$(LINK) -shared -Wl,-soname,libconcepts.so -o $(LIB)/libconcepts.so.$(VERSION) $(ALL_MODULES) -L/usr/local/lib -lneu
+	(cd $(LIB); ln -f -s libconcepts.so.$(VERSION) libconcepts.so)
+	(cd $(LIB); ln -f -s libconcepts.so.$(VERSION) libconcepts.so.$(MAJOR))
+	(cd $(LIB); ln -f -s libconcepts.so.$(VERSION) libconcepts.so.$(MAJOR).$(MINOR))
+	rm -f $(LIB)/libconcepts-static.a
+	ar rcs $(LIB)/libconcepts-static.a $(ALL_MODULES)
 endif
 
 $(META_MODULES): $(@.o=.cpp)
@@ -60,5 +62,5 @@ clean:
 	rm -f $(META_MODULES)
 
 spotless: clean
-	rm -f ../libconcepts.*
-	rm -f ../libconcepts-static.a
+	rm -f $(LIB)/libconcepts.*
+	rm -f $(LIB)/libconcepts-static.a

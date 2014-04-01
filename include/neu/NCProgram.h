@@ -59,7 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NCOntology.h>
 #include <neu/NCCodeGen.h>
 
-namespace Meta{
+namespace neu{
 
 class NCProgram : public NProgram{
 public:
@@ -188,12 +188,12 @@ public:
     return codeGen_->run();
   }
 
-  CodeGen* getCodeGen(size_t population){
+  NCCodeGen* getCodeGen(size_t population){
     const nvar& a = args();
 
-    Ontology* ontology = Ontology::get();
+    NCOntology* ontology = NCOntology::get();
     
-    codeGen_ = new CodeGen(a["population"]);
+    codeGen_ = new NCCodeGen(a["population"]);
     return codeGen_;
   }
 
@@ -368,9 +368,9 @@ public:
 
             nvar f = codeGen_->getFinalSolution();
             
-            nstr mml = MMLGenerator::toStr(f);
+            nstr nml = NMLGenerator::toStr(f);
             
-            std::cout << mml << std::endl;
+            std::cout << nml << std::endl;
             
             nvar stats;
             printStats(stats);
@@ -768,11 +768,11 @@ public:
     codeGen_->shutdown();
   }
 
-  void addInput(const nstr& name, Concept* input){
+  void addInput(const nstr& name, NConcept* input){
     codeGen_->addInput(name, input);
   }
 
-  void addOutput(const nstr& name, Concept* output){
+  void addOutput(const nstr& name, NConcept* output){
     codeGen_->addOutput(name, output);
   }
 
