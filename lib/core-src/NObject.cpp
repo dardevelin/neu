@@ -746,6 +746,40 @@ namespace neu{
       return r;
     }
     
+    nvar Var(const nvar& v1, const nvar& v2, const nvar& v3){
+      ThreadContext* context = getContext();
+      NScope* currentScope = context->topScope();
+      
+#ifndef NEU_FAST
+      if(!v1.isSymbol()){
+        return Throw(v1, "Var[0] is not a symbol");
+      }
+#endif
+      
+      nvar p1 = process(v2);
+      
+      nvar r;
+      if(v3.get("shared", false)){
+        r = nvar(p1.obj(), nvar::SharedObject);
+      }
+      else if(v3.get("local"), false){
+        r = nvar(p1.obj(), nvar::LocalObject);
+      }
+      else{
+        r = new nvar(move(p1));
+      }
+      
+#ifndef NEU_FAST
+      if(!currentScope->setNewSymbol(v1, r)){
+        Throw(v1, "Symbol Var[0] exists in scope");
+      }
+#else
+      currentScope->setSymbol(v1, r);
+#endif
+      
+      return r;
+    }
+    
     nvar Set(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       nvar p2 = process(v2);
@@ -927,6 +961,24 @@ namespace neu{
       }
       
       return Throw(v, "New[0] failed to create: " + v);
+    }
+    
+    nvar New(const nvar& v1, const nvar& v2){
+      NObjectBase* o = NClass::create(v1);
+      
+      if(o){
+        if(v2.get("shared", false)){
+          return nvar(o, nvar::SharedObject);
+        }
+        else if(v2.get("local"), false){
+          return nvar(o, nvar::LocalObject);
+        }
+        else{
+          return o;
+        }
+      }
+      
+      return Throw(v1, "New[0] failed to create: " + v1);
     }
     
     nvar Block_n(const nvar& v){
@@ -1260,6 +1312,12 @@ FuncMap::FuncMap(){
         Var(v[0], v[1]);
       });
   
+  add("Var", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Var(v[0], v[1], v[2]);
+      });
+  
   add("Set", 2,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
@@ -1348,6 +1406,12 @@ FuncMap::FuncMap(){
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
         New(v[0]);
+      });
+  
+  add("New", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        New(v[0], v[1]);
       });
   
   add("Block",
@@ -1587,6 +1651,10 @@ nvar NObject::Var(const nvar& v1, const nvar& v2){
   return x_->Var(v1, v2);
 }
 
+nvar NObject::Var(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->Var(v1, v2, v3);
+}
+
 nvar NObject::Set(const nvar& v1, const nvar& v2){
   return x_->Set(v1, v2);
 }
@@ -1645,6 +1713,10 @@ nvar NObject::Def(const nvar& v1, const nvar& v2, const nvar& v3){
 
 nvar NObject::New(const nvar& v){
   return x_->New(v);
+}
+
+nvar NObject::New(const nvar& v1, const nvar& v2){
+  return x_->New(v1, v2);
 }
 
 nvar NObject::PushScope(const nvar& v){

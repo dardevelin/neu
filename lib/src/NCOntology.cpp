@@ -117,9 +117,9 @@ void remapCode(RenameMap& m, size_t& temp, nvar& n){
       n.str() = itr->second;
     }
   }
-  else if(n.isFunction("Type")){
-    if(n.size() == 4){
-      remapCode(m, temp, n[3]);
+  else if(n.isFunction("Var")){
+    if(n.size() > 1){
+      remapCode(m, temp, n[1]);
     }
 
     nstr& s = n[0].str();
@@ -279,11 +279,9 @@ public:
       else{
         nstr temp = getTemp(state, type);
           
-        code.add(nfunc("Type") << nsym(temp) << nsym(type) +
-                 nvar()({"ptr", true, "shared", true}) <<
-                 nvar()({"ptr", true, "shared", true}) <<
-                 (nfunc("Idx") + nsym(pn) +
-                  (nfunc("Call") + nfunc("copy"))));
+        code << (nfunc("Var") << nsym(temp) <<
+                 (nfunc("In") << nsym(pn) << nfunc("copy"))
+                 << nvar()({"shared", true, "type", type}));
     
         nvar& vv = vt(temp);
         vv = param->attributes();
@@ -505,8 +503,8 @@ public:
 
           outs(vi) = 2;
 
-          code.add(nfunc("Type") << nsym(temp) << nsym(type) <<
-                   nvar()({"ptr", true, "shared", true}));
+          code << (nfunc("Var") << nsym(temp) << undef <<
+                   nvar()({"shared", true, "type", type}));
         }
       }
       else{
@@ -524,8 +522,8 @@ public:
       f = mc;
     }
     else{
-      f = nfunc("Type") << nsym(returnTemp) << nsym(returnType) <<
-      nvar()({"ptr", true, "shared", true}) << mc;
+      f = nfunc("Var") << nsym(returnTemp) << mc <<
+      nvar()({"shared", true, "type", returnType});
     }
 
     code << f;
@@ -2529,10 +2527,12 @@ public:
             if(code == none){
               code = nfunc("Block");
             }
+
+            const nstr& name = c->name();
             
-            code << nfunc("Type") << nsym(itr.first) << nsym(c->name()) <<
-            nvar()({"ptr", true, "shared", true}) <<
-            (nfunc("New") << nfunc(c->name()));
+            code << (nfunc("Var") << nsym(itr.first) <<
+                     (nfunc("New") << nfunc(name)) <<
+                     nvar()({"shared", true, "type", name}));
             
             code << nfunc("Idx") << nsym(itr.first) <<
             (nfunc("Call") << (nfunc("set") << c->val()));

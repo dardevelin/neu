@@ -180,6 +180,8 @@ namespace neu{
     
     nvar Var(const nvar& v1, const nvar& v2);
     
+    nvar Var(const nvar& v1, const nvar& v2, const nvar& v3);
+    
     nvar Set(const nvar& v1, const nvar& v2);
     
     nvar VarSet(const nvar& v1, const nvar& v2);
@@ -209,6 +211,8 @@ namespace neu{
     nvar Def(const nvar& v1, const nvar& v2);
     
     nvar New(const nvar& v);
+    
+    nvar New(const nvar& v1, const nvar& v2);
     
     nvar PushScope(const nvar& v);
     
