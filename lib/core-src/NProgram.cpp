@@ -481,6 +481,8 @@ nvar NProgram::parseArgs(int argc, char** argv){
   ret("bin") = argv[0];
   
   nstr lastKey;
+  bool lastStr = false;
+  
   for(int i = 1; i < argc; ++i){
     nstr arg = argv[i];
     
@@ -508,20 +510,31 @@ nvar NProgram::parseArgs(int argc, char** argv){
       }
       
       lastKey = arg.substr(2, arg.length() - 2);
+      lastStr = true;
     }
     else if(arg.beginsWith("-")){
       if(!lastKey.empty()){
         NERROR("expected a value");
       }
       
-      ret(arg.substr(1, arg.length() - 1)) = true;
+      lastKey = arg.substr(1, arg.length() - 1);
+      lastStr = false;
     }
     else if(lastKey.empty()){
       ret.pushBack(arg);
     }
     else{
-      ret(lastKey) = nml(arg);
+      nvar v = lastStr ? nvar(arg) : nml(arg);
+      
+      if(ret.hasKey(lastKey)){
+        ret[lastKey].pushBack(v);
+      }
+      else{
+        ret(lastKey) = v;
+      }
+      
       lastKey = "";
+      lastStr = false;
     }
   }
   

@@ -627,15 +627,11 @@ public:
              isBaseType(t->getPointeeType(), "neu::NObjectBase")){
               
             nstr cn = t->getPointeeType().getAsString();
+
+            cn.findReplace("<anonymous>::", "");
+            cn.findReplace("class ", "");
               
-            nstr c = cn.substr(0, 6);
-              
-            assert(c == "class ");
-            nstr name = cn.substr(6);
-              
-            name.findReplace("<anonymous>::", "");
-              
-            ostr << "n[" << k << "].ptr<" << name << ">()";
+            ostr << "n[" << k << "].ptr<" << cn << ">()";
           }
           else if(t->isReferenceType()){
             nstr qs = qt.getAsString();
@@ -676,9 +672,9 @@ public:
         "_FuncMap.map(n) ? : neu::NObject::handle(n);" << endl;
     }
     else{
-      ostr << "  return _" << className << "_FuncMap.map(n) ? : " << endl;
+      ostr << "  return _" << className << "_FuncMap.map(n) ? : ";
       ostr << getQualifiedName(getFirstSuperClass(rd, "neu::NObject"));
-      ostr << "::handle(v, flags);";
+      ostr << "::handle(n, flags);";
     }
       
     ostr << "}" << endl;
@@ -1152,23 +1148,28 @@ void printUsage(){
 int main(int argc, char** argv){
   NProgram program(argc, argv);
 
-  program.argDefault("class", "",
+  program.argDefault("class", "c", "",
                      "Class name to generate metadata for. "
                      "Defaults to the name of the source file.");
 
-  program.argDefault("handle", true,
+  program.argDefault("handle", "h", true,
                      "True to generate handler.");
   
-  program.argDefault("create", true,
+  program.argDefault("factory", "f", true,
                      "True to generate class.");
   
-  program.argDefault("metadata", true,
+  program.argDefault("metadata", "m", true,
                      "True to generate class metadata.");
   
-  program.argDefault("outer", true,
+  program.argDefault("outer", "o", true,
                      "True to generate outer.");
+
+  program.argDefault("include", "I", none,
+                     "Include paths.");
   
   const nvar& args = program.args();
+
+  //cout << "args is: " << args << endl;
 
   if(args.size() != 1){
     printUsage();
@@ -1195,9 +1196,22 @@ int main(int argc, char** argv){
   MetaGenerator gen;
   
   gen.enableHandle(args["handle"]);
-  gen.enableClass(args["create"]);
+  gen.enableClass(args["factory"]);
   gen.enableMetadata(args["metadata"]);
   gen.enableOuter(args["outer"]);
+
+  const nvar& is = args["include"];
+
+  if(is.some()){
+    if(is.empty()){
+      gen.addInclude(is);
+    }
+    else{
+      for(const nvar& i : is){
+        gen.addInclude(i);
+      }
+    }
+  }
   
   if(!gen.generate(ostr, filePath, className)){
     return 1;

@@ -34,7 +34,7 @@ Integer::Integer(const Integer& c)
   x_ = new class Integer_(this, *c.x_);
 }
 
-Integer::Integer(PrototypeFlag* p, const mvar& metadata)
+Integer::Integer(PrototypeFlag* p, const nvar& metadata)
   : Real(p, metadata){
   
 }

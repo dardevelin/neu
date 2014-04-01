@@ -36,7 +36,7 @@ Count::Count(const Count& c)
   x_ = new class Count_(this, *c.x_);
 }
 
-Count::Count(PrototypeFlag* p, const mvar& metadata)
+Count::Count(PrototypeFlag* p, const nvar& metadata)
   : Integer(p, metadata){
   
 }

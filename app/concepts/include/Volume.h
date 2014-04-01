@@ -1,6 +1,8 @@
 #ifndef VOLUME_H
 #define VOLUME_H
 
+#include <neu/NClass.h>
+
 #include "Real.h"
 
 namespace neu{

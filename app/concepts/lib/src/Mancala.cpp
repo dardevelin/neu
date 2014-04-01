@@ -23,7 +23,7 @@ public:
     
   }
 
-  void validate(const mvar& v){
+  void validate(const nvar& v){
     
   }
 
@@ -45,7 +45,7 @@ public:
 
   int move(bool first, size_t slot){
     if(slot < 1 || slot > 6){
-      NERROR("invalid slot: " + mstr::toStr(slot));
+      NERROR("invalid slot: " + nstr::toStr(slot));
     }
 
     size_t s = realSlot(first, slot);
@@ -165,7 +165,7 @@ public:
 
   size_t numPieces(bool first, size_t slot){
     if(slot < 1 || slot > 6){
-      NERROR("invalid slot: " + mstr::toStr(slot));
+      NERROR("invalid slot: " + nstr::toStr(slot));
     }
 
     return slots_[realSlot(first, slot)];
@@ -198,7 +198,7 @@ public:
     size_t iv = i->val();
 
     if(iv > 12){
-      NERROR("invalid slot: " + mstr::toStr(iv));
+      NERROR("invalid slot: " + nstr::toStr(iv));
     }
 
     Count* ret = new Count;
@@ -225,13 +225,13 @@ public:
     size_t iv = i->val();
 
     if(iv > 12){
-      NERROR("invalid slot: " + mstr::toStr(iv));
+      NERROR("invalid slot: " + nstr::toStr(iv));
     }
 
     size_t cv = c->val();
 
     if(cv > 48){
-      NERROR("count too high: " + mstr::toStr(cv));
+      NERROR("count too high: " + nstr::toStr(cv));
     }
 
     while(cv != 0){
@@ -254,13 +254,13 @@ public:
     size_t av = a->val();
 
     if(av > 12){
-      NERROR("invalid slot: " + mstr::toStr(av));
+      NERROR("invalid slot: " + nstr::toStr(av));
     }
 
     size_t bv = b->val();
 
     if(bv > 12){
-      NERROR("invalid slot: " + mstr::toStr(bv));
+      NERROR("invalid slot: " + nstr::toStr(bv));
     }
 
     size_t d = 0;
@@ -285,7 +285,7 @@ public:
     size_t iv = i->val();
 
     if(iv > 12){
-      NERROR("invalid slot: " + mstr::toStr(iv));
+      NERROR("invalid slot: " + nstr::toStr(iv));
     }
     
     Truth* ret = new Truth;
@@ -311,7 +311,7 @@ public:
   Truth* truthOr(const Truth* a, const Truth* b) const{
     Truth* ret = new Truth;
 
-    *ret = mvar::max(a->val(), b->val());
+    *ret = nvar::max(a->val(), b->val());
 
     return ret;
   }
@@ -319,7 +319,7 @@ public:
   Truth* truthNot(const Truth* t) const{
     Truth* ret = new Truth;
 
-    *ret = 1.0 - t.val();
+    *ret = 1.0 - t->val();
 
     return ret;
   }
@@ -427,12 +427,12 @@ private:
 } // end namespace Meta
 
 Mancala::Mancala(const Mancala& c)
-  : Concept(c){
+  : NConcept(c){
   x_ = new class Mancala_(this, *c.x_);
 }
 
 Mancala::Mancala(PrototypeFlag* p, const nvar& metadata)
-  : Concept(p, metadata){
+  : NConcept(p, metadata){
   
 }
 

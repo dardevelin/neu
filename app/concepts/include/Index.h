@@ -3,6 +3,8 @@
 
 #include "Count.h"
 
+#include <neu/NClass.h>
+
 namespace neu{
 
 /**[

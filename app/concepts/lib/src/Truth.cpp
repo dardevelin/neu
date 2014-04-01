@@ -68,12 +68,12 @@ private:
 } // end namespace neu
 
 Truth::Truth(const Truth& c)
-  : Concept(c){
+  : NConcept(c){
   x_ = new class Truth_(this, *c.x_);
 }
 
 Truth::Truth(PrototypeFlag* p, const nvar& metadata)
-  : Concept(p, metadata){
+  : NConcept(p, metadata){
   
 }
 

@@ -3,7 +3,9 @@
 
 #include "Real.h"
 
-namespace Meta{
+#include <neu/NClass.h>
+
+namespace neu{
 
 class Volume;
 class Length;
@@ -41,7 +43,7 @@ public:
     return "Area";
   }
 
-  virtual void validate(const mvar& v);
+  virtual void validate(const nvar& v);
 
   /**[
     description: "Do it"
@@ -67,7 +69,7 @@ private:
   class Area_* x_;
 };
 
-} // end namespace Meta
+} // end namespace neu
 
 #endif // AREA_H
 

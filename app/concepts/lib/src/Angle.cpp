@@ -21,7 +21,7 @@ public:
     
   }
 
-  void validate(const mvar& v){
+  void validate(const nvar& v){
     
   }
   

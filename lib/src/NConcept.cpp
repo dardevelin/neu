@@ -60,7 +60,7 @@ using namespace neu;
 
 namespace neu{
 
-const NConcept::PrototypeFlag* NConcept::Prototype = 0;
+NConcept::PrototypeFlag* NConcept::Prototype = 0;
 
 class NConcept_{
 public:

@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include <neu/NClass.h>
+
 namespace neu{
 
 class Area;
@@ -31,7 +33,7 @@ public:
     return new Length;
   }
 
-  Length& operator=(const mvar& v){
+  Length& operator=(const nvar& v){
     set(v);
     return *this;
   }

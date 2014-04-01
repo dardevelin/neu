@@ -30,7 +30,7 @@ Index::Index(const Index& c)
   x_ = new class Index_(this, *c.x_);
 }
 
-Index::Index(PrototypeFlag* p, const mvar& metadata)
+Index::Index(PrototypeFlag* p, const nvar& metadata)
   : Count(p, metadata){
   
 }

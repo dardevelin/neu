@@ -2,6 +2,7 @@
 #define MANCALA_H
 
 #include <neu/NConcept.h>
+#include <neu/NClass.h>
 
 namespace neu{
 

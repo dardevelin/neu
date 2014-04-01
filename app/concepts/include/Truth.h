@@ -2,6 +2,7 @@
 #define TRUTH_H
 
 #include <neu/NConcept.h>
+#include <neu/NClass.h>
 
 namespace neu{
 
@@ -27,7 +28,7 @@ public:
     return new Truth;
   }
 
-  Truth& operator=(const mvar& v){
+  Truth& operator=(const nvar& v){
     set(v);
     return *this;
   }

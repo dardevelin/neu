@@ -26,7 +26,7 @@ public:
   }
 
   Area* mulLengthRatio(const Length* l) const{
-    mvar v = o_->val();
+    nvar v = o_->val();
     v *= l->val();
     
     Area* ret = new Area;

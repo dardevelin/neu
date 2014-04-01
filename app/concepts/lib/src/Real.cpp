@@ -31,7 +31,7 @@ public:
   }
 
   void validate(const nvar& v){
-    if(!Concept::isNumeric(v)){
+    if(!NConcept::isNumeric(v)){
       NERROR("Non-numeric value: " + v.toStr());
     }
   }
@@ -46,7 +46,7 @@ public:
     const nvar& attrs = o_->attributes();
 
     if(attrs.hasKey("delta")){
-      if(!v.hasKey("delta") && attrs.delta != undef){
+      if(!v.hasKey("delta") && attrs["delta"] != undef){
         return -1;
       }
     }
@@ -55,7 +55,7 @@ public:
     }
 
     if(attrs.hasKey("ratio")){
-      if(!v.hasKey("ratio") && attrs.ratio != undef){
+      if(!v.hasKey("ratio") && attrs["ratio"] != undef){
         return -1;
       }
     }
@@ -64,7 +64,7 @@ public:
     }
 
     if(attrs.hasKey("multiplier")){
-      if(!v.hasKey("multiplier") && attrs.multiplier != undef){
+      if(!v.hasKey("multiplier") && attrs["multiplier"] != undef){
         return -1;
       }
     }
@@ -73,7 +73,7 @@ public:
     }
 
     if(attrs.hasKey("coord")){
-      if(!v.hasKey("coord") && attrs.coord != undef){
+      if(!v.hasKey("coord") && attrs["coord"] != undef){
         return -1;
       }
     }
@@ -153,7 +153,7 @@ public:
   }
 
   NConcept* sum() const{
-    mvar r = 0;
+    nvar r = 0;
 
     for(const nvar& vi : value_){
       r += vi;
@@ -188,7 +188,7 @@ public:
       NERROR("empty vector");
     }
 
-    nvar m = mvar::negInf();
+    nvar m = nvar::negInf();
     for(const nvar& vi : value_){
       if(vi > m){
         m = vi;
@@ -217,7 +217,8 @@ public:
 
   NConcept* setUnion(const NConcept* c) const{
     nvar r = value_;
-    r.unite(c->val());
+    // ndm - not implemented
+    //r.unite(c->val());
 
     Real* ret = o_->create();
 
@@ -230,9 +231,10 @@ public:
   }
 
   NConcept* setIntersection(const NConcept* c) const{
-    mvar r = value_;
+    nvar r = value_;
 
-    r.intersect(c->val());
+    // ndm - not implemented
+    //r.intersect(c->val());
 
     Real* ret = o_->create();
 
@@ -246,7 +248,9 @@ public:
 
   NConcept* setComplement(const NConcept* c) const{
     nvar r = value_;
-    r.complement(c->val());
+
+    // ndm - not implemented
+    //r.complement(c->val());
 
     Real* ret = o_->create();
 
@@ -342,12 +346,12 @@ private:
 } // end namespace Meta
 
 Real::Real(const Real& c)
-  : Concept(c){
+  : NConcept(c){
   x_ = new class Real_(this, *c.x_);
 }
 
-Real::Real(PrototypeFlag* p, const mvar& metadata)
-  : Concept(p, metadata){
+Real::Real(PrototypeFlag* p, const nvar& metadata)
+  : NConcept(p, metadata){
   
 }
 

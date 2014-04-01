@@ -3,6 +3,8 @@
 
 #include "Real.h"
 
+#include <neu/NClass.h>
+
 namespace neu{
 
 class Length;

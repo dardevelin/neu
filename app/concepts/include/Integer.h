@@ -3,6 +3,8 @@
 
 #include "Real.h"
 
+#include <neu/NClass.h>
+
 namespace neu{
 
 /**[
@@ -27,7 +29,7 @@ public:
     return new Integer;
   }
 
-  Integer& operator=(const mvar& v){
+  Integer& operator=(const nvar& v){
     set(v);
     return *this;
   }
