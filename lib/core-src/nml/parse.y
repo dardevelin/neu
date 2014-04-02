@@ -67,12 +67,13 @@ using namespace neu;
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
+%right '?' ':'
 %right OR
 %right AND
 %right EQ NE
@@ -82,6 +83,7 @@ using namespace neu;
 %left '*' '/' '%'
 %left '^'
 %left '!' INC DEC
+%left '.'
 
 %%
 
@@ -277,11 +279,8 @@ expr: expr_num {
     $$ = move($1);
   }
 }
-| '{' expr '}' {
-  $$ = PS->func("Cs") << move($2);
-}
-| '{' stmt '}' {
-  $$ = PS->func("Cs") << move($2);
+| block {
+  $$ = PS->func("Cs") << move($1);
 }
 ;
 
@@ -407,6 +406,27 @@ stmt: expr ';' {
 | if_stmt {
   $$ = move($1);
 }
+| KW_RETURN ';' {
+  $$ = PS->func("Ret");
+}
+| KW_RETURN expr ';' {
+  $$ = PS->func("Ret") << move($2);
+}
+| KW_BREAK ';' {
+  $$ = PS->func("Break");
+}
+| KW_CONTINUE ';' {
+  $$ = PS->func("Continue");
+}
+| KW_WHILE '(' expr ')' block {
+  $$ = PS->func("While") << move($3) << move($5);
+}
+| KW_FOR '(' stmt stmt expr ')' block {
+  $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
+}
+| KW_SWITCH '(' expr ')' '{' case_stmts '}' {
+  $$ = PS->createSwitch($3, $6);
+}
 ;
 
 if_stmt: KW_IF '(' expr ')' block {
@@ -417,6 +437,47 @@ if_stmt: KW_IF '(' expr ')' block {
 }
 | KW_IF '(' expr ')' block KW_ELSE if_stmt {
   $$ = PS->func("If") << move($3) << move($5) << move($7);
+}
+;
+
+case_stmts: case_stmts case_stmt {
+  $$ = move($1);
+  $$.merge($2);
+}
+| case_stmt {
+  $$ = move($1);
+}
+;
+
+case_stmt: case_labels '{' stmts '}' {
+  $$ = nmmap();
+  for(const nvar& k : $1){
+    $3.str() = "ScopedBlock";
+    $$(k) = $3;
+  }
+}
+| case_labels stmts {
+  $$ = nmmap();
+  for(const nvar& k : $1){
+    $$(k) = $2;
+  }
+}
+;
+
+case_label: KW_CASE expr ':' {
+  $$ = move($2);
+}
+| KW_DEFAULT ':' {
+  $$ = PS->sym("__default");
+}
+;
+
+case_labels: case_labels case_label {
+  $$ = move($1);
+  $$ << move($2);
+}
+| case_label {
+  $$ = nvec() << move($1);
 }
 ;
 

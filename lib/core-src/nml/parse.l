@@ -128,6 +128,13 @@ KW_UNDEF undef
 KW_NEW new
 KW_IF if
 KW_ELSE else
+KW_WHILE while
+KW_RETURN return
+KW_BREAK break
+KW_CONTINUE continue
+KW_SWITCH switch
+KW_CASE case
+KW_DEFAULT default
 
 %%
 
@@ -229,6 +236,41 @@ KW_ELSE else
 {KW_ELSE} {
   PS->advance(yytext, "keyword");
   return KW_ELSE;
+}
+
+{KW_WHILE} {
+  PS->advance(yytext, "keyword");
+  return KW_WHILE;
+}
+
+{KW_RETURN} {
+  PS->advance(yytext, "keyword");
+  return KW_RETURN;
+}
+
+{KW_BREAK} {
+  PS->advance(yytext, "keyword");
+  return KW_BREAK;
+}
+
+{KW_CONTINUE} {
+  PS->advance(yytext, "keyword");
+  return KW_CONTINUE;
+}
+
+{KW_SWITCH} {
+  PS->advance(yytext, "keyword");
+  return KW_SWITCH;
+}
+
+{KW_CASE} {
+  PS->advance(yytext, "keyword");
+  return KW_CASE;
+}
+
+{KW_DEFAULT} {
+  PS->advance(yytext, "keyword");
+  return KW_DEFAULT;
 }
 
 {INTEGER} {
