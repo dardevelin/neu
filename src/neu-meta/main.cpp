@@ -805,6 +805,7 @@ public:
       if(TextComment* tc = dyn_cast<TextComment>(ci)){
         nstr cs = tc->getText().str();
         cs.strip();
+
         str += cs;
       }
       else{

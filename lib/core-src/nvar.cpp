@@ -20511,6 +20511,8 @@ void nvar::ceil(){
 }
 
 nvar& nvar::unite(const nvar& x, bool outer){
+  bool v = hasVector();
+
   touchList();
   touchMap();
 
@@ -20521,12 +20523,18 @@ nvar& nvar::unite(const nvar& x, bool outer){
   uniteList(list(), xc.list(), outer);
   uniteMap(map(), xc.map(), outer);
 
+  if(v){
+    touchVector();
+  }
+
   normalize();
 
   return *this;
 }
 
 nvar& nvar::intersect(const nvar& x, bool outer){
+  bool v = hasVector();
+
   touchList();
   touchMap();
 
@@ -20537,12 +20545,18 @@ nvar& nvar::intersect(const nvar& x, bool outer){
   intersectList(list(), xc.list(), outer);
   intersectMap(map(), xc.map(), outer);
 
+  if(v){
+    touchVector();
+  }
+
   normalize();
 
   return *this;
 }
 
 nvar& nvar::complement(const nvar& x){
+  bool v = hasVector();
+
   touchList();
   touchMap();
 
@@ -20552,6 +20566,10 @@ nvar& nvar::complement(const nvar& x){
 
   complementList(list(), xc.list());
   complementMap(map(), xc.map());
+
+  if(v){
+    touchVector();
+  }
 
   normalize();
 

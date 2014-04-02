@@ -126,6 +126,8 @@ KW_FALSE false
 KW_NONE none
 KW_UNDEF undef
 KW_NEW new
+KW_IF if
+KW_ELSE else
 
 %%
 
@@ -217,6 +219,16 @@ KW_NEW new
 {KW_UNDEF} {
   PS->advance(yytext, "keyword");
   return KW_UNDEF;
+}
+
+{KW_IF} {
+  PS->advance(yytext, "keyword");
+  return KW_IF;
+}
+
+{KW_ELSE} {
+  PS->advance(yytext, "keyword");
+  return KW_ELSE;
 }
 
 {INTEGER} {

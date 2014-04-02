@@ -76,18 +76,51 @@ namespace{
       nameMap_("this") = true;
       nameMap_("try") = true;
       nameMap_("catch") = true;
+      
+      varBuiltinMap_({"pushBack", 1}) = "PushBack";
+      varBuiltinMap_({"touchMultimap", 0}) = "TouchMultimap";
+      varBuiltinMap_({"touchList", 0}) = "TouchList";
+      varBuiltinMap_({"keys", 0}) = "Keys";
+      varBuiltinMap_({"pushFront", 1}) = "PushFront";
+      varBuiltinMap_({"popBack", 0}) = "PopBack";
+      varBuiltinMap_({"hasKey", 1}) = "HasKey";
+      varBuiltinMap_({"insert", 2}) = "Insert";
+      varBuiltinMap_({"clear", 0}) = "Clear";
+      varBuiltinMap_({"empty", 0}) = "Empty";
+      varBuiltinMap_({"back", 0}) = "Back";
+      varBuiltinMap_({"get", 1}) = "Get";
+      varBuiltinMap_({"get", 2}) = "Get";
+      varBuiltinMap_({"erase", 1}) = "Erase";
+      varBuiltinMap_({"merge", 1}) = "Merge";
+      varBuiltinMap_({"outerMerge", 0}) = "OuterMerge";
     }
     
     bool isReservedName(const nstr& name) const{
       return nameMap_.hasKey(name);
     }
     
+    bool handleVarBuiltin(nvar& f){
+      nvar b = varBuiltinMap_.get({f.str(), f.size()}, none);
+      
+      if(b == none){
+        return false;
+      }
+      
+      f.str() = b;
+      return true;
+    }
+    
     nvar nameMap_;
+    nvar varBuiltinMap_;
   };
   
   Global _global;
   
 } // end namespace
+
+bool NMLParser_::handleVarBuiltin(nvar& f){
+  return _global.handleVarBuiltin(f);
+}
 
 NMLParser::NMLParser(){
   x_ = new NMLParser_(this);

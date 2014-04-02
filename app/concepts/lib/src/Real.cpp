@@ -217,8 +217,7 @@ public:
 
   NConcept* setUnion(const NConcept* c) const{
     nvar r = value_;
-    // ndm - not implemented
-    //r.unite(c->val());
+    r.unite(c->val());
 
     Real* ret = o_->create();
 
@@ -233,8 +232,7 @@ public:
   NConcept* setIntersection(const NConcept* c) const{
     nvar r = value_;
 
-    // ndm - not implemented
-    //r.intersect(c->val());
+    r.intersect(c->val());
 
     Real* ret = o_->create();
 
@@ -249,8 +247,7 @@ public:
   NConcept* setComplement(const NConcept* c) const{
     nvar r = value_;
 
-    // ndm - not implemented
-    //r.complement(c->val());
+    r.complement(c->val());
 
     Real* ret = o_->create();
 

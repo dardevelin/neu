@@ -950,7 +950,7 @@ public:
       concept_(concept),
       metadata_(metadata){
 
-    if(extends != "Concept"){
+    if(extends != "NConcept"){
       directExtends_ = extends;
       addExtends(extends);
     }
@@ -1577,7 +1577,7 @@ public:
       while(!front.empty()){
         nstr c = front.popFront();
 
-        if(c == "Concept"){
+        if(c == "NConcept"){
           continue;
         }
 
@@ -1591,7 +1591,7 @@ public:
         for(size_t i = 0; i < ei.size(); ++i){
           const nstr& ci = ei[i];
 
-          if(ci == "Concept"){
+          if(ci == "NConcept"){
             continue;
           }
 
@@ -1614,23 +1614,25 @@ public:
 
       const nvar& metadata = concept->metadata();
 
-      if(!metadata.hasKey("data")){
+      if(!metadata.hasKey("comment")){
         NERROR("Missing data field on: " + concept->name());
       }
 
-      const nvar& data = metadata["data"];
+      const nvar& comment = metadata["comment"];
 
-      if(!data.isString()){
+      if(!comment.isString()){
         NERROR("[1] invalid data field on: " + concept->name());
       }
 
-      nstr code = data;
+      nstr code = comment;
       code += ";\n";
 
+      cout << "code2 is: " << code << endl;
+      
       nvar n = parser.parse(code);
       
       if(n == none){
-        NERROR("Parse error on data field in: " + concept->name());
+        NERROR("Parse error on comment field in: " + concept->name());
       }
 
       if(n.isSymbolic()){
@@ -1647,34 +1649,24 @@ public:
       nvec keys;
       methods.keys(keys);
 
-      for(const nstr& k : keys){
-        nvec keys2;
-        methods[k].keys(keys2);
-        if(keys2.size() < 1){
-          NERROR("Invalid method definition for '" +
-                 k + "' on class: " + concept->name());
-        }
-        else if(keys2.size() > 1){
-          NERROR("Duplicate methods for '" +
-                 k + "' on class: " + concept->name());
-        }
-
-        const nvar& mi = methods[k][keys2[0]];
+      for(const nvar& k : keys){
+        const nvar& mi = methods[k];
         
-        if(!mi.hasKey("data")){
-          NERROR("Missing data field on concept: '" +
+        if(!mi.hasKey("comment")){
+          continue;
+        }
+        
+        const nvar& comment = mi["comment"];
+        
+        if(!comment.isString()){
+          NERROR("[1] invalid comment field on concept: '" +
                  concept->name() + "' on method: " + k);
         }
         
-        const nvar& data = mi["data"];
-        
-        if(!data.isString()){
-          NERROR("[1] invalid data field on concept: '" +
-                 concept->name() + "' on method: " + k);
-        }
-        
-        nstr code = data;
+        nstr code = comment;
         code += ";\n";
+        
+        cout << "code is: " << code << endl;
         
         nvar n = parser.parse(code);
         
@@ -1688,7 +1680,7 @@ public:
                  concept->name() + "' on method: " + k);
         }
 
-        Method* method = new Method(concept->concept(), k, methodId++);
+        Method* method = new Method(concept->concept(), k[0], methodId++);
         method->setData(n);
 
         nvar pt;
@@ -1732,7 +1724,7 @@ public:
           nstr type = r["type"];
 
           bool poly;
-          if(type == "Concept"){
+          if(type == "NConcept"){
             type = concept->name();
             poly = true;
           }
@@ -1773,10 +1765,14 @@ public:
           method->setReturn(rc);
         }
 
+        cout << "mi is: " << mi << endl;
+        
         for(size_t i = 0; i < mi.size(); ++i){
           const nvar& pi = mi[i];
 
-          if(!pi.isString()){
+          cout << "pi is: " << pi << endl;
+          
+          if(!pi.isSymbol()){
             NERROR("[1] invalid parameter " + nstr::toStr(i) +
                    "' on concept: '" + concept->name() +
                    "' on method: " + k);
@@ -1799,7 +1795,7 @@ public:
           nstr type = pi["type"];
 
           bool poly;
-          if(type == "Concept"){
+          if(type == "NConcept"){
             type = concept->name();
             poly = true;
           }
@@ -1884,7 +1880,7 @@ public:
     }
 
     const nvar& extends = metadata[name]["extends"];
-    if(!extends.isString()){
+    if(!extends.isSymbol()){
       NERROR("Invalid extends field on: " + name);
     }
 

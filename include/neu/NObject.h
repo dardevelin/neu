@@ -198,7 +198,7 @@ namespace neu{
     
     nvar DotPut(const nvar& v1, const nvar& v2);
     
-    nvar Cls(const nvar& v);
+    nvar Cs(const nvar& v);
     
     nvar In(const nvar& v1, const nvar& v2);
     
@@ -217,6 +217,34 @@ namespace neu{
     nvar PushScope(const nvar& v);
     
     nvar PopScope();
+    
+    nvar PushBack(const nvar& v1, const nvar& v2);
+    
+    nvar TouchMultimap(const nvar& v1);
+    
+    nvar TouchList(const nvar& v1);
+    
+    nvar Keys(const nvar& v1);
+    
+    nvar PushFront(const nvar& v1, const nvar& v2);
+    
+    nvar PopBack(const nvar& v1);
+    
+    nvar HasKey(const nvar& v1, const nvar& v2);
+    
+    nvar Insert(const nvar& v1, const nvar& v2, const nvar& v3);
+    
+    nvar Clear(const nvar& v1);
+    
+    nvar Empty(const nvar& v1);
+    
+    nvar Back(const nvar& v1);
+    
+    nvar Erase(const nvar& v1, const nvar& v2);
+    
+    nvar Merge(const nvar& v1, const nvar& v2);
+    
+    nvar OuterMerge(const nvar& v1, const nvar& v2);
     
     friend class NObject_;
     

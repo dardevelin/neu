@@ -78,6 +78,8 @@ namespace neu{
       
     }
     
+    bool handleVarBuiltin(nvar& f);
+    
     void setMetadata(bool flag){
       metadata_ = flag;
     }

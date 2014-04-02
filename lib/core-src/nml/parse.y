@@ -67,9 +67,9 @@ using namespace neu;
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW ENDL DOUBLE INTEGER REAL
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -277,6 +277,12 @@ expr: expr_num {
     $$ = move($1);
   }
 }
+| '{' expr '}' {
+  $$ = PS->func("Cs") << move($2);
+}
+| '{' stmt '}' {
+  $$ = PS->func("Cs") << move($2);
+}
 ;
 
 expr_map: expr ':' expr {
@@ -398,6 +404,20 @@ stmt: expr ';' {
 | ';' {
   $$ = none;
 }
+| if_stmt {
+  $$ = move($1);
+}
+;
+
+if_stmt: KW_IF '(' expr ')' block {
+  $$ = PS->func("If") << move($3) << move($5);
+}
+| KW_IF '(' expr ')' block KW_ELSE block {
+  $$ = PS->func("If") << move($3) << move($5) << move($7);
+}
+| KW_IF '(' expr ')' block KW_ELSE if_stmt {
+  $$ = PS->func("If") << move($3) << move($5) << move($7);
+}
 ;
 
 block: '{' stmts '}' {
@@ -430,7 +450,12 @@ get: '[' expr ']' {
 }
 | '.' func {
   if(nstr::isLower($2.str()[0])){
-    $$ = PS->func("Call") << move($2);
+    if(PS->handleVarBuiltin($2)){
+      $$ = $2;
+    }
+    else{
+      $$ = PS->func("Call") << move($2);
+    }
   }
   else{
     $$ = PS->func("In") << move($2);

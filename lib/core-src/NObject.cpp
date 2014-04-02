@@ -866,7 +866,7 @@ namespace neu{
       return nvar(&v, nvar::Ptr);
     }
     
-    nvar Cls(const nvar& v){
+    nvar Cs(const nvar& v){
       return v;
     }
     
@@ -1009,6 +1009,116 @@ namespace neu{
     nvar PopScope(){
       ThreadContext* context = getContext();
       context->popScope();
+      
+      return none;
+    }
+    
+    nvar PushBack(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.pushBack(p2);
+      
+      return none;
+    }
+    
+    nvar TouchMultimap(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchMultimap();
+      
+      return none;
+    }
+    
+    nvar TouchList(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.touchList();
+      
+      return none;
+    }
+    
+    nvar Keys(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      return p1.keys();
+    }
+    
+    nvar PushFront(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.pushFront(p2);
+      
+      return none;
+    }
+    
+    nvar PopBack(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      return p1.popBack();
+    }
+    
+    nvar HasKey(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      return p1.hasKey(p2);
+    }
+    
+    nvar Insert(const nvar& v1, const nvar& v2, const nvar& v3){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      nvar p3 = process(v3);
+      
+      p1.insert(v2, v3);
+      
+      return none;
+    }
+    
+    nvar Clear(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      p1.clear();
+      
+      return none;
+    }
+    
+    nvar Empty(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      return p1.empty();
+    }
+    
+    nvar Back(const nvar& v1){
+      nvar p1 = process(v1);
+      
+      return p1.back();
+    }
+    
+    nvar Erase(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.erase(p2);
+      
+      return none;
+    }
+    
+    nvar Merge(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.merge(p2);
+      
+      return none;
+    }
+    
+    nvar OuterMerge(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.outerMerge(p2);
       
       return none;
     }
@@ -1366,10 +1476,10 @@ FuncMap::FuncMap(){
         DotPut(v[0], v[1]);
       });
   
-  add("Cls", 1,
+  add("Cs", 1,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
-        Cls(v[0]);
+        Cs(v[0]);
       });
   
   add("In", 2,
@@ -1430,6 +1540,90 @@ FuncMap::FuncMap(){
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
         PopScope();
+      });
+  
+  add("PushBack", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        PushBack(v[0], v[1]);
+      });
+  
+  add("TouchMultimap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        TouchMultimap(v[0]);
+      });
+  
+  add("TouchList", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        TouchList(v[0]);
+      });
+  
+  add("Keys", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Keys(v[0]);
+      });
+  
+  add("PushFront", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        PushFront(v[0], v[1]);
+      });
+  
+  add("PopBack", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        PopBack(v[0]);
+      });
+  
+  add("HasKey", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        HasKey(v[0], v[1]);
+      });
+  
+  add("Insert", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Insert(v[0], v[1], v[2]);
+      });
+  
+  add("Clear", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Clear(v[0]);
+      });
+  
+  add("Empty", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Empty(v[0]);
+      });
+  
+  add("Back", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Back(v[0]);
+      });
+  
+  add("Erase", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Erase(v[0], v[1]);
+      });
+  
+  add("Merge", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Merge(v[0], v[1]);
+      });
+  
+  add("OuterMerge", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        OuterMerge(v[0], v[1]);
       });
   
   add("foo", 1,
@@ -1687,8 +1881,8 @@ nvar NObject::DotPut(const nvar& v1, const nvar& v2){
   return x_->DotPut(v1, v2);
 }
 
-nvar NObject::Cls(const nvar& v){
-  return x_->Cls(v);
+nvar NObject::Cs(const nvar& v){
+  return x_->Cs(v);
 }
 
 nvar NObject::In(const nvar& v1, const nvar& v2){
@@ -1725,6 +1919,62 @@ nvar NObject::PushScope(const nvar& v){
 
 nvar NObject::PopScope(){
   return x_->PopScope();
+}
+
+nvar NObject::PushBack(const nvar& v1, const nvar& v2){
+  return x_->PushBack(v1, v2);
+}
+
+nvar NObject::TouchMultimap(const nvar& v1){
+  return x_->TouchMultimap(v1);
+}
+
+nvar NObject::TouchList(const nvar& v1){
+  return x_->TouchList(v1);
+}
+
+nvar NObject::Keys(const nvar& v1){
+  return x_->Keys(v1);
+}
+
+nvar NObject::PushFront(const nvar& v1, const nvar& v2){
+  return x_->PushFront(v1, v2);
+}
+
+nvar NObject::PopBack(const nvar& v1){
+  return x_->PopBack(v1);
+}
+
+nvar NObject::HasKey(const nvar& v1, const nvar& v2){
+  return x_->HasKey(v1, v2);
+}
+
+nvar NObject::Insert(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->Insert(v1, v2, v3);
+}
+
+nvar NObject::Clear(const nvar& v1){
+  return x_->Clear(v1);
+}
+
+nvar NObject::Empty(const nvar& v1){
+  return x_->Empty(v1);
+}
+
+nvar NObject::Back(const nvar& v1){
+  return x_->Back(v1);
+}
+
+nvar NObject::Erase(const nvar& v1, const nvar& v2){
+  return x_->Erase(v1, v2);
+}
+
+nvar NObject::Merge(const nvar& v1, const nvar& v2){
+  return x_->Merge(v1, v2);
+}
+
+nvar NObject::OuterMerge(const nvar& v1, const nvar& v2){
+  return x_->OuterMerge(v1, v2);
 }
 
 void NObject::foo(nvar& x){
