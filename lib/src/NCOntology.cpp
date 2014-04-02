@@ -1864,6 +1864,8 @@ public:
   }
 
   void addConcept(NConcept* concept, const nvar& metadata){
+    cout << "metadata is: " << metadata << endl;
+    
     nvec keys;
     metadata.keys(keys);
 

@@ -2560,6 +2560,58 @@ namespace neu{
           return true;
       }
     }
+
+    bool mapEmpty() const{
+      switch(t_){
+        case Map:
+          return h_.m->empty();
+        case Multimap:
+          return h_.mm->empty();
+        case Function:
+          return h_.f->m ? h_.f->m->empty() : true;
+        case HeadMap:
+          return h_.hm->m->empty();
+        case SequenceMap:
+          return h_.sm->m->empty();
+        case HeadSequenceMap:
+          return h_.hsm->m->empty();
+        case Reference:
+          return h_.ref->v->mapEmpty();
+        case Pointer:
+          return h_.vp->mapEmpty();
+        default:
+          return true;
+      }
+    }
+
+    bool allEmpty() const{
+      switch(t_){
+        case Vector:
+          return h_.v->empty();
+        case List:
+          return h_.l->empty();
+        case Map:
+          return h_.m->empty();
+        case Multimap:
+          return h_.mm->empty();
+        case Function:
+          return h_.f->v.empty() && h_.f->m ? h_.f->m->empty() : true;
+        case HeadSequence:
+          return h_.hs->s->empty();
+        case HeadMap:
+          return h_.hm->m->mapEmpty();
+        case SequenceMap:
+          return h_.sm->s->empty() && h_.sm->m->mapEmpty();
+        case HeadSequenceMap:
+          return h_.hsm->s->empty() && h_.hsm->m->mapEmpty();
+        case Reference:
+          return h_.ref->v->allEmpty();
+        case Pointer:
+          return h_.vp->allEmpty();
+        default:
+          return true;
+      }
+    }
     
     const nvar& back() const{
       switch(t_){
@@ -3510,7 +3562,13 @@ namespace neu{
     void merge(const nvar& x);
     
     void outerMerge(const nvar& x);
-    
+
+    nvar& unite(const nvar& x, bool outer=false);
+
+    nvar& intersect(const nvar& x, bool outer=false);
+
+    nvar& complement(const nvar& x);
+
     static nvar parseFuncSpec(const char* fs){
       nvar ret;
       
