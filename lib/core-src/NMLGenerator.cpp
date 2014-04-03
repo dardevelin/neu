@@ -197,7 +197,6 @@ namespace neu{
         case FKEY_Block_n:{
           for(size_t i = 0; i < v.size(); ++i){
             emitStatement(ostr, indent, v[i]);
-            ostr << ";" << endl;
           }
           break;
         }
@@ -206,12 +205,14 @@ namespace neu{
           emitExpression(ostr, indent, v[0]);
           ostr << " = ";
           emitExpression(ostr, indent, v[1]);
+          ostr << ";" << endl;
           break;
         }
         default:
         {
           ostr << indent;
           emitExpression(ostr, indent, v);
+          ostr << ";" << endl;
           break;
         }
       }
