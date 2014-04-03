@@ -1021,7 +1021,7 @@ public:
     data_.keys(keys);
 
     for(const nstr& k : keys){
-      nvar n = nfunc("Call") << (nfunc("set" + k.uppercase())) << data_[k];
+      nvar n = nfunc("Call") << (nfunc("set" + k.uppercase()) << data_[k]);
 
       try{
         concept_->process(n);
@@ -1627,8 +1627,6 @@ public:
       nstr code = comment;
       code += ";\n";
 
-      cout << "code2 is: " << code << endl;
-      
       nvar n = parser.parse(code);
       
       if(n == none){
@@ -1665,8 +1663,6 @@ public:
         
         nstr code = comment;
         code += ";\n";
-        
-        cout << "code is: " << code << endl;
         
         nvar n = parser.parse(code);
         
@@ -1765,13 +1761,9 @@ public:
           method->setReturn(rc);
         }
 
-        cout << "mi is: " << mi << endl;
-        
         for(size_t i = 0; i < mi.size(); ++i){
           const nvar& pi = mi[i];
 
-          cout << "pi is: " << pi << endl;
-          
           if(!pi.isSymbol()){
             NERROR("[1] invalid parameter " + nstr::toStr(i) +
                    "' on concept: '" + concept->name() +
@@ -2281,6 +2273,8 @@ public:
           continue;
         }
 
+        cout << "----------------------" << endl;
+        
         Proc* proc2;
         auto pitr = procMap_.find(m);
         if(pitr == procMap_.end()){

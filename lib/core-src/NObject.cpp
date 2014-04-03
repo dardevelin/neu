@@ -905,7 +905,7 @@ namespace neu{
       
       NScope* scope = context->topScope();
       
-      switch(v2.type()){
+      switch(v1.type()){
         case nvar::Function:
           scope->setFunction(v1, v2);
           break;

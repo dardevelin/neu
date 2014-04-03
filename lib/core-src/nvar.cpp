@@ -14880,8 +14880,8 @@ nvar nvar::operator!=(const nvar& x) const{
       }
     case True:
       switch(x.t_){
-        case False:
-          return True;
+        case True:
+          return false;
         case Symbol:
         case Function:
           return nfunc("NE") << *this << new nvar(x, Copy);

@@ -335,7 +335,7 @@ public:
   }
   
   double match(const nvar& v, bool full){
-    //cout << "attrs is: " << attrs_ << endl;
+    //cout << "attrs_ is: " << attrs_ << endl;
     //cout << "v is: " << v << endl;
 
     if(attrs_["in"] != v["in"]){
