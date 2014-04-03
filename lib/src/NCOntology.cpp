@@ -280,7 +280,7 @@ public:
         nstr temp = getTemp(state, type);
           
         code << (nfunc("Var") << nsym(temp) <<
-                 (nfunc("In") << nsym(pn) << nfunc("copy"))
+                 (nfunc("Call") << nsym(pn) << nfunc("copy"))
                  << nvar()({"shared", true, "type", type}));
     
         nvar& vv = vt(temp);
@@ -317,8 +317,8 @@ public:
     for(size_t i = 0; i < vs.size(); ++i){
       const nvar& vi = vs[i];
 
-      nvar f = nfunc("Idx") << nsym(paranvec_[i].first) <<
-      (nfunc("Call") << (nfunc("setObj") << nsym(vi)));
+      nvar f = nfunc("Call") << nsym(paramVec_[i].first) <<
+      (nfunc("setObj") << nsym(vi));
       
       code << f;
       
@@ -436,11 +436,11 @@ public:
     for(size_t i = 1; i < vs.size(); ++i){
       const nvar& vi = vs[i];
 
-      NConcept* pi = paranvec_[i - 1].second;
+      NConcept* pi = paramVec_[i - 1].second;
 
       NConcept* po;
 
-      auto itr = paramOutMap_.find(paranvec_[i - 1].first);
+      auto itr = paramOutMap_.find(paramVec_[i - 1].first);
       if(itr != paramOutMap_.end()){
         po = itr->second;
       }
@@ -460,7 +460,7 @@ public:
       nvar& vv = vt[vi];
 
       if(obj){
-        obj->Def(nsym(paranvec_[i - 1].first), nvar(&vv, nvar::Ptr));
+        obj->Def(nsym(paramVec_[i - 1].first), nvar(&vv, nvar::Ptr));
       }
 
       if(pi->getOut()){
@@ -515,7 +515,7 @@ public:
       call << nsym(vi);
     }
 
-    nvar mc = nfunc("Idx") << nsym(v0) + (nfunc("Call") << call);
+    nvar mc = nfunc("Call") << nsym(v0) << call;
 
     nvar f;
     if(returnTemp.empty()){
@@ -547,7 +547,7 @@ public:
     }
     
     paramMap_.insert({name, param});
-    paranvec_.push_back({name, param});
+    paramVec_.push_back({name, param});
 
     return true;
   }
@@ -850,7 +850,7 @@ public:
 
     bool first = true;
 
-    for(auto& itr : paranvec_){
+    for(auto& itr : paramVec_){
       if(first){
         first = false;
       }
@@ -893,7 +893,7 @@ public:
     
     ostr << "self: " << this_->attributes() << endl << endl;
 
-    for(auto& itr : paranvec_){
+    for(auto& itr : paramVec_){
       NConcept* pc = itr.second;
 
       ostr << itr.first << ": " << pc->attributes() << endl << endl;
@@ -924,7 +924,7 @@ public:
   
 private:
   typedef NMap<nstr, NConcept*> ParamMap_;
-  typedef NVector<pair<nstr, NConcept*>> Paranvec_;
+  typedef NVector<pair<nstr, NConcept*>> ParamVec_;
 
   NConcept* concept_;
   nstr name_;
@@ -932,7 +932,7 @@ private:
   nvar data_;
   ParamMap_ paramMap_;
   ParamMap_ paramOutMap_;
-  Paranvec_ paranvec_;
+  ParamVec_ paramVec_;
   NConcept* return_;
   NConcept* this_;
   NConcept* thisOut_;
@@ -2404,12 +2404,12 @@ public:
       }
     }
 
-    //cout << "processing: " << f << endl;
-
     try{
       obj_.process(f);
     }
     catch(NError& e){
+      //cout << "e is: " << e << endl;
+      
       if(errorLog_){
         ostream& ostr = *errorLog_;
 
@@ -2525,8 +2525,8 @@ public:
                      (nfunc("New") << nfunc(name)) <<
                      nvar()({"shared", true, "type", name}));
             
-            code << nfunc("Idx") << nsym(itr.first) <<
-            (nfunc("Call") << (nfunc("set") << c->val()));
+            code << nfunc("Call") << nsym(itr.first) << nfunc("set") <<
+            c->val();
           }
 
           m[itr.first] = true;
@@ -3194,7 +3194,7 @@ bool Method::getParamVars(const nvar& state,
     }
   }
 
-  for(auto& itr : paranvec_){
+  for(auto& itr : paramVec_){
     ps.push_back(ParamVarMap());
     ParamVarMap& pm = ps.back();
 

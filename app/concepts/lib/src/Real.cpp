@@ -220,41 +220,27 @@ public:
     r.unite(c->val());
 
     Real* ret = o_->create();
-
-    nlist& l = r;
-    nvec rv(l.begin(), l.end());
-
-    *ret = rv;
+    *ret = r;
 
     return ret;
   }
 
   NConcept* setIntersection(const NConcept* c) const{
     nvar r = value_;
-
     r.intersect(c->val());
 
     Real* ret = o_->create();
-
-    nlist& l = r;
-    nvec rv(l.begin(), l.end());
-
-    *ret = rv;
+    *ret = r;
 
     return ret;
   }
 
   NConcept* setComplement(const NConcept* c) const{
     nvar r = value_;
-
     r.complement(c->val());
 
     Real* ret = o_->create();
-
-    nlist& l = r;
-    nvec rv(l.begin(), l.end());
-
-    *ret = rv;
+    *ret = r;
 
     return ret;
   }

@@ -762,7 +762,7 @@ namespace neu{
       if(v3.get("shared", false)){
         r = nvar(p1.obj(), nvar::SharedObject);
       }
-      else if(v3.get("local"), false){
+      else if(v3.get("local", false)){
         r = nvar(p1.obj(), nvar::LocalObject);
       }
       else{
@@ -970,7 +970,7 @@ namespace neu{
         if(v2.get("shared", false)){
           return nvar(o, nvar::SharedObject);
         }
-        else if(v2.get("local"), false){
+        else if(v2.get("local", false)){
           return nvar(o, nvar::LocalObject);
         }
         else{

@@ -65,6 +65,7 @@ namespace{
     FKEY_NO_KEY,
     FKEY_Var_1,
     FKEY_Var_2,
+    FKEY_Var_3,
     FKEY_Throw_2,
     FKEY_Add_2,
     FKEY_Sub_2,
@@ -91,7 +92,9 @@ namespace{
     FKEY_ModBy_2,
     FKEY_Neg_1,
     FKEY_Pow_2,
-    FKEY_Set_2
+    FKEY_Set_2,
+    FKEY_Block_n,
+    FKEY_Call_2
   };
   
   typedef NMap<nstr, SymbolKey> SymbolMap;
@@ -109,6 +112,7 @@ namespace{
   static void _initFunctionMap(){
     _functionMap[{"Var", 1}] = FKEY_Var_1;
     _functionMap[{"Var", 2}] = FKEY_Var_2;
+    _functionMap[{"Var", 3}] = FKEY_Var_3;
     _functionMap[{"Throw", 2}] = FKEY_Throw_2;
     _functionMap[{"Add", 2}] = FKEY_Add_2;
     _functionMap[{"Sub", 2}] = FKEY_Sub_2;
@@ -136,6 +140,8 @@ namespace{
     _functionMap[{"DivBy", 2}] = FKEY_DivBy_2;
     _functionMap[{"ModBy", 2}] = FKEY_ModBy_2;
     _functionMap[{"Neg", 1}] = FKEY_Neg_1;
+    _functionMap[{"Block", -1}] = FKEY_Block_n;
+    _functionMap[{"Call", 2}] = FKEY_Call_2;
   };
   
   class _FunctionMapLoader{
@@ -164,7 +170,7 @@ namespace neu{
     }
     
     void generate(ostream& ostr, const nvar& v){
-      emitExpression(ostr, "", v);
+      emitStatement(ostr, "", v);
     }
     
     FunctionKey getFunctionKey(const nvar& f){
@@ -180,6 +186,35 @@ namespace neu{
       }
       
       return itr->second;
+    }
+    
+    void emitStatement(ostream& ostr,
+                       const nstr& indent,
+                       const nvar& v){
+      FunctionKey key = getFunctionKey(v);
+      
+      switch(key){
+        case FKEY_Block_n:{
+          for(size_t i = 0; i < v.size(); ++i){
+            emitStatement(ostr, indent, v[i]);
+            ostr << ";" << endl;
+          }
+          break;
+        }
+        case FKEY_Var_3:
+        case FKEY_Var_2:{
+          emitExpression(ostr, indent, v[0]);
+          ostr << " = ";
+          emitExpression(ostr, indent, v[1]);
+          break;
+        }
+        default:
+        {
+          ostr << indent;
+          emitExpression(ostr, indent, v);
+          break;
+        }
+      }
     }
     
     void emitExpression(ostream& ostr,
@@ -259,6 +294,22 @@ namespace neu{
           if(p > prec){
             ostr << ")";
           }
+          break;
+        }
+        case FKEY_Call_2:{
+          emitExpression(ostr, indent, v[0]);
+          ostr << ".";
+
+          const nvar& v1 = v[1];
+          
+          ostr << v1.str() << "(";
+          for(size_t i = 0; i < v1.size(); ++i){
+            if(i > 0){
+              ostr << ", ";
+            }
+            emitExpression(ostr, indent, v1[i]);
+          }
+          ostr << ")";
           break;
         }
         default:
