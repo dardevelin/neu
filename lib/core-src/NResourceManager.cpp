@@ -97,12 +97,26 @@ namespace neu{
       mutex_.unlock();
     }
     
+    void add(NSocket* socket){
+      mutex_.lock();
+      socketList_.push_back(socket);
+      mutex_.unlock();
+    }
+    
+    void remove(NSocket* socket){
+      mutex_.lock();
+      socketList_.remove(socket);
+      mutex_.unlock();
+    }
+    
   private:
     typedef NList<NCommand*> CommandList_;
+    typedef NList<NSocket*> SocketList_;
     
     NResourceManager* o_;
     
     CommandList_ commandList_;
+    SocketList_ socketList_;
     
     NRecMutex mutex_;
     NMutex releaseMutex_;
@@ -128,4 +142,12 @@ void NResourceManager::add(NCommand* command){
 
 void NResourceManager::remove(NCommand* command){
   x_->remove(command);
+}
+
+void NResourceManager::add(NSocket* socket){
+  x_->add(socket);
+}
+
+void NResourceManager::remove(NSocket* socket){
+  x_->remove(socket);
 }

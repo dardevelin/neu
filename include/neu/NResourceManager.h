@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace neu{
   
   class NCommand;
+  class NSocket;
   
   class NResourceManager{
   public:
@@ -66,6 +67,10 @@ namespace neu{
     void add(NCommand* command);
     
     void remove(NCommand* command);
+    
+    void add(NSocket* socket);
+    
+    void remove(NSocket* socket);
     
   private:
     class NResourceManager_* x_;
