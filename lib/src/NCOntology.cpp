@@ -383,7 +383,7 @@ public:
       nvar& vv = vt(returnTemp);
 
       if(obj){
-        obj->Def(nsym("ret"), &vv);
+        obj->Def(nsym("ret"), nvar(&vv, nvar::Ptr));
       }
 
       vv = return_->attributes();
@@ -409,7 +409,7 @@ public:
     nvar& vv = vt[v0];
 
     if(obj){
-      obj->Def(nsym("self"), &vv);
+      obj->Def(nsym("self"), nvar(&vv, nvar::Ptr));
     }
 
     vv("in") = true;
@@ -460,7 +460,7 @@ public:
       nvar& vv = vt[vi];
 
       if(obj){
-        obj->Def(nsym(paranvec_[i - 1].first), &vv);
+        obj->Def(nsym(paranvec_[i - 1].first), nvar(&vv, nvar::Ptr));
       }
 
       if(pi->getOut()){
@@ -1486,6 +1486,7 @@ public:
   }
 
   bool handle(const nvar& v, nvar& r){
+    r = v;
     return true;
   }
   
@@ -1852,7 +1853,7 @@ public:
   }
 
   void addConcept(NConcept* concept, const nvar& metadata){
-    cout << "metadata is: " << metadata << endl;
+    //cout << "metadata is: " << metadata << endl;
     
     nvec keys;
     metadata.keys(keys);
@@ -2273,8 +2274,6 @@ public:
           continue;
         }
 
-        cout << "----------------------" << endl;
-        
         Proc* proc2;
         auto pitr = procMap_.find(m);
         if(pitr == procMap_.end()){

@@ -69,6 +69,10 @@ namespace neu{
       
     }
     
+    ~NScope(){
+      
+    }
+    
     virtual bool instanceOf(uint32_t classId) const{
       return classId == NScope::classId;
     }

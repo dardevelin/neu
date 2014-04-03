@@ -15166,6 +15166,8 @@ nvar nvar::operator&&(const nvar& x) const{
         case Undefined:
         case False:
           return false;
+        case True:
+          return true;
         case Integer:
           return x.h_.i != 0;
         case Rational:
