@@ -48,52 +48,51 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#ifndef NEU_N_ERROR_H
-#define NEU_N_ERROR_H
+#ifndef NEU_N_COMMUNICATOR_H
+#define NEU_N_COMMUNICATOR_H
 
-#include <cassert>
-
-#define NCHECK(cond, msg) assert(cond && __PRETTY_FUNCTION__ && msg);
-#define NERROR(msg) throw NError(nstr(__PRETTY_FUNCTION__) + ": " + msg)
-#define NVERROR(msg, var) throw NError(nstr(__PRETTY_FUNCTION__) + ": " + msg, var)
-
-#include <exception>
-#include <ostream>
+#include <neu/nvar.h>
 
 namespace neu{
-
-  class nstr;
-  class nvar;
   
-  class NError : public std::exception{
+  class NProcTask;
+  class NSocket;
+  
+  class NCommunicator{
   public:
-    NError& operator=(const NError&) = delete;
-    
-    NError(const nstr& message) throw();
-    
-    NError(const nstr& message, const nvar& var) throw();
 
-    NError(const NError& error);
+    NCommunicator(NProcTask* task, NSocket* socket=0);
     
-    virtual ~NError() throw();
+    virtual ~NCommunicator();
     
-    virtual const char* what() const throw();
+    bool connect(const nstr& host, int port);
     
-    const char* msg() const throw();
+    NProcTask* task();
+
+    void close();
     
-    nvar& var() throw();
+    void close_();
     
-    const nvar& var() const throw();
+    virtual void onClose(bool manual){}
+    
+    virtual void onConnect(){}
+    
+    bool isConnected() const;
+    
+    void send(const nvar& msg);
+    
+    bool receive(nvar& msg);
+    
+    bool receive(nvar& msg, double timeout);
+    
+    NCommunicator(const NCommunicator&) = delete;
+    
+    NCommunicator& operator=(const NCommunicator&) = delete;
     
   private:
-    class NError_* x_;
+    class NCommunicator_* x_;
   };
-
-  inline std::ostream& operator<<(std::ostream& ostr, const NError& e){
-    ostr << e.what();
-    return ostr;
-  }
   
 } // end namespace neu
 
-#endif // NEU_N_ERROR_H
+#endif // NEU_N_COMMUNICATOR_H
