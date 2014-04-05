@@ -50,6 +50,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NPQueue.h>
 
+#include <deque>
+
 #include <neu/NVSemaphore.h>
 #include <neu/NThread.h>
 #include <neu/NBasicMutex.h>
@@ -83,7 +85,7 @@ namespace{
     }
     
   private:
-    typedef NList<size_t> Queue_;
+    typedef deque<size_t> Queue_;
     
     Queue_ queue_;
     NBasicMutex mutex_;

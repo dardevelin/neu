@@ -50,6 +50,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NNModule.h>
 
+#include <deque>
+
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/JIT.h"
@@ -239,7 +241,7 @@ public:
 
 private:
   typedef NVector<RunNeuron*> NeuronVec_;
-  typedef NList<size_t> Queue_;
+  typedef deque<size_t> Queue_;
 
   size_t threads_;
   NeuronVec_ neuronVec_;
