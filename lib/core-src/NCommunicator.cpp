@@ -69,10 +69,6 @@ namespace{
   public:
     ReceiveProc(NCommunicator_* c);
     
-    bool handle(nvar& v, nvar& r){
-      return true;
-    }
-    
     void run(nvar& r);
     
   private:
@@ -83,10 +79,6 @@ namespace{
   class SendProc : public NProc{
   public:
     SendProc(NCommunicator_* c);
-    
-    bool handle(nvar& v, nvar& r){
-      return true;
-    }
     
     void run(nvar& r);
     
@@ -253,14 +245,14 @@ void ReceiveProc::run(nvar& r){
     n = s_->receive(hbuf, size, _timeout);
     if(n != 4){
       free(hbuf);
-      c_->close();
+      c_->close_();
       return;
     }
 
     for(size_t i = 0; i < size; ++i){
       if(hbuf[i] != h[i]){
         free(hbuf);
-        c_->close();
+        c_->close_();
         return;
       }
     }
@@ -307,22 +299,22 @@ s_(c_->socket()){
 }
 
 void SendProc::run(nvar& r){
-  int n;
-  uint32_t size;
-
-  char* hbuf = c_->header(size);
-  if(hbuf){
-    n = s_->send(hbuf, size);
-    if(n != size){
-      c_->close();
-      return;
-    }
-  }
-  
   nvar msg;
   if(!c_->get(msg, _timeout)){
     signal(this);
     return;
+  }
+  
+  int n;
+  uint32_t size;
+
+  char* h = c_->header(size);
+  if(h){
+    n = s_->send(h, size);
+    if(n != size){
+      c_->close();
+      return;
+    }
   }
   
   char* buf = msg.pack(size);

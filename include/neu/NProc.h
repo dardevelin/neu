@@ -63,7 +63,9 @@ namespace neu{
     
     virtual ~NProc();
     
-    virtual bool handle(nvar& v, nvar& r) = 0;
+    virtual bool handle(nvar& v, nvar& r){
+      return true;
+    }
     
     virtual void run(nvar& r) = 0;
     
@@ -77,6 +79,7 @@ namespace neu{
     void setTask(NProcTask* task);
     
     NProc& operator=(const NProc&) = delete;
+    
     NProc(const NProc&) = delete;
     
   private:
