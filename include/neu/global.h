@@ -63,7 +63,7 @@ namespace neu{
   extern bool _improper;
   
   // larger block sizes are better when packing larger nvar's
-  extern size_t _packBlockSize;
+  extern uint32_t _packBlockSize;
   
   extern nstr _tempPath;
   
@@ -80,6 +80,8 @@ namespace neu{
   extern nvar _argMap;
   
   extern nvar _configArgMap;
+  
+  extern double _timeout;
   
 } // end namespace neu
 

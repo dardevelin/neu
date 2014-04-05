@@ -39,7 +39,10 @@
 #include <zlib.h>
 #include <assert.h>
 
-int zlib_compress_(const char* in, char* out, int inSize, int outSize){
+int zlib_compress_(const char* in,
+                   char* out,
+                   unsigned int inSize,
+                   unsigned int outSize){
   int ret;
   z_stream strm;
   
@@ -66,9 +69,9 @@ int zlib_compress_(const char* in, char* out, int inSize, int outSize){
 }
 
 char* zlib_decompress_(const char* in,
-                       int inSize,
+                       unsigned int inSize,
                        char* out,
-                       int* outSize,
+                       unsigned int* outSize,
                        int resize){
   int ret;
   z_stream strm;
@@ -83,8 +86,8 @@ char* zlib_decompress_(const char* in,
     return 0;
   }
   
-  int pos = 0;
-  int chunk = *outSize;
+  unsigned int pos = 0;
+  unsigned int chunk = *outSize;
   
   strm.avail_in = inSize;
   strm.next_in = (unsigned char*)in;

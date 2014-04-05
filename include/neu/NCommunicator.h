@@ -71,7 +71,17 @@ namespace neu{
 
     void close();
     
-    void close_();
+    virtual char* header(uint32_t& size){
+      return 0;
+    }
+
+    virtual char* encrypt(char* buf, uint32_t& size){
+      return buf;
+    }
+    
+    virtual char* decrypt(char* buf, uint32_t& size){
+      return buf;
+    }
     
     virtual void onClose(bool manual){}
     

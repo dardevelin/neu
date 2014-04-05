@@ -55,12 +55,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
   
-  int zlib_compress_(const char* in, char* out, int inSize, int outSize);
+  int zlib_compress_(const char* in,
+                     char* out,
+                     unsigned int inSize,
+                     unsigned int outSize);
   
   char* zlib_decompress_(const char* in,
-                         int inSize,
+                         unsigned int inSize,
                          char* out,
-                         int* outSize,
+                         unsigned int* outSize,
                          int resize);
   
 #ifdef __cplusplus

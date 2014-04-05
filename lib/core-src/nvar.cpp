@@ -18209,29 +18209,29 @@ nvar nvar::fromStr(const nstr& str){
   NERROR("failed to parse: " + str);
 }
 
-char* nvar::pack(size_t& length, bool compress) const{
-  size_t size = _packBlockSize;
-  char* pbuf = (char*)malloc(size);
+char* nvar::pack(uint32_t& size, bool compress) const{
+  unsigned int psize = _packBlockSize;
+  char* pbuf = (char*)malloc(psize);
   
-  size_t pos = 0;
-  pbuf = pack_(pbuf, size, pos);
+  uint32_t pos = 0;
+  pbuf = pack_(pbuf, psize, pos);
   
   if(compress){
-    size_t csize = size*2;
+    unsigned int csize = psize*2;
     char* cbuf = (char*)malloc(csize);
     
-    csize = zlib_compress_(pbuf, cbuf, size, csize);
+    csize = zlib_compress_(pbuf, cbuf, psize, csize);
     free(pbuf);
-    length = csize;
+    size = csize;
     
     return cbuf;
   }
   
-  length = pos;
+  size = pos;
   return pbuf;
 }
 
-char* nvar::pack_(char* buf, size_t& size, size_t& pos) const{
+char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
   if(size - pos < _packBlockSize){
     size += _packBlockSize;
     buf = (char*)realloc(buf, size);
@@ -18676,13 +18676,13 @@ char* nvar::pack_(char* buf, size_t& size, size_t& pos) const{
   return buf;
 }
 
-void nvar::unpack(char* buf, size_t size, bool compressed){
+void nvar::unpack(char* buf, uint32_t size, bool compressed){
   assert(t_ == Undefined);
   
-  size_t pos = 0;
+  uint32_t pos = 0;
   
   if(compressed){
-    int psize = size*2;
+    unsigned int psize = size*2;
     char* pbuf = (char*)malloc(psize);
     
     pbuf = zlib_decompress_(buf, size, pbuf, &psize, true);
@@ -18694,7 +18694,7 @@ void nvar::unpack(char* buf, size_t size, bool compressed){
   }
 }
 
-void nvar::unpack_(char* buf, size_t& pos){
+void nvar::unpack_(char* buf, uint32_t& pos){
   Type t = buf[pos++];
   
   switch(t){
@@ -19223,9 +19223,9 @@ void nvar::save(const nstr& path) const{
     NERROR("failed to create file: " + tempPath);
   }
   
-  size_t len;
+  uint32_t len;
   char* buf = pack(len);
-  size_t n = fwrite(buf, 1, len, file);
+  uint32_t n = fwrite(buf, 1, len, file);
   
   fclose(file);
   free(buf);
@@ -19249,17 +19249,19 @@ void nvar::open(const nstr& path){
   }
   
   fseek(file, 0, SEEK_END);
-  long size = ftell(file);
+  long n = ftell(file);
   
-  if(size < 0){
+  if(n < 0){
     NERROR("[1] failed to read file: " + path);
   }
+  
+  uint32_t size = n;
   
   rewind(file);
   
   char* buf = (char*)malloc(size);
   
-  size_t n = fread(buf, 1, size, file);
+  n = fread(buf, 1, size, file);
   fclose(file);
   
   if(n < size){

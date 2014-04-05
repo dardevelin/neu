@@ -3376,9 +3376,9 @@ namespace neu{
       }
     }
     
-    char* pack(size_t& length, bool compress=true) const;
+    char* pack(uint32_t& size, bool compress=true) const;
     
-    void unpack(char* buf, size_t size, bool compressed=true);
+    void unpack(char* buf, uint32_t size, bool compressed=true);
     
     void save(const nstr& path) const;
     
@@ -3655,8 +3655,8 @@ namespace neu{
     }
   
   private:
-    char* pack_(char* buf, size_t& size, size_t& pos) const;
-    void unpack_(char* buf, size_t& pos);
+    char* pack_(char* buf, uint32_t& size, uint32_t& pos) const;
+    void unpack_(char* buf, uint32_t& pos);
     
     Head h_;
     Type t_;

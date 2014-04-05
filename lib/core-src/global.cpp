@@ -60,7 +60,7 @@ using namespace std;
 namespace neu{
   
   bool _improper = false;
-  size_t _packBlockSize = 8192;
+  uint32_t _packBlockSize = 8192;
   nstr _tempPath;
   ostream* _outputStream = &cout;
   NProgram* _nprogram = 0;
@@ -68,6 +68,7 @@ namespace neu{
   nvar _args;
   nvar _argMap;
   nvar _configArgMap;
+  double _timeout = 1.0;
   
   NResourceManager* _resourceManager = new NResourceManager;
   

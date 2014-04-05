@@ -51,6 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NCommunicator.h>
 
 #include <deque>
+#include <atomic>
 
 #include <neu/NProcTask.h>
 #include <neu/NProc.h>
@@ -146,11 +147,11 @@ namespace neu{
     }
     
     void close_(){
-      
+      connected_ = false;
     }
     
     bool isConnected() const{
-      return false;
+      return connected_;
     }
     
     void send(const nvar& msg){
@@ -205,6 +206,18 @@ namespace neu{
       return socket_;
     }
     
+    virtual char* header(uint32_t& size){
+      return o_->header(size);
+    }
+    
+    virtual char* encrypt(char* buf, uint32_t& size){
+      return o_->encrypt(buf, size);
+    }
+    
+    virtual char* decrypt(char* buf, uint32_t& size){
+      return o_->decrypt(buf, size);
+    }
+    
   private:
     typedef deque<nvar> Queue_;
     
@@ -219,6 +232,7 @@ namespace neu{
     NBasicMutex receiveMutex_;
     NVSemaphore receiveSem_;
     ReceiveProc* receiveProc_;
+    atomic_bool connected_;
   };
   
 } // end namespace neu
@@ -230,7 +244,60 @@ s_(c_->socket()){
 }
 
 void ReceiveProc::run(nvar& r){
+  int n;
+  uint32_t size;
   
+  char* h = c_->header(size);
+  if(h){
+    char* hbuf = (char*)malloc(size);
+    n = s_->receive(hbuf, size, _timeout);
+    if(n != 4){
+      free(hbuf);
+      c_->close();
+      return;
+    }
+
+    for(size_t i = 0; i < size; ++i){
+      if(hbuf[i] != h[i]){
+        free(hbuf);
+        c_->close();
+        return;
+      }
+    }
+    free(hbuf);
+  }
+  
+  n = s_->receive((char*)&size, 4, _timeout);
+  if(n != 4){
+    c_->close_();
+    return;
+  }
+  
+  char* buf = (char*)malloc(size);
+  
+  uint32_t nTotal = 0;
+  
+  while(nTotal < size){
+    n = s_->receive(buf + nTotal, size - nTotal);
+    
+    if(n <= 0){
+      free(buf);
+      c_->close_();
+      return;
+    }
+    
+    nTotal += n;
+  }
+  
+  buf = c_->decrypt(buf, size);
+  
+  nvar msg;
+  msg.unpack(buf, size);
+  free(buf);
+  
+  c_->put(msg);
+  
+  signal(this);
 }
 
 SendProc::SendProc(NCommunicator_* c)
@@ -240,7 +307,43 @@ s_(c_->socket()){
 }
 
 void SendProc::run(nvar& r){
+  int n;
+  uint32_t size;
+
+  char* hbuf = c_->header(size);
+  if(hbuf){
+    n = s_->send(hbuf, size);
+    if(n != size){
+      c_->close();
+      return;
+    }
+  }
   
+  nvar msg;
+  if(!c_->get(msg, _timeout)){
+    signal(this);
+    return;
+  }
+  
+  char* buf = msg.pack(size);
+  n = s_->send((char*)&size, 4);
+  if(n != 4){
+    free(buf);
+    c_->close();
+    return;
+  }
+  
+  buf = c_->encrypt(buf, size);
+
+  n = s_->send(buf, size);
+  free(buf);
+  
+  if(n != size){
+    c_->close();
+    return;
+  }
+  
+  signal(this);
 }
 
 NCommunicator::NCommunicator(NProcTask* task, NSocket* socket){
@@ -261,10 +364,6 @@ NProcTask* NCommunicator::task(){
 
 void NCommunicator::close(){
   x_->close();
-}
-
-void NCommunicator::close_(){
-  x_->close_();
 }
 
 bool NCommunicator::isConnected() const{
