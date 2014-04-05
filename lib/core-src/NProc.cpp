@@ -71,7 +71,7 @@ namespace neu{
       
     }
     
-    void signal(NProc_* proc, const nvar& v, double priority){
+    void signal(NProc_* proc, nvar& v, double priority){
       assert(proc->task_ && "NProc has no task");
       
       nvar r;
@@ -99,7 +99,7 @@ NProc::~NProc(){
   delete x_;
 }
 
-void NProc::signal(NProc* proc, const nvar& v, double priority){
+void NProc::signal(NProc* proc, nvar& v, double priority){
   x_->signal(proc->x_, v, priority);
 }
 

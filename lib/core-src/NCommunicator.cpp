@@ -68,7 +68,7 @@ namespace{
   public:
     ReceiveProc(NCommunicator_* c);
     
-    bool handle(const nvar& v, nvar& r){
+    bool handle(nvar& v, nvar& r){
       return true;
     }
     
@@ -83,7 +83,7 @@ namespace{
   public:
     SendProc(NCommunicator_* c);
     
-    bool handle(const nvar& v, nvar& r){
+    bool handle(nvar& v, nvar& r){
       return true;
     }
     

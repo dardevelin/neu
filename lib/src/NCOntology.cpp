@@ -1485,8 +1485,8 @@ public:
     return method_;
   }
 
-  bool handle(const nvar& v, nvar& r){
-    r = v;
+  bool handle(nvar& v, nvar& r){
+    r = move(v);
     return true;
   }
   
@@ -1514,7 +1514,7 @@ public:
     idMap_[id] = proc;
   }
   
-  void signal(int id, const nvar& v){
+  void signal(int id, nvar& v){
     NProc::signal(idMap_[id], v);
   }
   

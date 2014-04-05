@@ -63,11 +63,16 @@ namespace neu{
     
     virtual ~NProc();
     
-    virtual bool handle(const nvar& v, nvar& r) = 0;
+    virtual bool handle(nvar& v, nvar& r) = 0;
     
     virtual void run(nvar& r) = 0;
     
-    void signal(NProc* proc, const nvar& v=none, double priority=0);
+    void signal(NProc* proc, nvar& v, double priority=0);
+    
+    void signal(NProc* proc){
+      nvar v;
+      signal(proc, v);
+    }
     
     void setTask(NProcTask* task);
     
