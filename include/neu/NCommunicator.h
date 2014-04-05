@@ -85,8 +85,6 @@ namespace neu{
     
     virtual void onClose(bool manual){}
     
-    virtual void onConnect(){}
-    
     bool isConnected() const;
     
     void send(const nvar& msg);

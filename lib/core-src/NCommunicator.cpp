@@ -71,9 +71,18 @@ namespace{
     
     void run(nvar& r);
     
+    void finish(){
+      f_.release();
+    }
+    
+    void await(){
+      f_.acquire();
+    }
+    
   private:
     NCommunicator_* c_;
     NSocket* s_;
+    NVSemaphore f_;
   };
   
   class SendProc : public NProc{
@@ -82,9 +91,18 @@ namespace{
     
     void run(nvar& r);
     
+    void finish(){
+      f_.release();
+    }
+    
+    void await(){
+      f_.acquire();
+    }
+    
   private:
     NCommunicator_* c_;
     NSocket* s_;
+    NVSemaphore f_;
   };
   
 } // end namespace
@@ -102,20 +120,29 @@ namespace neu{
     receiveSem_(0),
     receiveProc_(0){
       
-      if(socket_){
-        start_();
-      }
-      
     }
     
     ~NCommunicator_(){
       if(socket_){
+        close();
+        sendProc_->await();
+        receiveProc_->await();
+        delete sendProc_;
+        delete receiveProc_;
         delete socket_;
       }
     }
     
-    void start_(){
+    void init(){
+      if(!socket_){
+        return;
+      }
       
+      connected_ = true;
+      sendProc_ = new SendProc(this);
+      receiveProc_ = new ReceiveProc(this);
+      task_->queue(sendProc_);
+      task_->queue(receiveProc_);
     }
     
     bool connect(const nstr& host, int port){
@@ -124,8 +151,11 @@ namespace neu{
       socket_ = new NSocket;
       if(!socket_->connect(host, port)){
         delete socket_;
+        socket_ = 0;
         return false;
       }
+      
+      init();
       
       return true;
     }
@@ -135,11 +165,25 @@ namespace neu{
     }
     
     void close(){
+      if(!connected_){
+        return;
+      }
       
+      connected_ = false;
+      socket_->close();
+      
+      o_->onClose(true);
     }
     
     void close_(){
+      if(!connected_){
+        return;
+      }
+      
       connected_ = false;
+      socket_->close();
+      
+      o_->onClose(false);
     }
     
     bool isConnected() const{
@@ -236,6 +280,11 @@ s_(c_->socket()){
 }
 
 void ReceiveProc::run(nvar& r){
+  if(!c_->isConnected()){
+    finish();
+    return;
+  }
+  
   int n;
   uint32_t size;
   
@@ -246,6 +295,7 @@ void ReceiveProc::run(nvar& r){
     if(n != 4){
       free(hbuf);
       c_->close_();
+      finish();
       return;
     }
 
@@ -253,6 +303,7 @@ void ReceiveProc::run(nvar& r){
       if(hbuf[i] != h[i]){
         free(hbuf);
         c_->close_();
+        finish();
         return;
       }
     }
@@ -262,6 +313,7 @@ void ReceiveProc::run(nvar& r){
   n = s_->receive((char*)&size, 4, _timeout);
   if(n != 4){
     c_->close_();
+    finish();
     return;
   }
   
@@ -275,6 +327,7 @@ void ReceiveProc::run(nvar& r){
     if(n <= 0){
       free(buf);
       c_->close_();
+      finish();
       return;
     }
     
@@ -299,6 +352,11 @@ s_(c_->socket()){
 }
 
 void SendProc::run(nvar& r){
+  if(!c_->isConnected()){
+    finish();
+    return;
+  }
+  
   nvar msg;
   if(!c_->get(msg, _timeout)){
     signal(this);
@@ -313,6 +371,7 @@ void SendProc::run(nvar& r){
     n = s_->send(h, size);
     if(n != size){
       c_->close();
+      finish();
       return;
     }
   }
@@ -322,6 +381,7 @@ void SendProc::run(nvar& r){
   if(n != 4){
     free(buf);
     c_->close();
+    finish();
     return;
   }
   
@@ -332,6 +392,7 @@ void SendProc::run(nvar& r){
   
   if(n != size){
     c_->close();
+    finish();
     return;
   }
   
@@ -340,6 +401,7 @@ void SendProc::run(nvar& r){
 
 NCommunicator::NCommunicator(NProcTask* task, NSocket* socket){
   x_ = new NCommunicator_(this, task, socket);
+  x_->init();
 }
 
 NCommunicator::~NCommunicator(){

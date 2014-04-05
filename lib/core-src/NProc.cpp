@@ -53,6 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 #include <neu/NProcTask.h>
+#include <neu/NVSemaphore.h>
 
 using namespace std;
 using namespace neu;
@@ -63,7 +64,8 @@ namespace neu{
   public:
     NProc_(NProc* o)
     : o_(o),
-    task_(0){
+    task_(0),
+    finishSem_(0){
       
     }
     
@@ -87,6 +89,7 @@ namespace neu{
   private:
     NProc* o_;
     NProcTask* task_;
+    NVSemaphore finishSem_;
   };
   
 } // end namespace neu
