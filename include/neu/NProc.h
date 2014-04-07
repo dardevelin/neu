@@ -76,6 +76,8 @@ namespace neu{
       signal(proc, v);
     }
     
+    NProcTask* task();
+    
     void setTask(NProcTask* task);
     
     NProc& operator=(const NProc&) = delete;

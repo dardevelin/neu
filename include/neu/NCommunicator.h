@@ -97,6 +97,8 @@ namespace neu{
     
     NCommunicator& operator=(const NCommunicator&) = delete;
     
+    nvar& session();
+    
   private:
     class NCommunicator_* x_;
   };

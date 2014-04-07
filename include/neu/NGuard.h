@@ -58,15 +58,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace neu{
   
   template <class T>
-  class NTGuard{
+  class NGuard_{
   public:
-    NTGuard(T& t)
+    NGuard_(T& t)
     : t_(t),
     locked_(true){
       t_.lock();
     }
     
-    ~NTGuard(){
+    ~NGuard_(){
       if(locked_){
         t_.unlock();
       }
@@ -87,17 +87,17 @@ namespace neu{
       return locked_;
     }
     
-    NTGuard(const NTGuard&) = delete;
-    NTGuard& operator=(const NTGuard&) = delete;
+    NGuard_(const NGuard_&) = delete;
+    NGuard_& operator=(const NGuard_&) = delete;
     
   private:
     T& t_;
     bool locked_;
   };
   
-  typedef NTGuard<NMutex> NGuard;
-  typedef NTGuard<NRecMutex> NRecGuard;
-  typedef NTGuard<NBasicMutex> NBasicGuard;
+  typedef NGuard_<NMutex> NGuard;
+  typedef NGuard_<NRecMutex> NRecGuard;
+  typedef NGuard_<NBasicMutex> NBasicGuard;
   
 } // end namespace neu
 

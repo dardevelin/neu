@@ -1108,9 +1108,9 @@ namespace neu{
         case ObjectPointer:
         case LocalObject:
         case SharedObject:
-          return static_cast<T*>(h_.o);
+          return reinterpret_cast<T*>(h_.o);
         case RawPointer:
-          return static_cast<T*>(h_.p);
+          return reinterpret_cast<T*>(h_.p);
         case HeadSequence:
           return h_.hs->h->ptr<T>();
         case HeadMap:

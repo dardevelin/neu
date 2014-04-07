@@ -48,72 +48,41 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#include <neu/NProc.h>
+#ifndef NEU_N_SERVER_H
+#define NEU_N_SERVER_H
 
-#include <iostream>
-
-#include <neu/NProcTask.h>
-#include <neu/NVSemaphore.h>
-
-using namespace std;
-using namespace neu;
+#include <neu/nvar.h>
 
 namespace neu{
   
-  class NProc_{
+  class NProcTask;
+  class NCommunicator;
+  class NSocket;
+  
+  class NServer{
   public:
-    NProc_(NProc* o)
-    : o_(o),
-    task_(0),
-    finishSem_(0){
-      
+    NServer(NProcTask* task);
+    
+    virtual ~NServer();
+    
+    NProcTask* task();
+    
+    bool listen(int port);
+    
+    virtual NCommunicator* create(NSocket* socket) = 0;
+
+    virtual bool authenticate(NCommunicator* comm, const nvar& auth){
+      return true;
     }
     
-    ~NProc_(){
-      
-    }
-    
-    void signal(NProc_* proc, nvar& v, double priority){
-      assert(proc->task_ && "NProc has no task");
-      
-      nvar r;
-      if(proc->o_->handle(v, r)){
-        proc->task_->queue(proc->o_, r, priority);
-      }
-    }
-    
-    void setTask(NProcTask* task){
-      task_ = task;
-    }
-    
-    NProcTask* task(){
-      return task_;
-    }
+    NServer& operator=(const NServer&) = delete;
+
+    NServer(const NServer&) = delete;
     
   private:
-    NProc* o_;
-    NProcTask* task_;
-    NVSemaphore finishSem_;
+    class NServer_* x_;
   };
   
 } // end namespace neu
 
-NProc::NProc(){
-  x_ = new NProc_(this);
-}
-
-NProc::~NProc(){
-  delete x_;
-}
-
-void NProc::signal(NProc* proc, nvar& v, double priority){
-  x_->signal(proc->x_, v, priority);
-}
-
-void NProc::setTask(NProcTask* task){
-  x_->setTask(task);
-}
-
-NProcTask* NProc::task(){
-  return x_->task();
-}
+#endif // NEU_N_SERVER_H

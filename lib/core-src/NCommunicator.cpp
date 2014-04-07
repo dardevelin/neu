@@ -59,6 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NVSemaphore.h>
 #include <neu/NError.h>
 #include <neu/NSocket.h>
+#include <neu/NGuard.h>
 
 using namespace std;
 using namespace neu;
@@ -140,7 +141,9 @@ namespace neu{
       
       connected_ = true;
       sendProc_ = new SendProc(this);
+      sendProc_->setTask(task_);
       receiveProc_ = new ReceiveProc(this);
+      receiveProc_->setTask(task_);
       task_->queue(sendProc_);
       task_->queue(receiveProc_);
     }
@@ -254,6 +257,10 @@ namespace neu{
       return o_->decrypt(buf, size);
     }
     
+    nvar& session(){
+      return session_;
+    }
+    
   private:
     typedef deque<nvar> Queue_;
     
@@ -269,6 +276,7 @@ namespace neu{
     NVSemaphore receiveSem_;
     ReceiveProc* receiveProc_;
     atomic_bool connected_;
+    nvar session_;
   };
   
 } // end namespace neu
@@ -292,6 +300,11 @@ void ReceiveProc::run(nvar& r){
   if(h){
     char* hbuf = (char*)malloc(size);
     n = s_->receive(hbuf, size, _timeout);
+    if(n == -1){
+      signal(this);
+      return;
+    }
+    
     if(n != 4){
       free(hbuf);
       c_->close_();
@@ -308,9 +321,16 @@ void ReceiveProc::run(nvar& r){
       }
     }
     free(hbuf);
+    n = s_->receive((char*)&size, 4);
   }
-  
-  n = s_->receive((char*)&size, 4, _timeout);
+  else{
+    n = s_->receive((char*)&size, 4, _timeout);
+    if(n == -1){
+      signal(this);
+      return;
+    }
+  }
+
   if(n != 4){
     c_->close_();
     finish();
@@ -378,6 +398,7 @@ void SendProc::run(nvar& r){
   
   char* buf = msg.pack(size);
   n = s_->send((char*)&size, 4);
+
   if(n != 4){
     free(buf);
     c_->close();
@@ -388,6 +409,7 @@ void SendProc::run(nvar& r){
   buf = c_->encrypt(buf, size);
 
   n = s_->send(buf, size);
+  
   free(buf);
   
   if(n != size){
@@ -434,4 +456,8 @@ bool NCommunicator::receive(nvar& msg){
 
 bool NCommunicator::receive(nvar& msg, double timeout){
   return x_->receive(msg, timeout);
+}
+
+nvar& NCommunicator::session(){
+  return x_->session();
 }
