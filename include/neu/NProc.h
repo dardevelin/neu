@@ -84,8 +84,29 @@ namespace neu{
     
     NProc(const NProc&) = delete;
     
+    friend class NProcTask;
+    
   private:
     class NProc_* x_;
+  };
+  
+  class NProcTask{
+  public:
+    NProcTask(size_t threads);
+    
+    ~NProcTask();
+    
+    void queue(NProc* proc, nvar& r, double priority=0);
+    
+    void queue(NProc* proc){
+      nvar r;
+      queue(proc, r);
+    }
+    
+    void terminate(NProc* proc);
+    
+  private:
+    class NProcTask_* x_;
   };
   
 } // end namespace neu

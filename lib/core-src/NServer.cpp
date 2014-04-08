@@ -52,7 +52,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <atomic>
 
-#include <neu/NProcTask.h>
 #include <neu/NProc.h>
 #include <neu/NListener.h>
 #include <neu/NVSemaphore.h>
@@ -77,11 +76,16 @@ namespace{
         return;
       }
       
-      NSocket* socket = r["s"].ptr<NSocket>();
+      NSocket* socket = r.ptr<NSocket>();
       NCommunicator* comm = server_->create(socket);
+      
       nvar auth;
       comm->receive(auth);
-      server_->authenticate(comm, auth);
+      
+      if(!server_->authenticate(comm, auth)){
+        comm->close();
+        delete comm;
+      }
     }
     
     void finished(){
@@ -119,9 +123,8 @@ namespace{
       
       NSocket* socket = listener_.accept(_timeout);
       if(socket){
-        nvar r;
-        r("s") = socket;
-        task()->queue(authProc_, r);
+        nvar ar = socket;
+        task()->queue(authProc_, ar);
       }
       
       signal(this);
@@ -183,11 +186,11 @@ namespace neu{
         return false;
       }
       
-      acceptProc_ = new AcceptProc(authProc_, listener_, port);
-      acceptProc_->setTask(task_);
-      
       authProc_ = new AuthProc(o_);
       authProc_->setTask(task_);
+      
+      acceptProc_ = new AcceptProc(authProc_, listener_, port);
+      acceptProc_->setTask(task_);
       
       task_->queue(acceptProc_);
       return true;

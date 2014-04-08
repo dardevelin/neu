@@ -140,6 +140,7 @@ namespace neu{
     }
 
     NVSemaphore& operator=(const NVSemaphore&) = delete;
+    
     NVSemaphore(const NVSemaphore&) = delete;
 
   private:

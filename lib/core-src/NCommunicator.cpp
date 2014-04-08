@@ -53,7 +53,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <deque>
 #include <atomic>
 
-#include <neu/NProcTask.h>
 #include <neu/NProc.h>
 #include <neu/NBasicMutex.h>
 #include <neu/NVSemaphore.h>

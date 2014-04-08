@@ -2823,6 +2823,8 @@ namespace neu{
     
     nvar& operator=(double x);
     
+    nvar& operator=(void* p);
+    
     nvar& operator=(nvar* x){
       return *this = nvar(x);
     }

@@ -60,7 +60,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NMLParser.h>
 #include <neu/NMultimap.h>
 #include <neu/NProc.h>
-#include <neu/NProcTask.h>
 #include <neu/NMutex.h>
 #include <neu/NVSemaphore.h>
 #include <neu/NRandom.h>

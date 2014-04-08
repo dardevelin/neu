@@ -51,9 +51,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NProc.h>
 
 #include <iostream>
+#include <queue>
 
-#include <neu/NProcTask.h>
 #include <neu/NVSemaphore.h>
+#include <neu/NThread.h>
+#include <neu/NBasicMutex.h>
 
 using namespace std;
 using namespace neu;
@@ -65,7 +67,9 @@ namespace neu{
     NProc_(NProc* o)
     : o_(o),
     task_(0),
-    finishSem_(0){
+    finishSem_(0),
+    queueCount_(0),
+    terminated_(false){
       
     }
     
@@ -90,10 +94,157 @@ namespace neu{
       return task_;
     }
     
+    void queued(){
+      atomic_fetch_add<uint32_t>(&queueCount_, 1);
+    }
+    
+    bool dequeued(){
+      return atomic_fetch_sub<uint32_t>(&queueCount_, 1) - 1 == 0 &&
+      terminated_;
+    }
+    
+    NProc* outer(){
+      return o_;
+    }
+    
+    bool terminate(){
+      terminated_ = true;
+      return queueCount_ == 0;
+    }
+    
+    bool terminated(){
+      return terminated_;
+    }
+    
   private:
     NProc* o_;
     NProcTask* task_;
     NVSemaphore finishSem_;
+    atomic<uint32_t> queueCount_;
+    atomic_bool terminated_;
+  };
+  
+  class NProcTask_{
+  public:
+    
+    class Item{
+    public:
+      Item(NProc_* np, nvar& r, double p)
+      : np(np),
+      r(move(r)),
+      p(p){
+
+      }
+      
+      NProc_* np;
+      nvar r;
+      double p;
+    };
+    
+    class Queue{
+    public:
+      Queue()
+      : sem_(0){
+        
+      }
+      
+      void put(Item* item){
+        mutex_.lock();
+        queue_.push(item);
+        mutex_.unlock();
+        
+        sem_.release();
+      }
+      
+      Item* get(){
+        sem_.acquire();
+        
+        mutex_.lock();
+        Item* item = queue_.top();
+        queue_.pop();
+        mutex_.unlock();
+        
+        return item;
+      }
+      
+    private:
+      struct Compare_{
+        bool operator()(const Item* i1, const Item* i2) const{
+          return i1->p < i2->p;
+        }
+      };
+      
+      typedef priority_queue<Item*, vector<Item*>, Compare_> Queue_;
+      
+      Queue_ queue_;
+      NVSemaphore sem_;
+      NBasicMutex mutex_;
+    };
+    
+    class Thread : public NThread{
+    public:
+      Thread(Queue& queue)
+      : queue_(queue),
+      active_(true){
+        
+      }
+      
+      void run(){
+        while(active_.load()){
+          Item* item = queue_.get();
+          NProc_* np = item->np;
+          np->outer()->run(item->r);
+          
+          if(np->dequeued()){
+            delete np->outer();
+          }
+          delete item;
+        }
+      }
+      
+      void setActive(bool flag){
+        active_.store(flag);
+      }
+      
+    private:
+      Queue& queue_;
+      atomic_bool active_;
+    };
+    
+    NProcTask_(NProcTask* o, size_t threads)
+    : o_(o){
+      
+      for(size_t i = 0; i < threads; ++i){
+        Thread* thread = new Thread(q_);
+        threadVec_.push_back(thread);
+        thread->start();
+      }
+    }
+    
+    ~NProcTask_(){
+      for(Thread* t : threadVec_){
+        t->setActive(false);
+        t->join();
+        delete t;
+      }
+    }
+    
+    void queue(NProc_* proc, nvar& r, double priority){
+      if(proc->terminated()){
+        return;
+      }
+      
+      proc->queued();
+      Item* item = new Item(proc, r, priority);
+      q_.put(item);
+    }
+    
+  private:
+    typedef NVector<Thread*> ThreadVec_;
+    
+    NProcTask* o_;
+    Queue q_;
+    ThreadVec_ threadVec_;
   };
   
 } // end namespace neu
@@ -114,6 +265,24 @@ void NProc::setTask(NProcTask* task){
   x_->setTask(task);
 }
 
+void NProcTask::terminate(NProc* proc){
+  if(proc->x_->terminate()){
+    delete proc;
+  }
+}
+
 NProcTask* NProc::task(){
   return x_->task();
+}
+
+NProcTask::NProcTask(size_t threads){
+  x_ = new NProcTask_(this, threads);
+}
+
+NProcTask::~NProcTask(){
+  delete x_;
+}
+
+void NProcTask::queue(NProc* proc, nvar& r, double priority){
+  x_->queue(proc->x_, r, priority);
 }
