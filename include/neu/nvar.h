@@ -293,11 +293,11 @@ namespace neu{
       }
       
       bool deref(){
-        return std::atomic_fetch_sub<uint32_t>(&refCount_, 1) - 1 == 0;
+        return --refCount_ == 0;
       }
       
       void ref(){
-        std::atomic_fetch_add<uint32_t>(&refCount_, 1);
+        ++refCount_;
       }
       
       nvar* v;

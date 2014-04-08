@@ -71,18 +71,9 @@ namespace{
     
     void run(nvar& r);
     
-    void finish(){
-      f_.release();
-    }
-    
-    void await(){
-      f_.acquire();
-    }
-    
   private:
     NCommunicator_* c_;
     NSocket* s_;
-    NVSemaphore f_;
   };
   
   class SendProc : public NProc{
@@ -91,18 +82,9 @@ namespace{
     
     void run(nvar& r);
     
-    void finish(){
-      f_.release();
-    }
-    
-    void await(){
-      f_.acquire();
-    }
-    
   private:
     NCommunicator_* c_;
     NSocket* s_;
-    NVSemaphore f_;
   };
   
 } // end namespace
@@ -124,11 +106,8 @@ namespace neu{
     
     ~NCommunicator_(){
       if(socket_){
-        close();
-        sendProc_->await();
-        receiveProc_->await();
-        delete sendProc_;
-        delete receiveProc_;
+        task_->terminate(sendProc_);
+        task_->terminate(receiveProc_);
         delete socket_;
       }
     }
@@ -288,7 +267,6 @@ s_(c_->socket()){
 
 void ReceiveProc::run(nvar& r){
   if(!c_->isConnected()){
-    finish();
     return;
   }
   
@@ -307,7 +285,6 @@ void ReceiveProc::run(nvar& r){
     if(n != 4){
       free(hbuf);
       c_->close_();
-      finish();
       return;
     }
 
@@ -315,7 +292,6 @@ void ReceiveProc::run(nvar& r){
       if(hbuf[i] != h[i]){
         free(hbuf);
         c_->close_();
-        finish();
         return;
       }
     }
@@ -332,7 +308,6 @@ void ReceiveProc::run(nvar& r){
 
   if(n != 4){
     c_->close_();
-    finish();
     return;
   }
   
@@ -346,7 +321,6 @@ void ReceiveProc::run(nvar& r){
     if(n <= 0){
       free(buf);
       c_->close_();
-      finish();
       return;
     }
     
@@ -372,7 +346,6 @@ s_(c_->socket()){
 
 void SendProc::run(nvar& r){
   if(!c_->isConnected()){
-    finish();
     return;
   }
   
@@ -390,7 +363,6 @@ void SendProc::run(nvar& r){
     n = s_->send(h, size);
     if(n != size){
       c_->close();
-      finish();
       return;
     }
   }
@@ -401,7 +373,6 @@ void SendProc::run(nvar& r){
   if(n != 4){
     free(buf);
     c_->close();
-    finish();
     return;
   }
   
@@ -413,7 +384,6 @@ void SendProc::run(nvar& r){
   
   if(n != size){
     c_->close();
-    finish();
     return;
   }
   

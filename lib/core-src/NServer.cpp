@@ -65,17 +65,11 @@ namespace{
   class AuthProc : public NProc{
   public:
     AuthProc(NServer* server)
-    : server_(server),
-    active_(true){
+    : server_(server){
       
     }
     
     void run(nvar& r){
-      if(!active_){
-        finished();
-        return;
-      }
-      
       NSocket* socket = r.ptr<NSocket>();
       NCommunicator* comm = server_->create(socket);
       
@@ -88,39 +82,20 @@ namespace{
       }
     }
     
-    void finished(){
-      f_.release();
-    }
-    
-    void await(){
-      f_.acquire();
-    }
-    
-    void finish(){
-      active_ = false;
-    }
-    
   private:
     NServer* server_;
     NVSemaphore f_;
-    atomic_bool active_;
   };
   
   class AcceptProc : public NProc{
   public:
     AcceptProc(AuthProc* authProc, NListener& listener, int port)
     : authProc_(authProc),
-    listener_(listener),
-    active_(true){
+    listener_(listener){
       
     }
 
     void run(nvar& r){
-      if(!active_){
-        finished();
-        return;
-      }
-      
       NSocket* socket = listener_.accept(_timeout);
       if(socket){
         nvar ar = socket;
@@ -130,23 +105,9 @@ namespace{
       signal(this);
     }
     
-    void finished(){
-      f_.release();
-    }
-    
-    void await(){
-      f_.acquire();
-    }
-    
-    void finish(){
-      active_ = false;
-    }
-    
   private:
     AuthProc* authProc_;
     NListener& listener_;
-    NVSemaphore f_;
-    atomic_bool active_;
   };
   
 } // end namespace
@@ -165,15 +126,11 @@ namespace neu{
     
     ~NServer_(){
       if(acceptProc_){
-        acceptProc_->finish();
-        acceptProc_->await();
-        delete acceptProc_;
+        task_->terminate(acceptProc_);
       }
       
       if(authProc_){
-        authProc_->finish();
-        authProc_->await();
-        delete authProc_;
+        task_->terminate(authProc_);
       }
     }
     

@@ -95,12 +95,11 @@ namespace neu{
     }
     
     void queued(){
-      atomic_fetch_add<uint32_t>(&queueCount_, 1);
+      ++queueCount_;
     }
     
     bool dequeued(){
-      return atomic_fetch_sub<uint32_t>(&queueCount_, 1) - 1 == 0 &&
-      terminated_;
+      return --queueCount_ == 0 && terminated_;
     }
     
     NProc* outer(){
@@ -148,6 +147,19 @@ namespace neu{
         
       }
       
+      ~Queue(){
+        while(!queue_.empty()){
+          Item* item = queue_.top();
+          queue_.pop();
+          
+          if(item->np->dequeued()){
+            delete item->np->outer();
+          }
+          
+          delete item;
+        }
+      }
+      
       void put(Item* item){
         mutex_.lock();
         queue_.push(item);
@@ -190,7 +202,7 @@ namespace neu{
       }
       
       void run(){
-        while(active_.load()){
+        while(active_){
           Item* item = queue_.get();
           NProc_* np = item->np;
           np->outer()->run(item->r);
@@ -203,7 +215,7 @@ namespace neu{
       }
       
       void setActive(bool flag){
-        active_.store(flag);
+        active_ = flag;
       }
       
     private:
