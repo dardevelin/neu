@@ -108,6 +108,16 @@ namespace{
       return itr->second->construct(f);
     }
     
+    NObject* createRemote(const nstr& className, NBroker* broker){
+      auto itr = classMap_.find(className);
+      
+      if(itr == classMap_.end()){
+        return 0;
+      }
+      
+      return itr->second->constructRemote(broker);
+    }
+    
   private:
     typedef NMap<nstr, NClass*> ClassMap_;
     
@@ -186,6 +196,12 @@ NObjectBase* NClass::create(const nvar& f){
   NReadGuard guard(_mutex);
   
   return _global->create(f);
+}
+
+NObject* NClass::createRemote(const nstr& className, NBroker* broker){
+  NReadGuard guard(_mutex);
+  
+  return _global->createRemote(className, broker);
 }
 
 nvec NClass::getClasses(){

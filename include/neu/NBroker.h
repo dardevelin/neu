@@ -48,8 +48,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
 */
 
-#ifndef NEU_N_SERVER_H
-#define NEU_N_SERVER_H
+#ifndef NEU_N_BROKER_H
+#define NEU_N_BROKER_H
 
 #include <neu/nvar.h>
 #include <neu/NCommunicator.h>
@@ -57,34 +57,52 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace neu{
   
   class NProcTask;
-  class NSocket;
   
-  class NServer{
+  class NBroker{
   public:
-    NServer(NProcTask* task);
+    NBroker(NProcTask* task);
     
-    virtual ~NServer();
+    ~NBroker();
     
     NProcTask* task();
     
     bool listen(int port);
     
-    virtual NCommunicator* create(){
-      return new NCommunicator(task());
-    }
+    void distribute(NObject* object,
+                    const nstr& className,
+                    const nstr& objectName);
+    
+    bool revoke(NObject* object);
+    
+    NObject* obtain(const nstr& host,
+                    int port,
+                    const nstr& objectName,
+                    const nvar& auth);
 
-    virtual bool authenticate(NCommunicator* comm, const nvar& auth){
+    virtual bool onObtain(NObject* object){
       return true;
     }
     
-    NServer& operator=(const NServer&) = delete;
-
-    NServer(const NServer&) = delete;
+    bool release(NObject* object, bool disconnect=false);
+    
+    void setLogStream(std::ostream& ostr);
+    
+    virtual bool authenticate(const nvar& auth){
+      return true;
+    }
+    
+    void setEncoder(NCommunicator::Encoder* encoder);
+    
+    nvar process_(NObject* obj, const nvar& n);
+    
+    NBroker& operator=(const NBroker&) = delete;
+    
+    NBroker(const NBroker&) = delete;
     
   private:
-    class NServer_* x_;
+    class NBroker_* x_;
   };
   
 } // end namespace neu
 
-#endif // NEU_N_SERVER_H
+#endif // NEU_N_BROKER_H

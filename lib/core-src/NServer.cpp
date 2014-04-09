@@ -71,7 +71,8 @@ namespace{
     
     void run(nvar& r){
       NSocket* socket = r.ptr<NSocket>();
-      NCommunicator* comm = server_->create(socket);
+      NCommunicator* comm = server_->create();
+      comm->setSocket(socket);
       
       nvar auth;
       comm->receive(auth);

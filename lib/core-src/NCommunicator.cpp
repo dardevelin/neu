@@ -93,14 +93,15 @@ namespace neu{
   
   class NCommunicator_{
   public:
-    NCommunicator_(NCommunicator* o, NProcTask* task, NSocket* socket)
+    NCommunicator_(NCommunicator* o, NProcTask* task)
     : o_(o),
     task_(task),
-    socket_(socket),
+    socket_(0),
     sendSem_(0),
     sendProc_(0),
     receiveSem_(0),
-    receiveProc_(0){
+    receiveProc_(0),
+    encoder_(0){
       
     }
     
@@ -112,11 +113,12 @@ namespace neu{
       }
     }
     
+    void setSocket(NSocket* socket){
+      socket_ = socket;
+      init();
+    }
+    
     void init(){
-      if(!socket_){
-        return;
-      }
-      
       connected_ = true;
       sendProc_ = new SendProc(this);
       sendProc_->setTask(task_);
@@ -224,19 +226,23 @@ namespace neu{
     }
     
     virtual char* header(uint32_t& size){
-      return o_->header(size);
+      return encoder_ ? encoder_->header(size) : 0;
     }
     
     virtual char* encrypt(char* buf, uint32_t& size){
-      return o_->encrypt(buf, size);
+      return encoder_ ? encoder_->encrypt(buf, size) : buf;
     }
     
     virtual char* decrypt(char* buf, uint32_t& size){
-      return o_->decrypt(buf, size);
+      return encoder_ ? encoder_->decrypt(buf, size) : buf;
     }
     
     nvar& session(){
       return session_;
+    }
+    
+    void setEncoder(NCommunicator::Encoder* encoder){
+      encoder_ = encoder;
     }
     
   private:
@@ -255,6 +261,7 @@ namespace neu{
     ReceiveProc* receiveProc_;
     atomic_bool connected_;
     nvar session_;
+    NCommunicator::Encoder* encoder_;
   };
   
 } // end namespace neu
@@ -390,9 +397,8 @@ void SendProc::run(nvar& r){
   signal(this);
 }
 
-NCommunicator::NCommunicator(NProcTask* task, NSocket* socket){
-  x_ = new NCommunicator_(this, task, socket);
-  x_->init();
+NCommunicator::NCommunicator(NProcTask* task){
+  x_ = new NCommunicator_(this, task);
 }
 
 NCommunicator::~NCommunicator(){
@@ -401,6 +407,10 @@ NCommunicator::~NCommunicator(){
 
 bool NCommunicator::connect(const nstr& host, int port){
   return x_->connect(host, port);
+}
+
+void NCommunicator::setSocket(NSocket* socket){
+  x_->setSocket(socket);
 }
 
 NProcTask* NCommunicator::task(){
@@ -429,4 +439,8 @@ bool NCommunicator::receive(nvar& msg, double timeout){
 
 nvar& NCommunicator::session(){
   return x_->session();
+}
+
+void NCommunicator::setEncoder(Encoder* encoder){
+  x_->setEncoder(encoder);
 }

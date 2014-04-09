@@ -3071,6 +3071,11 @@ namespace neu{
     
     nvar operator==(double x) const;
     
+    // ndm - make this a real method
+    nvar operator==(const char* s) const{
+      return *this == nvar(s);
+    }
+    
     nvar operator!=(const nvar& x) const;
 
     nvar operator!=(int x) const{

@@ -57,6 +57,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace neu{
   
   class NScope;
+  class NBroker;
   
   class NObject : public NObjectBase{
   public:
@@ -66,9 +67,13 @@ namespace neu{
     
     NObject(NScope* sharedScope);
     
+    NObject(NBroker* broker);
+    
     ~NObject();
     
     static const uint32_t Delegated = 0x00000001;
+    
+    nvar remoteProcess(const nvar& v);
     
     nvar process(const nvar& v, uint32_t flags=0);
     

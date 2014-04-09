@@ -55,6 +55,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace neu{
   
+  class NBroker;
+  
   class NClass{
   public:
     NClass(const nstr& fullName);
@@ -71,7 +73,13 @@ namespace neu{
     
     static NObjectBase* create(const nvar& f);
     
+    static NObject* createRemote(const nstr& className, NBroker* broker);
+    
     virtual NObjectBase* construct(const nvar& f){
+      return 0;
+    }
+    
+    virtual NObject* constructRemote(NBroker* broker){
       return 0;
     }
     
@@ -80,6 +88,7 @@ namespace neu{
     void setMetadata(const nvar& v);
     
     NClass& operator=(const NClass&) = delete;
+
     NClass(const NClass&) = delete;
     
   private:

@@ -55,6 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NClass.h>
 #include <neu/NThread.h>
 #include <neu/NRWMutex.h>
+#include <neu/NBroker.h>
 
 using namespace std;
 using namespace neu;
@@ -219,7 +220,8 @@ namespace neu{
     exact_(false),
     strict_(true),
     sharedScope_(false),
-    threadData_(0){
+    threadData_(0),
+    broker_(0){
       
       NScope* gs = _global.globalScope();
       mainContext_.pushScope(gs);
@@ -236,7 +238,8 @@ namespace neu{
     exact_(false),
     strict_(true),
     sharedScope_(true),
-    threadData_(0){
+    threadData_(0),
+    broker_(0){
       
       NScope* gs = _global.globalScope();
       mainContext_.pushScope(gs);
@@ -245,6 +248,24 @@ namespace neu{
       NScope* s = new NScope;
       s->setSymbolFast("Global", gs);
       s->setSymbolFast("Shared", sharedScope);
+      s->setSymbolFast("This", o_);
+      mainContext_.pushScope(s);
+    }
+    
+    NObject_(NObject* o, NBroker* broker)
+    : o_(o),
+    exact_(false),
+    strict_(true),
+    sharedScope_(false),
+    threadData_(0),
+    broker_(broker){
+      
+      NScope* gs = _global.globalScope();
+      mainContext_.pushScope(gs);
+      
+      NScope* s = new NScope;
+      s->setSymbolFast("Global", gs);
+      s->setSymbolFast("Shared", gs);
       s->setSymbolFast("This", o_);
       mainContext_.pushScope(s);
     }
@@ -1150,11 +1171,18 @@ namespace neu{
       return static_cast<NObject*>(o)->objectScope();
     }
     
+    nvar remoteProcess(const nvar& n){
+      assert(broker_);
+      
+      return broker_->process_(o_, n);
+    }
+    
   private:
     NObject* o_;
     
     ThreadContext mainContext_;
     ThreadData* threadData_;
+    NBroker* broker_;
     
     bool exact_ : 1;
     bool strict_ : 1;
@@ -1641,6 +1669,10 @@ NObject::NObject(NScope* sharedScope){
   x_ = new NObject_(this, sharedScope);
 }
 
+NObject::NObject(NBroker* broker){
+  x_ = new NObject_(this, broker);
+}
+
 NObject::~NObject(){
   delete x_;
 }
@@ -1651,6 +1683,10 @@ void NObject::enableThreading(){
 
 nvar NObject::process(const nvar& v, uint32_t flags){
   return x_->process(v, flags);
+}
+
+nvar NObject::remoteProcess(const nvar& v){
+  return x_->remoteProcess(v);
 }
 
 NFunc NObject::handle(const nvar& v, uint32_t flags){

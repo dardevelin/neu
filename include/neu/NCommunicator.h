@@ -61,27 +61,34 @@ namespace neu{
   class NCommunicator{
   public:
 
-    NCommunicator(NProcTask* task, NSocket* socket=0);
+    class Encoder{
+    public:
+      virtual char* header(uint32_t& size){
+        return 0;
+      }
+      
+      virtual char* encrypt(char* buf, uint32_t& size){
+        return buf;
+      }
+      
+      virtual char* decrypt(char* buf, uint32_t& size){
+        return buf;
+      }
+    };
+    
+    NCommunicator(NProcTask* task);
     
     virtual ~NCommunicator();
+
+    void setEncoder(Encoder* encoder);
     
     bool connect(const nstr& host, int port);
+    
+    void setSocket(NSocket* socket);
     
     NProcTask* task();
 
     void close();
-    
-    virtual char* header(uint32_t& size){
-      return 0;
-    }
-
-    virtual char* encrypt(char* buf, uint32_t& size){
-      return buf;
-    }
-    
-    virtual char* decrypt(char* buf, uint32_t& size){
-      return buf;
-    }
     
     virtual void onClose(bool manual){}
     
