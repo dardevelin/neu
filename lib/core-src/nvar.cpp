@@ -19305,7 +19305,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       break;
     }
     case Pointer:{
-      t_ = Reference;
+      t_ = Pointer;
       nvar* v = new nvar;
       v->unpack_(buf, pos);
       h_.vp = v;

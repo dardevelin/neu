@@ -708,7 +708,7 @@ public:
       CXXMethodDecl* md = *mitr;
       
       if(md->isUserProvided() && isa<CXXConstructorDecl>(md)){
-        md->dump();
+        //md->dump();
       }
     }
 
@@ -904,12 +904,10 @@ public:
              crt.getAsString() == "class neu::nvar"){
           
             if(CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject")){
-              cout << "t1" << endl;
               int m = isNCallable(md);
               if(m == 1){
                 isDist = true;
-                cout << "!!!!!!!!!! IS DIST" << endl;
-                md->dump();
+                //md->dump();
               }
             }
           }
