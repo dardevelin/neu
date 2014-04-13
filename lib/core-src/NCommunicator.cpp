@@ -107,8 +107,14 @@ namespace neu{
     
     ~NCommunicator_(){
       if(socket_){
-        task_->terminate(sendProc_);
-        task_->terminate(receiveProc_);
+        if(sendProc_->terminate()){
+          delete sendProc_;
+        }
+        
+        if(receiveProc_->terminate()){
+          delete receiveProc_;
+        }
+        
         delete socket_;
       }
     }
@@ -124,8 +130,8 @@ namespace neu{
       sendProc_->setTask(task_);
       receiveProc_ = new ReceiveProc(this);
       receiveProc_->setTask(task_);
-      task_->queue(sendProc_);
-      task_->queue(receiveProc_);
+      sendProc_->queue();
+      receiveProc_->queue();
     }
     
     bool connect(const nstr& host, int port){

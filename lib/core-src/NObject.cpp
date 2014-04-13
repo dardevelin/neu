@@ -295,6 +295,10 @@ namespace neu{
       exact_ = flag;
     }
     
+    bool isRemote(){
+      return broker_;
+    }
+    
     void enableThreading(){
       if(threadData_){
         return;
@@ -1703,6 +1707,10 @@ void NObject::setStrict(bool flag){
 
 void NObject::setExact(bool flag){
   x_->setExact(flag);
+}
+
+bool NObject::isRemote(){
+  return x_->isRemote();
 }
 
 nvar NObject::Reset(){

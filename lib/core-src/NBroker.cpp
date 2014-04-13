@@ -55,20 +55,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NBasicMutex.h>
 #include <neu/NObject.h>
 #include <neu/NClass.h>
+#include <neu/global.h>
 
 using namespace std;
 using namespace neu;
 
 namespace{
   
-  class Communicator : public NCommunicator{
+  static const int OP_ERROR = 100;
+  static const int OP_OBTAIN = 101;
+  static const int OP_OBTAINED = 102;
+  static const int OP_CALL = 103;
+  static const int OP_CALLED = 104;
+  
+  class DistributedObject;
+  
+  class ServerProc : public NCommunicator, public NProc{
   public:
-    Communicator(NProcTask* task, NBroker_* broker);
+    ServerProc(NProcTask* task, NBroker_* broker);
     
     void onClose(bool manual);
     
+    void run(nvar& r);
+    
+    NProcTask* task(){
+      return NProc::task();
+    }
+    
   private:
     NBroker_* broker_;
+    DistributedObject* obj_;
   };
   
   class Server : public NServer{
@@ -80,7 +96,7 @@ namespace{
     }
     
     NCommunicator* create(){
-      return new Communicator(task(), broker_);
+      return new ServerProc(task(), broker_);
     }
     
     bool authenticate(NCommunicator* comm, const nvar& auth);
@@ -89,38 +105,52 @@ namespace{
     NBroker_* broker_;
   };
   
-  class ClientProc : public NProc{
+  class Client : public NCommunicator{
   public:
-    ClientProc(NBroker_* broker)
-    : broker_(broker){
-      
+    Client(NProcTask* task, NBroker_* broker);
+    
+    void setObj(NObject* obj){
+      obj_ = obj;
     }
     
-    void run(nvar& r);
+    NObject* obj(){
+      return obj_;
+    }
+    
+    void onClose(bool manual);
     
   private:
     NBroker_* broker_;
+    NObject* obj_;
   };
   
-  class ServerProc : public NProc{
-  public:
-    ServerProc(NBroker_* broker, Communicator* comm)
-    : broker_(broker),
-    comm_(comm){
-      
-    }
-    
-    void run(nvar& r);
-    
-  private:
-    NBroker_* broker_;
-    Communicator* comm_;
-  };
-  
-  class Object{
+  class DistributedObject{
   public:
     nstr className;
     NObject* obj;
+    
+    ~DistributedObject(){
+      for(auto& itr : serverProcMap_){
+        ServerProc* serverProc = itr.first;
+        serverProc->close();
+        if(serverProc->terminate()){
+          delete serverProc;
+        }
+      }
+    }
+    
+    void addServerProc(ServerProc* proc){
+      serverProcMap_.insert({proc, true});
+    }
+    
+    void removeServerProc(ServerProc* proc){
+      serverProcMap_.erase(proc);
+    }
+    
+  private:
+    typedef NMap<ServerProc*, bool> ServerProcMap_;
+
+    ServerProcMap_ serverProcMap_;
   };
   
 } // end namespace
@@ -143,10 +173,7 @@ namespace neu{
         delete server_;
       }
       
-      for(auto& itr : serverProcMap_){
-        ServerProc* p = itr.first;
-        task_->terminate(p);
-      }
+
     }
     
     NProcTask* task(){
@@ -167,14 +194,11 @@ namespace neu{
     void distribute(NObject* object,
                     const nstr& className,
                     const nstr& objectName){
-      
-      Object* o = new Object;
+      DistributedObject* o = new DistributedObject;
       o->className = className;
       o->obj = object;
       
-      objectMapMutex_.lock();
-      objectMap_[objectName] = o;
-      objectMapMutex_.unlock();
+      distributedObjectMap_[objectName] = o;
     }
     
     bool revoke(NObject* object){
@@ -186,39 +210,46 @@ namespace neu{
                     const nstr& objectName,
                     const nvar& auth){
       
-      Communicator* comm = new Communicator(task_, this);
-      if(!comm->connect(host, port)){
-        delete comm;
+      Client* client = new Client(task_, this);
+      client->setEncoder(encoder_);
+      
+      if(!client->connect(host, port)){
+        delete client;
         return 0;
       }
       
-      comm->send(auth);
+      client->send(auth);
       nvar msg;
-      comm->receive(msg);
+      client->receive(msg);
       if(!msg){
-        delete comm;
+        delete client;
         return 0;
       }
       
       nvar req;
-      req("t") = "obt";
+      req("op") = OP_OBTAIN;
       req("o") = objectName;
-      
-      comm->send(req);
+      client->send(req);
+
       nvar resp;
-      comm->receive(resp);
+      client->receive(resp);
       
-      if(resp["t"] == "obd" && resp["r"]){
-        nvar f = nfunc(resp["c"]) << o_;
+      if(resp["op"] == OP_OBTAINED){
+        const nstr& className = resp["c"];
         
-        NObjectBase* ob = NClass::create(f);
-        NObject* obj = static_cast<NObject*>(ob);
-        objClientMap_[obj] = comm;
-        clientObjMap_[comm] = obj;
+        NObject* obj = NClass::createRemote(className, o_);
+
+        if(!obj){
+          delete client;
+          NERROR("failed to create remote object of class: " + className);
+        }
         
+        client->setObj(obj);
+        objectClientMap_.insert({obj, client});
         return obj;
       }
       
+      delete client;
       return 0;
     }
     
@@ -242,73 +273,130 @@ namespace neu{
       return encoder_;
     }
     
-    void createServerProc(Communicator* c){
-      ServerProc* p = new ServerProc(this, c);
-      p->setTask(task_);
-    
-      serverProcMapMutex_.lock();
-      serverProcMap_[p] = true;
-      serverProcMapMutex_.unlock();
-      
-      task_->queue(p);
-    }
-    
     nvar process_(NObject* obj, const nvar& n){
-      auto itr = objClientMap_.find(obj);
-      assert(itr != objClientMap_.end());
-      Communicator* comm = itr->second;
+      auto itr = objectClientMap_.find(obj);
+      assert(itr != objectClientMap_.end());
+      Client* client = itr->second;
+      
       nvar req;
-      req("t") = "cal";
+      req("op") = OP_CALL;
       req("f") = n;
-      comm->send(req);
+
+      cout << "call req is: " << req << endl;
+      
+      client->send(req);
       
       nvar resp;
-      comm->receive(resp);
-      if(resp["t"] == "cld"){
-        return resp["r"];
+      client->receive(resp);
+      if(resp["op"] != OP_CALLED){
+        // ndm - handle error - close, etc.
+        return none;
+      }
+
+      nvar& f = resp["f"];
+      
+      size_t size = n.size();
+      for(size_t i = 0; i < size; ++i){
+        if(n.fullType() == nvar::Pointer){
+          *n[i] = f[i];
+        }
       }
       
-      NERROR("invalid call");
+      return resp["r"];
+    }
+    
+    DistributedObject* obtain_(ServerProc* proc, const nstr& objName){
+      auto itr = distributedObjectMap_.find(objName);
+      if(itr == distributedObjectMap_.end()){
+        return 0;
+      }
+      
+      DistributedObject* o = itr->second;
+      o->addServerProc(proc);
+      return o;
     }
     
   private:
-    typedef NMap<ServerProc*, bool> ServerProcMap_;
-    typedef NMap<NObject*, Communicator*> ObjClientMap_;
-    typedef NMap<Communicator*, NObject*> ClientObjMap_;
-    typedef NMap<nstr, Object*> ObjectMap_;
+    typedef NMap<NObject*, Client*> ObjectClientMap_;
+    typedef NMap<nstr, DistributedObject*> DistributedObjectMap_;
     
     NBroker* o_;
     NProcTask* task_;
     Server* server_;
-    ServerProc* serverProc_;
-    ClientProc* clientProc_;
     NCommunicator::Encoder* encoder_;
-    ServerProcMap_ serverProcMap_;
-    NBasicMutex serverProcMapMutex_;
-    ObjectMap_ objectMap_;
-    NBasicMutex objectMapMutex_;
-    ClientObjMap_ clientObjMap_;
-    ObjClientMap_ objClientMap_;
+    ObjectClientMap_ objectClientMap_;
+    DistributedObjectMap_ distributedObjectMap_;
   };
   
 } // end namespace neu
 
 void ServerProc::run(nvar& r){
+  cout << "sp running..." << endl;
   
+  nvar req;
+  if(!receive(req, _timeout)){
+    signal(this);
+    return;
+  }
+  
+  cout << "req is: " << req << endl;
+  
+  int op = req["op"];
+
+  switch(op){
+    case OP_OBTAIN:{
+      obj_ = broker_->obtain_(this, req["o"]);
+      
+      if(!obj_){
+        close();
+        return;
+      }
+      
+      nvar resp;
+      resp("op") = OP_OBTAINED;
+      resp("c") = obj_->className;
+      send(resp);
+      break;
+    }
+    case OP_CALL:{
+      if(!obj_){
+        close();
+        return;
+      }
+      
+      nvar& f = req["f"];
+      
+      nvar resp;
+      try{
+        resp("r") = obj_->obj->process(f);
+      }
+      catch(NError& e){
+        resp("r") = none;
+      }
+      
+      resp("op") = OP_CALLED;
+      resp("f") = move(f);
+      
+      cout << "resp is: " << resp << endl;
+      
+      send(resp);
+      break;
+    }
+  }
+  
+  signal(this);
 }
 
-void ClientProc::run(nvar& r){
-  
-}
-
-Communicator::Communicator(NProcTask* task, NBroker_* broker)
+ServerProc::ServerProc(NProcTask* task, NBroker_* broker)
 : NCommunicator(task),
-broker_(broker){
+NProc(task),
+broker_(broker),
+obj_(0){
   setEncoder(broker_->encoder());
 }
 
-void Communicator::onClose(bool manual){
-  
+void ServerProc::onClose(bool manual){
+  cout << "server proc closed" << endl;
 }
 
 bool Server::authenticate(NCommunicator* comm, const nvar& auth){
@@ -316,10 +404,20 @@ bool Server::authenticate(NCommunicator* comm, const nvar& auth){
     return false;
   }
 
-  Communicator* c = static_cast<Communicator*>(comm);
-  broker_->createServerProc(c);
+  ServerProc* proc = static_cast<ServerProc*>(comm);
+  proc->queue();
   
   return true;
+}
+
+Client::Client(NProcTask* task, NBroker_* broker)
+: NCommunicator(task),
+broker_(broker){
+  
+}
+
+void Client::onClose(bool manual){
+  
 }
 
 NBroker::NBroker(NProcTask* task){

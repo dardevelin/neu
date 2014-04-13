@@ -18333,6 +18333,9 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
   }
   
   switch(t_){
+    case None:
+      buf[pos++] = None;
+      break;
     case Undefined:
       buf[pos++] = Undefined;
       break;
@@ -18408,6 +18411,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
               ++pos;
               break;
           }
+          break;
         }
       }
       break;
@@ -18563,7 +18567,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       }
       
       for(size_t i = 0; i < len; ++i){
-        v[i].pack_(buf, size, pos);
+        buf = v[i].pack_(buf, size, pos);
       }
       
       break;
@@ -18596,8 +18600,6 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       break;
     }
     case Function:{
-      buf[pos++] = Function;
-      
       const nvec& v = h_.f->v;
       
       const nstr& sbuf = h_.f->f;
@@ -18622,6 +18624,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         sbuf.copy(buf + pos, len, 0);
         pos += len;
         memcpy(buf + pos, &pn, 1);
+        ++pos;
       }
       else{
         isShort = false;
@@ -18637,6 +18640,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         sbuf.copy(buf + pos, len, 0);
         pos += len;
         memcpy(buf + pos, &n, 4);
+        pos += 4;
       }
       
       for(size_t i = 0; i < n; ++i){

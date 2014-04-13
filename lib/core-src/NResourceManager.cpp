@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NMutex.h>
 #include <neu/NRecMutex.h>
 #include <neu/NCommand.h>
+#include <neu/NSocket.h>
 
 using namespace std;
 using namespace neu;
@@ -79,7 +80,12 @@ namespace neu{
         itr->close();
       }
       
+      for(auto& itr : socketList_){
+        itr->close();
+      }
+      
       commandList_.clear();
+      socketList_.clear();
       
       mutex_.unlock();
       releaseMutex_.unlock();

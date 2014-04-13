@@ -2358,8 +2358,7 @@ public:
 
   void generate(){
     init_();
-
-    task_->queue(start_);
+    start_->queue();
   }
 
   void next(){
@@ -2375,13 +2374,12 @@ public:
       ++totalMisses_;
       ++totalSolutions_;
     }
-
-    task_->queue(start_);
+    start_->queue();
   }
 
   void queue(nvar& state, size_t methodId){
     Proc* proc = procMap_[methodMap_[methodId]];
-    task_->queue(proc, state);
+    proc->queue(state);
   }
 
   bool run(){
@@ -2666,7 +2664,7 @@ public:
       size_t id = choices[random_.equilikely(0, choices.size() - 1)];
 
       Proc* proc = procMap_[methodMap_[id]];
-      task_->queue(proc, state);
+      proc->queue(state);
     }
     else{
       queue();

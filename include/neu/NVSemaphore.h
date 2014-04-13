@@ -52,6 +52,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NEU_N_V_SEMAPHORE_H
 
 #include <pthread.h>
+#include <sys/time.h>
+#include <cmath>
 
 namespace neu{
   
@@ -79,11 +81,17 @@ namespace neu{
       pthread_mutex_destroy(&mutex_);
     }
 
-    bool acquire(double dt){
+    bool acquire(double timeout){
+      timeval tv;
+      gettimeofday(&tv, 0);
+      
+      double t = tv.tv_sec + tv.tv_usec/1e6;
+      t += timeout;
+      
       pthread_mutex_lock(&mutex_);
 
-      double sec = floor(dt);
-      double fsec = dt - sec;
+      double sec = std::floor(t);
+      double fsec = t - sec;
 
       timespec ts;
       ts.tv_sec = sec;

@@ -81,6 +81,8 @@ namespace{
         comm->close();
         delete comm;
       }
+      
+      comm->send(true);
     }
     
   private:
@@ -100,7 +102,7 @@ namespace{
       NSocket* socket = listener_.accept(_timeout);
       if(socket){
         nvar ar = socket;
-        task()->queue(authProc_, ar);
+        authProc_->queue(ar);
       }
       
       signal(this);
@@ -127,11 +129,15 @@ namespace neu{
     
     ~NServer_(){
       if(acceptProc_){
-        task_->terminate(acceptProc_);
+        if(acceptProc_->terminate()){
+          delete acceptProc_;
+        }
       }
       
       if(authProc_){
-        task_->terminate(authProc_);
+        if(authProc_->terminate()){
+          delete authProc_;
+        }
       }
     }
     
@@ -149,8 +155,8 @@ namespace neu{
       
       acceptProc_ = new AcceptProc(authProc_, listener_, port);
       acceptProc_->setTask(task_);
-      
-      task_->queue(acceptProc_);
+      acceptProc_->queue();
+
       return true;
     }
     

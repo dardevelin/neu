@@ -89,6 +89,8 @@ namespace neu{
     
     void setExact(bool flag);
     
+    bool isRemote();
+    
     void foo(nvar& x);
     
     static int precedence(const nvar& f);

@@ -3669,6 +3669,8 @@ namespace neu{
     Type t_;
   };
   
+  typedef nvar ndist;
+  
   inline nvar nfunc(const nstr& f){
     return new nvar(f, nvar::Func);
   }

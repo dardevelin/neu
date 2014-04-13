@@ -701,7 +701,17 @@ public:
     nstr fullName = getQualifiedName(rd);
       
     stringstream ostr;
+    
+    for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
+          mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
+    
+      CXXMethodDecl* md = *mitr;
       
+      if(md->isUserProvided() && isa<CXXConstructorDecl>(md)){
+        md->dump();
+      }
+    }
+
     ostr << "namespace{" << endl << endl;
       
     ostr << "class " << name << "_Class : public neu::NClass{" << endl;
@@ -890,13 +900,21 @@ public:
         
           ostr << rts << " " << fullName << "::" << methodName << "(";
         
+          cout << "str1: " << qrt.getAsString() << endl;
+          cout << "str2: " << crt.getAsString() << endl;
+          
           if(qrt.getAsString() == "ndist" &&
              crt.getAsString() == "class neu::nvar"){
           
+            cout << "t3" << endl;
+            
             if(CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject")){
+              cout << "t1" << endl;
               int m = isNCallable(md);
               if(m == 1){
                 isDist = true;
+                cout << "!!!!!!!!!! IS DIST" << endl;
+                md->dump();
               }
             }
           }
@@ -944,15 +962,16 @@ public:
             QualType ct = context_->getCanonicalType(qt);
             nstr ts = ct.getAsString();
           
-            ostr << " << mnode(";
+            ostr << " << ";
           
             if(ts == "const class neu::nvar &" ||
                ts == "class neu::nvar &" ||
                ts == "class neu::nstr &"){
-              ostr << "&";
+              ostr << "neu::nvar(&" << p->getName().str() << ", nvar::Ptr)";
             }
-          
-            ostr << p->getName().str() << ")";
+            else{
+              ostr << p->getName().str();
+            }
           }
           ostr << ");" << endl;
           ostr << "  }" << endl;

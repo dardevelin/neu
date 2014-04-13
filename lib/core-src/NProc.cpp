@@ -64,6 +64,15 @@ namespace neu{
   
   class NProc_{
   public:
+    NProc_(NProc* o, NProcTask* task)
+    : o_(o),
+    task_(task),
+    finishSem_(0),
+    queueCount_(0),
+    terminated_(false){
+      
+    }
+    
     NProc_(NProc* o)
     : o_(o),
     task_(0),
@@ -261,6 +270,10 @@ namespace neu{
   
 } // end namespace neu
 
+NProc::NProc(NProcTask* task){
+  x_ = new NProc_(this, task);
+}
+
 NProc::NProc(){
   x_ = new NProc_(this);
 }
@@ -277,14 +290,20 @@ void NProc::setTask(NProcTask* task){
   x_->setTask(task);
 }
 
-void NProcTask::terminate(NProc* proc){
-  if(proc->x_->terminate()){
-    delete proc;
-  }
+bool NProc::terminate(){
+  return x_->terminate();
 }
 
 NProcTask* NProc::task(){
   return x_->task();
+}
+
+void NProc::queue(nvar& r, double priority){
+  x_->task()->queue(this, r, priority);
+}
+
+void NProc::queue(){
+  x_->task()->queue(this);
 }
 
 NProcTask::NProcTask(size_t threads){

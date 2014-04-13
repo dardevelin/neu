@@ -59,6 +59,8 @@ namespace neu{
   
   class NProc{
   public:
+    NProc(NProcTask* task);
+    
     NProc();
     
     virtual ~NProc();
@@ -79,6 +81,12 @@ namespace neu{
     NProcTask* task();
     
     void setTask(NProcTask* task);
+
+    bool terminate();
+    
+    void queue(nvar& r, double priority=0);
+    
+    void queue();
     
     NProc& operator=(const NProc&) = delete;
     
@@ -102,8 +110,6 @@ namespace neu{
       nvar r;
       queue(proc, r);
     }
-    
-    void terminate(NProc* proc);
     
   private:
     class NProcTask_* x_;
