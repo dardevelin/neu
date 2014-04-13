@@ -72,7 +72,7 @@ namespace neu{
                     const nstr& className,
                     const nstr& objectName);
     
-    bool revoke(NObject* object);
+    void revoke(const nstr& objectName);
     
     NObject* obtain(const nstr& host,
                     int port,
@@ -83,7 +83,7 @@ namespace neu{
       return true;
     }
     
-    bool release(NObject* object, bool disconnect=false);
+    void release(NObject* object);
     
     void setLogStream(std::ostream& ostr);
     

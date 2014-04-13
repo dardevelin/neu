@@ -130,13 +130,7 @@ namespace{
     NObject* obj;
     
     ~DistributedObject(){
-      for(auto& itr : serverProcMap_){
-        ServerProc* serverProc = itr.first;
-        serverProc->close();
-        if(serverProc->terminate()){
-          delete serverProc;
-        }
-      }
+      revoke();
     }
     
     void addServerProc(ServerProc* proc){
@@ -145,6 +139,16 @@ namespace{
     
     void removeServerProc(ServerProc* proc){
       serverProcMap_.erase(proc);
+    }
+    
+    void revoke(){
+      for(auto& itr : serverProcMap_){
+        ServerProc* serverProc = itr.first;
+        serverProc->close();
+        if(serverProc->terminate()){
+          delete serverProc;
+        }
+      }
     }
     
   private:
@@ -172,8 +176,6 @@ namespace neu{
       if(server_){
         delete server_;
       }
-      
-
     }
     
     NProcTask* task(){
@@ -201,8 +203,12 @@ namespace neu{
       distributedObjectMap_[objectName] = o;
     }
     
-    bool revoke(NObject* object){
-      return false;
+    void revoke(const nstr& objectName){
+      auto itr = distributedObjectMap_.find(objectName);
+      assert(itr != distributedObjectMap_.end());
+      
+      DistributedObject* o = itr->second;
+      o->revoke();
     }
     
     NObject* obtain(const nstr& host,
@@ -219,9 +225,8 @@ namespace neu{
       }
       
       client->send(auth);
-      nvar msg;
-      client->receive(msg);
-      if(!msg){
+      nvar authResp;
+      if(!client->receive(authResp) || !authResp){
         delete client;
         return 0;
       }
@@ -232,33 +237,39 @@ namespace neu{
       client->send(req);
 
       nvar resp;
-      client->receive(resp);
-      
-      if(resp["op"] == OP_OBTAINED){
-        const nstr& className = resp["c"];
-        
-        NObject* obj = NClass::createRemote(className, o_);
-
-        if(!obj){
-          delete client;
-          NERROR("failed to create remote object of class: " + className);
-        }
-        
-        client->setObj(obj);
-        objectClientMap_.insert({obj, client});
-        return obj;
+      if(!client->receive(resp) || resp["op"] != OP_OBTAINED){
+        delete client;
+        return 0;
       }
       
-      delete client;
-      return 0;
+      const nstr& className = resp["c"];
+      
+      NObject* obj = NClass::createRemote(className, o_);
+      
+      if(!obj){
+        delete client;
+        NERROR("failed to create remote object of class: " + className);
+      }
+      
+      client->setObj(obj);
+      objectClientMap_.insert({obj, client});
+      
+      return obj;
     }
     
-    bool release(NObject* object, bool disconnect){
-      return false;
+    void release(NObject* object){
+      auto itr = objectClientMap_.find(object);
+      if(itr == objectClientMap_.end()){
+        return;
+      }
+      
+      Client* client = itr->second;
+      delete client;
+      objectClientMap_.erase(itr);
     }
     
     void setLogStream(std::ostream& ostr){
-      
+      logStream_ = &ostr;
     }
     
     NBroker* outer(){
@@ -276,29 +287,26 @@ namespace neu{
     nvar process_(NObject* obj, const nvar& n){
       auto itr = objectClientMap_.find(obj);
       assert(itr != objectClientMap_.end());
+
       Client* client = itr->second;
       
       nvar req;
       req("op") = OP_CALL;
       req("f") = n;
 
-      cout << "call req is: " << req << endl;
-      
       client->send(req);
       
       nvar resp;
-      client->receive(resp);
-      if(resp["op"] != OP_CALLED){
-        // ndm - handle error - close, etc.
-        return none;
+      if(!client->receive(resp) || resp["op"] != OP_CALLED){
+        NERROR("failed to remote process: " + n);
       }
-
-      nvar& f = resp["f"];
       
+      nvar& f = resp["f"];
       size_t size = n.size();
+
       for(size_t i = 0; i < size; ++i){
-        if(n.fullType() == nvar::Pointer){
-          *n[i] = f[i];
+        if(n[i].fullType() == nvar::Pointer){
+          *n[i] = move(*f[i]);
         }
       }
       
@@ -316,6 +324,13 @@ namespace neu{
       return o;
     }
     
+    void removeClient(NObject* obj){
+      auto itr = objectClientMap_.find(obj);
+      objectClientMap_.erase(itr);
+      delete obj;
+      // ndm - need to delete the client
+    }
+    
   private:
     typedef NMap<NObject*, Client*> ObjectClientMap_;
     typedef NMap<nstr, DistributedObject*> DistributedObjectMap_;
@@ -326,20 +341,17 @@ namespace neu{
     NCommunicator::Encoder* encoder_;
     ObjectClientMap_ objectClientMap_;
     DistributedObjectMap_ distributedObjectMap_;
+    ostream* logStream_;
   };
   
 } // end namespace neu
 
 void ServerProc::run(nvar& r){
-  cout << "sp running..." << endl;
-  
   nvar req;
   if(!receive(req, _timeout)){
     signal(this);
     return;
   }
-  
-  cout << "req is: " << req << endl;
   
   int op = req["op"];
 
@@ -371,13 +383,13 @@ void ServerProc::run(nvar& r){
         resp("r") = obj_->obj->process(f);
       }
       catch(NError& e){
-        resp("r") = none;
+        resp("op") = OP_ERROR;
+        send(resp);
+        break;
       }
       
       resp("op") = OP_CALLED;
       resp("f") = move(f);
-      
-      cout << "resp is: " << resp << endl;
       
       send(resp);
       break;
@@ -396,7 +408,8 @@ obj_(0){
 }
 
 void ServerProc::onClose(bool manual){
-  cout << "server proc closed" << endl;
+  obj_->removeServerProc(this);
+  terminate();
 }
 
 bool Server::authenticate(NCommunicator* comm, const nvar& auth){
@@ -417,7 +430,7 @@ broker_(broker){
 }
 
 void Client::onClose(bool manual){
-  
+  broker_->removeClient(obj_);
 }
 
 NBroker::NBroker(NProcTask* task){
@@ -442,8 +455,8 @@ void NBroker::distribute(NObject* object,
   x_->distribute(object, className, objectName);
 }
 
-bool NBroker::revoke(NObject* object){
-  return x_->revoke(object);
+void NBroker::revoke(const nstr& objectName){
+  x_->revoke(objectName);
 }
 
 NObject* NBroker::obtain(const nstr& host,
@@ -453,8 +466,8 @@ NObject* NBroker::obtain(const nstr& host,
   return x_->obtain(host, port, objectName, auth);
 }
 
-bool NBroker::release(NObject* object, bool disconnect){
-  return x_->release(object, disconnect);
+void NBroker::release(NObject* object){
+  x_->release(object);
 }
 
 void NBroker::setLogStream(std::ostream& ostr){
