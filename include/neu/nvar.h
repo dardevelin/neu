@@ -3712,7 +3712,7 @@ namespace neu{
       case nvar::Pointer:
         return v;
       default:
-        return new nvar(&v, nvar::Ptr);
+        return nvar(&v, nvar::Ptr);
     }
   }
   

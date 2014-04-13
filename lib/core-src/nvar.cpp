@@ -18797,6 +18797,9 @@ void nvar::unpack_(char* buf, uint32_t& pos){
   Type t = buf[pos++];
   
   switch(t){
+    case None:
+      t_ = None;
+      break;
     case Undefined:
       break;
     case False:

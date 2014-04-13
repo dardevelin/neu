@@ -900,14 +900,9 @@ public:
         
           ostr << rts << " " << fullName << "::" << methodName << "(";
         
-          cout << "str1: " << qrt.getAsString() << endl;
-          cout << "str2: " << crt.getAsString() << endl;
-          
           if(qrt.getAsString() == "ndist" &&
              crt.getAsString() == "class neu::nvar"){
           
-            cout << "t3" << endl;
-            
             if(CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject")){
               cout << "t1" << endl;
               int m = isNCallable(md);
