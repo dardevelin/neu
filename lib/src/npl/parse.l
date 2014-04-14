@@ -124,6 +124,7 @@ DIV_BY "/="
 MOD_BY "%="
 AND "&&"
 OR  "||"
+ARROW "->"
 KW_EXTERN extern
 KW_THIS this
 KW_TRUE true
@@ -141,6 +142,7 @@ KW_CASE case
 KW_DEFAULT default
 TYPE (void)|(bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(nvar)\*?
 VEC_TYPE ((bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double))[0-9]+\*?
+PTR_TYPE ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)\*\**
 DEFINE "#define"
 
 %%
@@ -218,6 +220,11 @@ DEFINE "#define"
 {OR} {
   PS->advance(yytext, "operator");
   return OR;
+}
+
+{ARROW} {
+  PS->advance(yytext, "operator");
+  return ARROW;
 }
 
 {KW_THIS} {
@@ -355,6 +362,23 @@ DEFINE "#define"
 {IDENTIFIER} {
   yylval->v = PS->token(yytext);
   return IDENTIFIER;
+}
+
+{PTR_TYPE} {
+  nstr t = yytext;
+  size_t ptr = 0;
+  while(t.back() == '*'){
+    t.pop_back();
+    ++ptr;
+  }
+
+  nvar pt;
+  pt("class") = t;
+  pt("ptr") = ptr;
+
+  yylval->v = move(pt);
+
+  return PTR_TYPE;
 }
 
 {STRING_LITERAL} {

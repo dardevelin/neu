@@ -18765,7 +18765,6 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       buf = h_.ref->v->pack_(buf, size, pos);
       break;
     case Pointer:
-      buf[pos++] = Reference;
       buf = h_.vp->pack_(buf, size, pos);
       break;
     default:

@@ -116,6 +116,8 @@ namespace{
       builtinMap_({"tan", 1}) = "Tan";
       builtinMap_({"atan", 1}) = "Atan";
       builtinMap_({"tanh", 1}) = "Tanh";
+      builtinMap_({"uniform", 0}) = "Uniform";
+      builtinMap_({"uniform", 2}) = "Uniform";
       
       varBuiltinMap_({"pushBack", 1}) = "PushBack";
       varBuiltinMap_({"touchMultimap", 0}) = "TouchMultimap";

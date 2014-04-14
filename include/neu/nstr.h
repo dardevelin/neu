@@ -202,6 +202,18 @@ namespace neu{
       return str_.at(pos);
     }
     
+    char front() const{
+      return str_.front();
+    }
+    
+    char back() const{
+      return str_.back();
+    }
+    
+    void pop_back(){
+      str_.pop_back();
+    }
+    
     nstr& append(const nstr& str){
       str_.append(str.str_);
       return *this;
@@ -827,7 +839,7 @@ namespace neu{
       return std::toupper(c);
     }
     
-    bool isNeumeric() const;
+    bool isNumeric() const;
     
     bool empty() const{
       return str_.empty();

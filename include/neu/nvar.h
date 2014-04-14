@@ -3618,20 +3618,22 @@ namespace neu{
       
       done = false;
       
+      ret("args") = nvec();
+      
       for(;;){
         c = fs[i];
         
         switch(c){
           case ',':
             ++n;
-            ret("args") << name;
+            ret["args"] << name;
             name = "";
             break;
           case ' ':
             break;
           case ')':
             if(!name.empty()){
-              ret("args") << name;
+              ret["args"] << name;
               name = "";
             }
             done = true;

@@ -306,7 +306,7 @@ namespace neu{
 
       for(size_t i = 0; i < size; ++i){
         if(n[i].fullType() == nvar::Pointer){
-          *n[i] = move(*f[i]);
+          *n[i] = move(f[i]);
         }
       }
       

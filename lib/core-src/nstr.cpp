@@ -216,7 +216,7 @@ nstr nstr::asStr(const nvar& v){
   return v.str();
 }
 
-bool nstr::isNeumeric() const{
+bool nstr::isNumeric() const{
   return _numericRegex.match(str_);
 }
 

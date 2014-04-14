@@ -72,6 +72,13 @@ using namespace std;
 using namespace llvm;
 using namespace neu;
 
+static const double _RAND_MAX = RAND_MAX;
+
+extern "C"
+double __n_uniform(){
+  return rand()/_RAND_MAX;
+}
+
 namespace{
 
   typedef NVector<Type*> TypeVec;
@@ -122,6 +129,7 @@ namespace{
     FKEY_Dec_1,
     FKEY_PostDec_1,
     FKEY_Idx_2,
+    FKEY_Arrow_2,
     FKEY_Size_1,
     FKEY_Neg_1,
     FKEY_Sqrt_1,
@@ -171,7 +179,9 @@ namespace{
     FKEY_Atan_1,
     FKEY_Tanh_1,
     FKEY_Merge_2,
-    FKEY_OuterMerge_2
+    FKEY_OuterMerge_2,
+    FKEY_Uniform_0,
+    FKEY_Uniform_2
   };
   
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionKeyMap;
@@ -230,6 +240,7 @@ namespace{
     _functionMap[{"While", 2}] = FKEY_While_2;
     _functionMap[{"For", 4}] = FKEY_For_4;
     _functionMap[{"Idx", 2}] = FKEY_Idx_2;
+    _functionMap[{"Arrow", 2}] = FKEY_Arrow_2;
     _functionMap[{"Size", 1}] = FKEY_Size_1;
     _functionMap[{"Neg", 1}] = FKEY_Neg_1;
     _functionMap[{"Sqrt", 1}] = FKEY_Sqrt_1;
@@ -280,6 +291,8 @@ namespace{
     _functionMap[{"Tanh", 1}] = FKEY_Tanh_1;
     _functionMap[{"Merge", 2}] = FKEY_Merge_2;
     _functionMap[{"OuterMerge", 2}] = FKEY_OuterMerge_2;
+    _functionMap[{"Uniform", 0}] = FKEY_Uniform_0;
+    _functionMap[{"Uniform", 2}] = FKEY_Uniform_2;
   }
   
   static void _initSymbolMap(){
@@ -368,7 +381,9 @@ namespace{
     }
     
     ~NPLCompiler(){
-      
+      for(auto& itr : structMap_){
+        delete itr.second;
+      }
     }
     
     TypeVec typeVec(const nvec& v){
@@ -390,7 +405,23 @@ namespace{
       
       if(bits == 0){
         if(ptr > 0){
-          Type* pt = PointerType::get(Type::getIntNTy(context_, 8), 0);
+
+          Type* pt;
+          nstr c = t.get("class", "");
+          if(c.empty()){
+            pt = PointerType::get(Type::getIntNTy(context_, 8), 0);
+          }
+          else{
+            auto itr = structMap_.find(c);
+
+            if(itr == structMap_.end()){
+              NERROR("unknown class: " + c);
+            }
+            
+            Struct* s = itr->second;
+            pt = PointerType::get(s->structType, 0);
+          }
+
           for(size_t i = 1; i < ptr; ++i){
             pt = PointerType::get(pt, 0);
           }
@@ -758,7 +789,7 @@ namespace{
         Value* ret = createAlloca("nvar", name);
         Value* h = createStructGEP(ret, 0, "h_");
         h = builder_.CreateBitCast(h, type("double*"));
-        Value* t = createStructGEP(ret, 0, "t_");
+        Value* t = createStructGEP(ret, 1, "t_");
         
         Value* vd = convert(v, "double");
         createStore(vd, h);
@@ -2171,6 +2202,8 @@ namespace{
     }
 
     Value* compile(const nvar& n){
+      cout << "compiling: " << n << endl;
+      
       if(n.isNumeric()){
         Value* v = getNumeric(n);
         v = completeVar(v, n);
@@ -2215,6 +2248,8 @@ namespace{
       FunctionKey key = getFunctionKey(n);
       
       switch(key){
+        case FKEY_NO_KEY:
+          return error("invalid function", n);
         case FKEY_Add_2:{
           Value* l = compile(n[0]);
           if(!l){
@@ -3175,6 +3210,38 @@ namespace{
           
           return ret;
         }
+        case FKEY_Arrow_2:{
+          Value* v = compile(n[0]);
+          if(!v){
+            return error("invalid operand[0]", n);
+          }
+          
+          PointerType* pt = dyn_cast<PointerType>(v->getType());
+          
+          if(!pt){
+            return error("not a pointer[0]", n);
+          }
+          
+          StructType* st = dyn_cast<StructType>(pt->getElementType());
+          
+          if(!st){
+            return error("not a class[0]", n);
+          }
+          
+          nstr c = st->getName().str();
+          
+          auto itr = structMap_.find(c);
+          if(itr == structMap_.end()){
+            return error("unknown class: " + c, n);
+          }
+
+          Struct* s = itr->second;
+          size_t pos = s->getPos(n[1]);
+          
+          v->dump();
+          
+          return builder_.CreateLoad(builder_.CreateStructGEP(v, pos));
+        }
         case FKEY_Size_1:{
           Value* v = compile(n[0]);
           if(!v){
@@ -4076,6 +4143,15 @@ namespace{
           
           return globalCall("void nvar::outerMerge(nvar*, nvar*)", {l, rv});
         }
+        case FKEY_Uniform_0:{
+          return globalCall("double __n_uniform()");
+        }
+        case FKEY_Uniform_2:{
+          nvar f = nfunc("Add") << n[0] <<
+          (nfunc("Mul") << (nfunc("Sub") << n[1] << n[0]) << nfunc("Uniform"));
+
+          return compile(f);
+        }
         default:
           func_->dump();
           NERROR("unimplemented function: " + n);
@@ -4150,14 +4226,20 @@ namespace{
           }
         }
         
+        Struct* s = new Struct;
+        
         nvec keys;
         am.keys(keys);
+        int pos = 0;
         for(const nvar& k : keys){
+          s->putField(am[k], pos);
           tv.push_back(type(am[k]));
+          ++pos;
         }
         
         classStruct_ = StructType::create(context_, tv.vector(), ck.c_str());
-        structMap_[ck] = classStruct_;
+        s->structType = classStruct_;
+        structMap_[ck] = s;
 
         for(size_t j = 0; j < ms.size(); ++j){
           const nvar& mk = ms[j];
@@ -4347,7 +4429,20 @@ namespace{
       return isVar(v->getType());
     }
     
-    Value* globalCall(const nvar& c, const ValueVec& v){
+    Value* globalCall(const nstr& c){
+      Function* f = globalFunc(c);
+      
+      Type* rt = f->getReturnType();
+      
+      if(rt->isVoidTy()){
+        return builder_.CreateCall(f);
+      }
+      else{
+        return builder_.CreateCall(f, c.c_str());
+      }
+    }
+    
+    Value* globalCall(const nstr& c, const ValueVec& v){
       Function* f = globalFunc(c);
 
       Type* rt = f->getReturnType();
@@ -4361,10 +4456,33 @@ namespace{
     }
     
   private:
+    class Struct{
+    public:
+      StructType* structType;
+
+      void putField(const nstr& field, int pos){
+        fieldMap_[field] = pos;
+      }
+      
+      int getPos(const nstr& field){
+        auto itr = fieldMap_.find(field);
+        if(itr == fieldMap_.end()){
+          return -1;
+        }
+        
+        return itr->second;
+      }
+      
+    private:
+      typedef NMap<nstr, int> FieldMap_;
+
+      FieldMap_ fieldMap_;
+    };
+    
     typedef NVector<LocalScope*> ScopeStack_;
     typedef NMap<Value*, nvar> InfoMap_;
     typedef NMap<nstr, Value*> AttributeMap_;
-    typedef NMap<nstr, StructType*> StructMap_;
+    typedef NMap<nstr, Struct*> StructMap_;
     
     LLVMContext& context_;
     Module& module_;
@@ -4476,6 +4594,9 @@ namespace{
     
     createFunction("double round(double)",
                    "llvm.round.f64");
+    
+    createFunction("double __n_uniform()",
+                   "__n_uniform");
     
     createFunction("void nvar::nvar(nvar*, nvar*)",
                    "_ZN3neu4nvarC1ERKS0_");

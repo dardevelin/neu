@@ -67,9 +67,9 @@ using namespace neu;
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE FLOAT
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE PTR_TYPE FLOAT
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args params block stmts if_stmt classes case_stmts case_stmt case_label case_labels
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args params block stmts if_stmt classes case_stmts case_stmt case_label case_labels var_decl
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -85,7 +85,7 @@ using namespace neu;
 %left '^'
 %right '!' '~'
 %right INC DEC
-%left '.'
+%left '.' ARROW
 
 %%
 
@@ -101,14 +101,27 @@ input: /* empty */
 }
 ;
 
+var_decl: TYPE IDENTIFIER {
+  $1.setHead(PS->sym($2));
+  $$ = move($1);
+}
+| IDENTIFIER IDENTIFIER {
+  $$ = PS->sym($2);
+  $$("class") = PS->sym($1);
+}
+| PTR_TYPE IDENTIFIER {
+  $$ = move($1);
+  $$.setHead(PS->sym($2));
+}
+;
+
 classes: func_def block {
   $$ = PS->newClass();
   $1 << move($2);
   PS->addMethod($$, $1);
 }
-| TYPE IDENTIFIER ';' {
+| var_decl ';' {
   $$ = PS->newClass();
-  $1.setHead(PS->sym($2));
   PS->addAttribute($$, $1);
 }
 | classes func_def block {
@@ -116,9 +129,8 @@ classes: func_def block {
   $2 << move($3);
   PS->addMethod($$, $2);
 }
-| classes TYPE IDENTIFIER ';' {
+| classes var_decl ';' {
   $$ = move($1);
-  $2.setHead(PS->sym($3));
   PS->addAttribute($$, $2);
 }
 
@@ -322,14 +334,12 @@ func_def: TYPE IDENTIFIER '(' params ')' {
 params: /* empty */ {
   $$ = undef;
 }
-| params ',' TYPE IDENTIFIER {
+| params ',' var_decl {
   $$ = move($1);
-  $3.setHead(PS->sym($4));
   $$ << move($3);
 }
-| TYPE IDENTIFIER {
-  $$ = undef;
-  $1.setHead(PS->sym($2));
+| var_decl {
+  $$ = nvec();
   $$ << move($1);
 }
 ;
@@ -448,6 +458,9 @@ get: '[' expr ']' {
 | '.' IDENTIFIER {
   $$ = PS->func("Dot") << PS->sym($2);
 }
+| ARROW IDENTIFIER {
+  $$ = PS->func("Arrow") << PS->sym($2);
+}
 | '{' expr '}' {
   $$ = PS->func("Put") << move($2);
 }
@@ -476,15 +489,13 @@ stmt: expr ';' {
 | ';' {
   $$ = none;
 }
-| TYPE IDENTIFIER ';' {
+| var_decl ';' {
   $$ = PS->func("Local");
-  $1.setHead(PS->sym($2));
   $$ << move($1);
 }
-| TYPE IDENTIFIER '=' expr ';' {
+| var_decl '=' expr ';' {
   $$ = PS->func("Local");
-  $1.setHead(PS->sym($2));
-  $$ << move($1) << move($4);
+  $$ << move($1) << move($3);
 }
 | KW_RETURN ';' {
   $$ = PS->func("Ret");
