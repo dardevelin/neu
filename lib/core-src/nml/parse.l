@@ -101,6 +101,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 %option reentrant bison-bridge
 %option always-interactive
 
+COMMENT "//".+\n
+MULTILINE_COMMENT "/*"[^"*/"]*"*/"
 IDENTIFIER ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)
 INTEGER [0-9]+
 DOUBLE (([0-9]+\.[0-9]+)|(\.[0-9]+)|([0-9]+))([Ee][\+\-]?[0-9]+)?
@@ -137,6 +139,17 @@ KW_CASE case
 KW_DEFAULT default
 
 %%
+
+{COMMENT} {
+  PS->newLine(1);
+  PS->advance(yytext, "comment");
+}
+
+{MULTILINE_COMMENT} {
+  size_t count = nstr(yytext).findCount("\n");
+  PS->newLine(count);
+  PS->advance(yytext, "comment");
+}
 
 {EQ} {
   PS->advance(yytext, "operator");

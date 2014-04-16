@@ -153,7 +153,8 @@ DEFINE "#define"
 }
 
 {MULTILINE_COMMENT} {
-  PS->newLine(nstr(yytext).findCount("\n"));
+  size_t count = nstr(yytext).findCount("\n");
+  PS->newLine(count);
   PS->advance(yytext, "comment");
 }
 

@@ -226,7 +226,7 @@ namespace{
     _functionMap[{"Set", 2}] = FKEY_Set_2;
     _functionMap[{"AddBy", 2}] = FKEY_AddBy_2;
     _functionMap[{"SubBy", 2}] = FKEY_SubBy_2;
-    _functionMap[{"MulBY", 2}] = FKEY_MulBy_2;
+    _functionMap[{"MulBy", 2}] = FKEY_MulBy_2;
     _functionMap[{"DivBy", 2}] = FKEY_DivBy_2;
     _functionMap[{"ModBy", 2}] = FKEY_ModBy_2;
     _functionMap[{"Block", -1}] = FKEY_Block_n;
@@ -1930,6 +1930,69 @@ namespace{
       return builder_.CreateFCmpUGE(v[0], v[1], "fge.out");
     }
     
+    // ndm - this needs some clean up - and the places which call
+    // it should properly detect if it is a vector op
+    Value* vectorIndexOp(const nvar& n){
+      const nvar& i = n[0];
+      assert(i.isFunction("Idx", 2));
+
+      Value* idx = compile(i[1]);
+      if(!idx){
+        error("invalid vector index[1]", i);
+        return 0;
+      }
+      
+      idx = convert(idx, "int");
+      if(!idx){
+        error("invalid vector index[1]", i);
+        return 0;
+      }
+      
+      Value* vp = getLValue(i[0]);
+      Value* v = createLoad(vp);
+      assert(vectorLength(v) > 0);
+
+      Value* r = compile(n[1]);
+      
+      FunctionKey key = getFunctionKey(n);
+
+      Value* vi;
+      if(key != FKEY_Set_2){
+        vi = builder_.CreateExtractElement(v, idx);
+      }
+      
+      switch(key){
+        case FKEY_AddBy_2:
+          r = add(vi, r);
+          break;
+        case FKEY_SubBy_2:
+          r = sub(vi, r);
+          break;
+        case FKEY_MulBy_2:
+          r = mul(vi, r);
+          break;
+        case FKEY_DivBy_2:
+          r = div(vi, r);
+          break;
+        case FKEY_ModBy_2:
+          r = div(vi, r);
+          break;
+        case FKEY_Set_2:
+          break;
+        default:
+          assert(false && "invalid op");
+      }
+
+      r = convert(r, elementType(v));
+      if(!r){
+        error("invalid value[1]", n);
+        return 0;
+      }
+      
+      v = builder_.CreateInsertElement(v, r, idx);
+      createStore(v, vp);
+    }
+    
     Value* idx(Value* v1, Value* v2){
       if(vectorLength(v1) > 0){
         Value* i = convert(v2, "int");
@@ -2202,7 +2265,7 @@ namespace{
     }
 
     Value* compile(const nvar& n){
-      cout << "compiling: " << n << endl;
+      //cout << "compiling: " << n << endl;
       
       if(n.isNumeric()){
         Value* v = getNumeric(n);
@@ -2518,6 +2581,10 @@ namespace{
           return getInt64(0);
         }
         case FKEY_Set_2:{
+          if(n[0].isFunction("Idx", 2)){
+            return vectorIndexOp(n);
+          }
+          
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -2528,11 +2595,17 @@ namespace{
             return error("invalid operand[1]", n);
           }
           
+          r = convert(r, l);
+          
           store(r, l);
           
           return l;
         }
         case FKEY_AddBy_2:{
+          if(n[0].isFunction("Idx", 2)){
+            return vectorIndexOp(n);
+          }
+          
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -2551,6 +2624,10 @@ namespace{
           return ret;
         }
         case FKEY_SubBy_2:{
+          if(n[0].isFunction("Idx", 2)){
+            return vectorIndexOp(n);
+          }
+          
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -2569,6 +2646,10 @@ namespace{
           return ret;
         }
         case FKEY_MulBy_2:{
+          if(n[0].isFunction("Idx", 2)){
+            return vectorIndexOp(n);
+          }
+          
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -2587,6 +2668,10 @@ namespace{
           return ret;
         }
         case FKEY_DivBy_2:{
+          if(n[0].isFunction("Idx", 2)){
+            return vectorIndexOp(n);
+          }
+          
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -2605,6 +2690,10 @@ namespace{
           return ret;
         }
         case FKEY_ModBy_2:{
+          if(n[0].isFunction("Idx", 2)){
+            return vectorIndexOp(n);
+          }
+          
           Value* l = getLValue(n[0]);
           if(!l){
             return error("invalid operand[0]", n);
@@ -3238,9 +3327,9 @@ namespace{
           Struct* s = itr->second;
           size_t pos = s->getPos(n[1]);
           
-          v->dump();
+          Value* r = builder_.CreateStructGEP(v, pos);
           
-          return builder_.CreateLoad(builder_.CreateStructGEP(v, pos));
+          return builder_.CreateLoad(r);
         }
         case FKEY_Size_1:{
           Value* v = compile(n[0]);

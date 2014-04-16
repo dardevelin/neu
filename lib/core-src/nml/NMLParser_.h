@@ -275,6 +275,10 @@ namespace neu{
       advance(1);
     }
     
+    void newLine(size_t count){
+      line_ += count;
+    }
+    
     void handleGet(const nvar& head, nvar& rest, nvar& out){
       out = head;
       
