@@ -396,6 +396,8 @@ namespace{
     }
     
     Type* type(const nvar& t){
+      cout << "t is: " << t << endl;
+      
       if(t.isString()){
         return type(NPLParser::parseType(t));
       }
@@ -878,7 +880,12 @@ namespace{
 
       Value* ret = createAlloca(t, name);
       if(v){
-        store(ret, v);
+        v = convert(v, ret);
+        if(!v){
+          return 0;
+        }
+        
+        store(v, ret);
       }
       
       return ret;
@@ -2075,7 +2082,7 @@ namespace{
         return 0;
       }
 
-      return globalCall("double pow(double)", {v1, v2});
+      return globalCall("double pow(double, double)", {v1, v2});
     }
     
     Value* sqrt(Value* v){
@@ -2265,7 +2272,7 @@ namespace{
     }
 
     Value* compile(const nvar& n){
-      //cout << "compiling: " << n << endl;
+      cout << "compiling: " << n << endl;
       
       if(n.isNumeric()){
         Value* v = getNumeric(n);
