@@ -1,0 +1,26 @@
+#define BOUNCE 0.50
+#define GRAVITY 0.01
+
+class Cube{
+  void run(){
+    v[1] -= GRAVITY;
+    u += v;
+    a += av;
+    
+    if(u[1] < 0.0){
+      u[1] = 0.0;
+      v[0] *= BOUNCE;
+      v[1] *= -BOUNCE;
+      v[2] *= BOUNCE;
+      av[0] *= BOUNCE;
+      av[1] *= BOUNCE;
+      av[2] *= BOUNCE;
+    }
+  }
+
+  float3 u;
+  float3 v;
+  float3 a;
+  float3 av;
+  float r;
+}

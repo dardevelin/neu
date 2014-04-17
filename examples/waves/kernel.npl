@@ -1,0 +1,33 @@
+#define A 0.0005
+#define P 0.00005
+#define B 10.0
+#define D 0.98
+#define I 0.10
+
+class Cell{
+  void run(){
+    s -= h * A;
+    
+    if(uniform() < P){
+      s = uniform() * 3.0;
+    }
+    
+    s *= D;
+    
+    h += s;
+    
+    if(h + s < 0){
+      h = -h * 0.20;
+    }
+    else if(h > 1){
+      h = 1;
+    }
+  }
+
+  void interact(Cell* c){
+    s += I * (c->h - h);
+  }
+
+  double h;
+  double s;
+}
