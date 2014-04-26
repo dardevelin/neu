@@ -69,7 +69,7 @@ using namespace neu;
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT KW_CLASS
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels class_defs ctor
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -427,6 +427,9 @@ stmt: expr ';' {
 | func block {
   $$ = PS->func("Def") << move($1) << move($2);
 }
+| KW_CLASS IDENTIFIER '{' class_defs '}' {
+  PS->createClass($$, $2, $4);
+}
 ;
 
 if_stmt: KW_IF '(' expr ')' block {
@@ -494,6 +497,32 @@ stmts: stmts stmt {
 }
 | stmt {
   $$ = PS->func("Block") << move($1);
+}
+;
+
+class_defs: class_defs stmt {
+  $$ = move($1);
+  $$ << move($2);
+}
+| class_defs ctor {
+  $$ = move($1);
+  $$ << move($2);
+}
+| stmt {
+  $$ = nvec();
+  $$ << move($1);
+}
+| ctor {
+  $$ = nvec();
+  $$ << move($1);
+}
+;
+
+ctor: func ':' IDENTIFIER block {
+  $$ = PS->func("Ctor") << PS->func($3) << move($1) << move($4);
+}
+| func ':' func block {
+  $$ = PS->func("Ctor") << move($3) << move($1) << move($4);
 }
 ;
 

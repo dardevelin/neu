@@ -206,7 +206,23 @@ namespace neu{
     nvar error(const nvar& n, const nstr& message, bool warn=false){
       status_ = 1;
       
-      cout << "error!" << endl;
+      ostream& estr = *estr_;
+      
+      estr << "NPLParser error: ";
+      
+      if(n.hasKey("__file")){
+        estr << n["__file"].str() << ":";
+      }
+      
+      if(n.hasKey("__line")){
+        estr << n["__line"] << ": ";
+      }
+      else{
+        estr << " ";
+      }
+      
+      estr << message << endl;
+      
       return nsym("Error");
     }
     
@@ -323,6 +339,56 @@ namespace neu{
       ret << d;
       
       return ret;
+    }
+    
+    void createClass(nvar& c, const nstr& name, nvar& block){
+      c = func("Class") << undef;
+
+      nvar& info = c[0];
+      
+      info("name") = sym(name);
+      nvar& ctors = info("ctors") = nvec();
+      nvar& stmts = info("stmts") = func("Block");
+
+      for(nvar& bi : block){
+        if(bi.isFunction("Ctor", 3)){
+          const nvar& f = bi[1];
+          if(f.str() != name){
+            error(f, "invalid ctor");
+            continue;
+          }
+          
+          size_t size = f.size();
+          if(ctors.hasKey(size)){
+            error(f, "duplicate ctor");
+            continue;
+          }
+          
+          ctors(size) = move(bi);
+        }
+        else if(bi.isFunction("Def", 2)){
+          nvar& f = bi[0];
+          if(f.isFunction()){
+            if(f.str() == name){
+              size_t size = f.size();
+              
+              if(ctors.hasKey(size)){
+                error(f, "duplicate ctor");
+                continue;
+              }
+              
+              nvar ctor = func("Ctor") << func("NObject") << move(f) << move(bi[1]);
+              ctors(size) = move(ctor);
+            }
+          }
+          else{
+            stmts << move(bi);
+          }
+        }
+        else{
+          stmts << move(bi);
+        }
+      }
     }
     
   private:

@@ -979,6 +979,58 @@ namespace neu{
     }
     
     nvar New(const nvar& v){
+      ThreadContext* context = getContext();
+
+      nstr n = "__class_" + v.str();
+      nvar s;
+      
+      getSymbolNone(context, n, s);
+      if(s.some()){
+        const nmap& m = s["ctors"];
+
+        auto itr = m.find(v.size());
+        if(itr == m.end()){
+          return Throw(v, "New[0] invalid ctor");
+        }
+
+        const nvar& ctor = itr->second;
+        const nvar& f = ctor[1];
+        
+        NScope scope(true);
+        context->pushScope(&scope);
+
+        for(size_t i = 0; i < f.size(); ++i){
+          const nvar& si = f[i];
+          const nvar& pi = v[i];
+          
+          scope.setSymbolFast(si, pi);
+        }
+
+        NObject* o;
+        try{
+          o = New(ctor[0]).ptr<NObject>();
+        }
+        catch(NError& e){
+          context->popScope();
+          return Throw(v, "New[0] failed to create base object");
+        }
+
+        context->popScope();
+        
+        o->PushScope(&scope);
+        try{
+          o->process(s["stmts"]);
+          o->process(ctor[2]);
+        }
+        catch(NError& e){
+          delete o;
+          return Throw(v, "New[0] failed to construct object");
+        }
+        o->PopScope();
+
+        return o;
+      }
+    
       NObjectBase* o = NClass::create(v);
       
       if(o){
@@ -1144,6 +1196,16 @@ namespace neu{
       nvar p2 = process(v2);
       
       p1.outerMerge(p2);
+      
+      return none;
+    }
+    
+    nvar Class(const nvar& v1){
+      nstr n = "__class_" + v1["name"].str();
+      
+      ThreadContext* context = getContext();
+      NScope* scope = context->topScope();
+      scope->setSymbol(n, v1);
       
       return none;
     }
@@ -1656,6 +1718,12 @@ FuncMap::FuncMap(){
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
         OuterMerge(v[0], v[1]);
+      });
+  
+  add("Class", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Class(v[0]);
       });
   
   add("foo", 1,

@@ -253,6 +253,8 @@ namespace neu{
     
     nvar OuterMerge(const nvar& v1, const nvar& v2);
     
+    nvar Class(const nvar& v1);
+    
     friend class NObject_;
     
   private:

@@ -88,12 +88,26 @@ int main(int argc, char** argv){
     program.exit(0);
   }
 
-  stifle_history(100);
-
   NObject o;
   //NMObject o;
   NMLParser parser;
   NMLGenerator generator;
+
+  for(size_t i = 0; i < args.size(); ++i){
+    nvar n = parser.parseFile(args[i]);
+
+    cout << "n is: " << n << endl;
+
+    if(!n.some()){
+      NProgram::exit(1);
+    }
+
+    nvar r = o.process(n);
+
+    cout << "r is: " << r << endl;
+  }
+
+  stifle_history(100);
 
   for(;;){
     char* line = readline(">>> ");
