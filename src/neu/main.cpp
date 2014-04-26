@@ -116,17 +116,17 @@ int main(int argc, char** argv){
 
     cout << "<<< " << v << endl;
 
-    try{
+    //try{
       nvar r = o.process(v);
 
       if(r.some()){
         generator.generate(cout, r);
         cout << endl;
       }
-    }
-    catch(NError& e){
-      cerr << e.msg() << endl;
-    }
+      //}
+      //catch(NError& e){
+      //cerr << e.msg() << endl;
+      //}
   }
   
   cout << endl;

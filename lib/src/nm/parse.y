@@ -84,7 +84,7 @@ func_list: func_list ',' func {
   $$ << $3;
 }
 | func {
-  $$ = PS->func("Tuple") << $1;
+  $$ = PS->func("Funcs") << $1;
 }
 ;
 

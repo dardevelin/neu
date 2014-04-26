@@ -191,6 +191,11 @@ namespace neu{
     void emitStatement(ostream& ostr,
                        const nstr& indent,
                        const nvar& v){
+      if(!v.isFunction()){
+        emitExpression(ostr, indent, v);
+        return;
+      }
+      
       FunctionKey key = getFunctionKey(v);
       
       switch(key){

@@ -67,7 +67,7 @@ using namespace neu;
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT KW_CLASS
 
 %type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels
 
@@ -90,12 +90,6 @@ using namespace neu;
 input: /* empty */
 | input stmt {
   PS->emit($2);
-}
-| input func '{' expr '}'{
-  PS->emit(PS->func("Def") << $2 << $4);
-}
-| input func block {
-  PS->emit(PS->func("Def") << $2 << $3);
 }
 ;
 
@@ -426,6 +420,12 @@ stmt: expr ';' {
 }
 | KW_SWITCH '(' expr ')' '{' case_stmts '}' {
   $$ = PS->createSwitch($3, $6);
+}
+| func '{' expr '}'{
+  $$ = PS->func("Def") << move($1) << move($3);
+}
+| func block {
+  $$ = PS->func("Def") << move($1) << move($2);
 }
 ;
 

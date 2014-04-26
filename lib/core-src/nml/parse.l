@@ -137,6 +137,7 @@ KW_CONTINUE continue
 KW_SWITCH switch
 KW_CASE case
 KW_DEFAULT default
+KW_CLASS class
 
 %%
 
@@ -284,6 +285,11 @@ KW_DEFAULT default
 {KW_DEFAULT} {
   PS->advance(yytext, "keyword");
   return KW_DEFAULT;
+}
+
+{KW_CLASS} {
+  PS->advance(yytext, "keyword");
+  return KW_CLASS;
 }
 
 {INTEGER} {

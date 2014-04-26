@@ -69,7 +69,7 @@ using namespace neu;
 
 %token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_THIS KW_TRUE KW_FALSE KW_FOR KW_IF KW_ELSE KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_CLASS KW_SWITCH KW_CASE KW_DEFAULT KW_EXTERN DEFINE DOUBLE INTEGER TYPE PTR_TYPE FLOAT
 
-%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args params block stmts if_stmt classes case_stmts case_stmt case_label case_labels var_decl
+%type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func_def args params block stmts if_stmt class_defs case_stmts case_stmt case_label case_labels var_decl
 
 %left ','
 %right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
@@ -90,7 +90,7 @@ using namespace neu;
 %%
 
 input: /* empty */
-| input KW_CLASS IDENTIFIER '{' classes '}' {
+| input KW_CLASS IDENTIFIER '{' class_defs '}' {
   PS->addClass($3, $5);
 }
 | input DEFINE IDENTIFIER expr {
@@ -115,7 +115,7 @@ var_decl: TYPE IDENTIFIER {
 }
 ;
 
-classes: func_def block {
+class_defs: func_def block {
   $$ = PS->newClass();
   $1 << move($2);
   PS->addMethod($$, $1);
@@ -124,12 +124,12 @@ classes: func_def block {
   $$ = PS->newClass();
   PS->addAttribute($$, $1);
 }
-| classes func_def block {
+| class_defs func_def block {
   $$ = move($1);
   $2 << move($3);
   PS->addMethod($$, $2);
 }
-| classes var_decl ';' {
+| class_defs var_decl ';' {
   $$ = move($1);
   PS->addAttribute($$, $2);
 }
