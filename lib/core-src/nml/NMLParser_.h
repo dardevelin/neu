@@ -84,6 +84,10 @@ namespace neu{
       metadata_ = flag;
     }
     
+    bool interactive(){
+      return interactive_;
+    }
+    
     void advance(const char* text, const nstr& tag=""){
       advance(strlen(text), tag);
     }
@@ -127,9 +131,42 @@ namespace neu{
       return token;
     }
     
+    nvar parse(nvar* tags){      
+      out_ = nfunc("Block");
+      
+      interactive_ = true;
+      openTokens_ = 0;
+      tags_ = tags;
+      line_ = 1;
+      char_ = 0;
+      status_ = 0;
+      file_ = "";
+      
+      nml_lex_init(&scanner_);
+      nml_set_extra(this, scanner_);
+      
+      FILE* file = readLine();
+      if(file){
+        nml_set_in(file, scanner_);
+        nml_parse(this, scanner_);
+      }
+      
+      fclose(file);
+      
+      nml_lex_destroy(scanner_);
+      
+      if(status_ != 0){
+        return none;
+      }
+      
+      return out_.size() == 1 ? out_[0] : out_;
+    }
+    
     nvar parse(const nstr& code, nvar* tags){
       out_ = nfunc("Block");
       
+      interactive_ = false;
+      openTokens_ = 0;
       tags_ = tags;
       line_ = 1;
       char_ = 0;
@@ -165,6 +202,8 @@ namespace neu{
     nvar parseFile(const nstr& path, nvar* tags){
       out_ = nfunc("Block");
       
+      interactive_ = false;
+      openTokens_ = 0;
       tags_ = tags;
       line_ = 1;
       char_ = 0;
@@ -368,18 +407,16 @@ namespace neu{
         }
         else if(bi.isFunction("Def", 2)){
           nvar& f = bi[0];
-          if(f.isFunction()){
-            if(f.str() == name){
-              size_t size = f.size();
-              
-              if(ctors.hasKey(size)){
-                error(f, "duplicate ctor");
-                continue;
-              }
-              
-              nvar ctor = func("Ctor") << func("NObject") << move(f) << move(bi[1]);
-              ctors(size) = move(ctor);
+          if(f.isFunction() && f.str() == name){
+            size_t size = f.size();
+            
+            if(ctors.hasKey(size)){
+              error(f, "duplicate ctor");
+              continue;
             }
+            
+            nvar ctor = func("Ctor") << func("NObject") << move(f) << move(bi[1]);
+            ctors(size) = move(ctor);
           }
           else{
             stmts << move(bi);
@@ -389,6 +426,38 @@ namespace neu{
           stmts << move(bi);
         }
       }
+    }
+    
+    FILE* readLine(){
+      nstr line;
+      if(!o_->readLine(line)){
+        return 0;
+      }
+         
+      line += "\n";
+         
+      int pfd[2];
+      
+      pipe(pfd);
+      
+      FILE* file = fdopen(pfd[1], "w");
+      
+      fwrite(line.c_str(), 1, line.length(), file);
+      fclose(file);
+      
+      return fdopen(pfd[0], "r");
+    }
+    
+    void openToken(){
+      ++openTokens_;
+    }
+    
+    void closeToken(){
+      --openTokens_;
+    }
+    
+    bool hasOpenTokens(){
+      return openTokens_ != 0;
     }
     
   private:
@@ -403,6 +472,8 @@ namespace neu{
     void* scanner_;
     nvar out_;
     bool metadata_;
+    bool interactive_;
+    size_t openTokens_;
   };
   
 } // end namespace neu

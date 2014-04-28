@@ -130,6 +130,10 @@ NMLParser::~NMLParser(){
   delete x_;
 }
 
+nvar NMLParser::parse(nvar* tags){
+  return x_->parse(tags);
+}
+
 nvar NMLParser::parse(const nstr& code, nvar* tags){
   return x_->parse(code, tags);
 }

@@ -391,25 +391,27 @@ args: /* empty */ {
 }
 ;
 
-stmt: expr ';' {
+end: ';' | ENDL;
+
+stmt: expr end {
   $$ = move($1);
 }
-| ';' {
+| end {
   $$ = none;
 }
 | if_stmt {
   $$ = move($1);
 }
-| KW_RETURN ';' {
+| KW_RETURN end {
   $$ = PS->func("Ret");
 }
-| KW_RETURN expr ';' {
+| KW_RETURN expr end {
   $$ = PS->func("Ret") << move($2);
 }
-| KW_BREAK ';' {
+| KW_BREAK end {
   $$ = PS->func("Break");
 }
-| KW_CONTINUE ';' {
+| KW_CONTINUE end {
   $$ = PS->func("Continue");
 }
 | KW_WHILE '(' expr ')' block {

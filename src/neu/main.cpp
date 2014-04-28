@@ -75,6 +75,39 @@ public:
   }
 };
 
+class Parser : public NMLParser{
+public:
+  Parser()
+    : done_(false){
+
+  }
+
+  bool readLine(nstr& line){
+    char* l = readline(">>> ");
+    if(!l){
+      done_ = true;
+      return false;
+    }
+    
+    line = l;
+    line.strip();
+    if(!line.empty()){
+      add_history(l);
+    }
+
+    free(l);
+
+    return true;
+  }
+
+  bool done(){
+    return done_;
+  }
+
+private:
+  bool done_;
+};
+
 int main(int argc, char** argv){
   Program program(argc, argv);
 
@@ -90,7 +123,7 @@ int main(int argc, char** argv){
 
   NObject o;
   //NMObject o;
-  NMLParser parser;
+  Parser parser;
   NMLGenerator generator;
 
   for(size_t i = 0; i < args.size(); ++i){
@@ -110,37 +143,30 @@ int main(int argc, char** argv){
   stifle_history(100);
 
   for(;;){
-    char* line = readline(">>> ");
-    if(!line){
-      break;
+    nvar v = parser.parse();
+
+    if(parser.done()){
+      cout << endl;
+      NProgram::exit(0);
     }
 
-    nstr code = line;
-    code.strip();
-
-    if(!code.empty()){
-      add_history(line);
+    if(v == none){
+      continue;
     }
-
-    free(line);
-
-    code += ";\n";
-
-    nvar v = parser.parse(code);
 
     cout << "<<< " << v << endl;
 
-    //try{
+    try{
       nvar r = o.process(v);
-
+      
       if(r.some()){
         generator.generate(cout, r);
         cout << endl;
       }
-      //}
-      //catch(NError& e){
-      //cerr << e.msg() << endl;
-      //}
+    }
+    catch(NError& e){
+      cerr << e.msg() << endl;
+    }
   }
   
   cout << endl;

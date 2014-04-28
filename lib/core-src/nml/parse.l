@@ -349,16 +349,51 @@ KW_CLASS class
   return STRING_LITERAL;
 }
 
-[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^\{\}\[\]\(\)] {
+[\+\-\/\%\*\,\.\;\=\<\>\:\!\|\^] {
   PS->advance(1, "operator");
+  return *yytext;
+}
+
+[\[\(\{] {
+  PS->advance(1, "operator");
+  PS->openToken();
+  return *yytext;
+}
+
+[\]\)\}] {
+  PS->advance(1, "operator");
+  PS->closeToken();
   return *yytext;
 }
 
 [\n] {
   PS->newLine();
+  if(PS->interactive() && !PS->hasOpenTokens()){
+    return ENDL;
+  }
 }
 
 [ \t] { PS->advance(1); }
+
+<<EOF>> {
+  if(PS->interactive()){
+    if(PS->hasOpenTokens()){
+      FILE* file = PS->readLine();
+      if(file){
+        yyin = file;
+      }
+      else{
+        yyterminate();
+      }
+    }
+    else{
+      yyterminate();
+    }
+  }
+  else{
+    yyterminate();
+  }
+}
 
 . { 
   nstr msg = nstr("invalid character: '") + yytext + "'";

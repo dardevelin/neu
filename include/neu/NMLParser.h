@@ -59,7 +59,13 @@ namespace neu{
   public:
     NMLParser();
     
-    ~NMLParser();
+    virtual ~NMLParser();
+    
+    virtual bool readLine(nstr& line){
+      return false;
+    }
+    
+    nvar parse(nvar* tags=0);
     
     nvar parse(const nstr& code, nvar* tags=0);
     

@@ -1017,9 +1017,10 @@ namespace neu{
 
         context->popScope();
         
+        o->process(s["stmts"]);
+        
         o->PushScope(&scope);
         try{
-          o->process(s["stmts"]);
           o->process(ctor[2]);
         }
         catch(NError& e){
