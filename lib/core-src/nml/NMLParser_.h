@@ -131,7 +131,7 @@ namespace neu{
       return token;
     }
     
-    nvar parse(nvar* tags){      
+    nvar parse(nvar* tags){
       out_ = nfunc("Block");
       
       interactive_ = true;

@@ -142,6 +142,11 @@ namespace{
   
   Class _class;
   
+  NFunc _ret0Func;
+  NFunc _ret1Func;
+  NFunc _breakFunc;
+  NFunc _continueFunc;
+  
 } // end namespace
 
 const uint32_t NObject::classId = NObjectBase::getClassId();
@@ -171,6 +176,14 @@ namespace neu{
       
       void popScope(){
         scopeStack.pop_back();
+      }
+      
+      void dumpScopes(){
+        for(size_t i = 0; i < scopeStack.size(); ++i){
+          cout << "---------------------" << endl;
+          scopeStack[i]->dump();
+        }
+        cout << "======================" << endl;
       }
       
       ScopeStack scopeStack;
@@ -339,7 +352,7 @@ namespace neu{
         }
         
         if(scope->isLimiting()){
-          i = sharedScope_ ? 2 : 1;
+          i = sharedScope_ ? 3 : 2;
         }
       }
       
@@ -359,7 +372,7 @@ namespace neu{
         }
         
         if(scope->isLimiting()){
-          i = sharedScope_ ? 2 : 1;
+          i = sharedScope_ ? 3 : 2;
         }
       }
       
@@ -387,7 +400,7 @@ namespace neu{
     }
     
     nvar process(const nvar& v, uint32_t flags=0){
-      //cout << "processing: " << v << endl;
+      cout << "processing: " << v << endl;
       
       const nvar& vd = *v;
       
@@ -424,15 +437,24 @@ namespace neu{
             try{
               nvar r = process(b);
               context->popScope();
+
+              if(r.isFunction()){
+                NFunc f = (*r).func();
+                if(f == _ret0Func){
+                  return none;
+                }
+                else if(f == _ret1Func){
+                  return r[0];
+                }
+              }
+              
               return r;
             }
             catch(NError& e){
               context->popScope();
-              return none;
+              throw e;
             }
           }
-          
-          NERROR("failed to process: " + v);
         }
         case nvar::Symbol:{
           nvar p;
@@ -979,6 +1001,12 @@ namespace neu{
     }
     
     nvar New(const nvar& v){
+      NObjectBase* o = NClass::create(v);
+      
+      if(o){
+        return o;
+      }
+      
       ThreadContext* context = getContext();
 
       nstr n = "__class_" + v.str();
@@ -1031,12 +1059,6 @@ namespace neu{
 
         return o;
       }
-    
-      NObjectBase* o = NClass::create(v);
-      
-      if(o){
-        return o;
-      }
       
       return Throw(v, "New[0] failed to create: " + v);
     }
@@ -1058,6 +1080,15 @@ namespace neu{
       
       return Throw(v1, "New[0] failed to create: " + v1);
     }
+
+    nvar Ret(const nvar& v){
+      nvar p = process(v);
+      
+      nvar r = nfunc("Ret") << move(p);
+      (*r).setFunc(_ret1Func);
+      
+      return r;
+    }
     
     nvar Block_n(const nvar& v){
       size_t size = v.size();
@@ -1065,6 +1096,15 @@ namespace neu{
       nvar r = none;
       for(size_t i = 0; i < size; ++i){
         r = process(v[i]);
+        if(r.isFunction()){
+          NFunc f = (*r).func();
+          if(f == _ret0Func ||
+             f == _ret1Func ||
+             f == _breakFunc ||
+             f == _continueFunc){
+            return r;
+          }
+        }
       }
       
       return r;
@@ -1242,6 +1282,11 @@ namespace neu{
       assert(broker_);
       
       return broker_->process_(o_, n);
+    }
+    
+    void dumpScopes(){
+      ThreadContext* context = getContext();
+      context->dumpScopes();
     }
     
   private:
@@ -1625,6 +1670,31 @@ FuncMap::FuncMap(){
         Block_n(v);
       });
   
+  _ret0Func =
+  add("Ret", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return v;
+      });
+  
+  _ret1Func =
+  add("Ret", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Ret(v[0]);
+      });
+  
+  _breakFunc =
+  add("Break", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return v;
+      });
+  
+  _continueFunc =
+  add("Continue", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return v;
+      });
+  
   add("PushScope", 1,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
@@ -1731,6 +1801,12 @@ FuncMap::FuncMap(){
       [](void* o, const nvar& v) -> nvar{
         NObject_::inner(static_cast<NObject*>(o))->
         foo(*v[0]); return none;
+      });
+  
+  add("dumpScopes", 0,
+      [](void* o, const nvar& v) -> nvar{
+        NObject_::inner(static_cast<NObject*>(o))->
+        dumpScopes(); return none;
       });
 }
 
@@ -2100,4 +2176,8 @@ NScope* NObject::currentScope(){
 
 NScope* NObject::objectScope(){
   return x_->objectScope();
+}
+
+void NObject::dumpScopes(){
+  x_->dumpScopes();
 }

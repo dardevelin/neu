@@ -67,12 +67,14 @@ namespace neu{
       
     }
     
-    void add(const nstr& func, NFunc fp){
+    NFunc add(const nstr& func, NFunc fp){
       functorMap_.insert({{func, -1}, fp});
+      return fp;
     }
     
-    void add(const nstr& func, size_t arity, NFunc fp){
+    NFunc add(const nstr& func, size_t arity, NFunc fp){
       functorMap_.insert({{func, arity}, fp});
+      return fp;
     }
     
     NFunc map(const nvar& f) const{

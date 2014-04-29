@@ -255,6 +255,8 @@ namespace neu{
     
     nvar Class(const nvar& v1);
     
+    void dumpScopes();
+    
     friend class NObject_;
     
   private:

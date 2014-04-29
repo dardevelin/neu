@@ -189,6 +189,12 @@ namespace neu{
       return true;
     }
     
+    void dump(){
+      for(auto& itr : symbolMap_){
+        std::cout << itr.first << ": " << itr.second << std::endl;
+      }
+    }
+    
   private:
     struct SymHash_{
       size_t operator()(const nstr& k) const{

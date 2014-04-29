@@ -78,12 +78,19 @@ public:
 class Parser : public NMLParser{
 public:
   Parser()
-    : done_(false){
+ : done_(false),
+  first_(true){
 
   }
 
+  void reset(){
+    first_ = true;
+  }
+  
   bool readLine(nstr& line){
-    char* l = readline(">>> ");
+    char* l = readline(first_ ? ">>> " : "");
+    first_ = false;
+    
     if(!l){
       done_ = true;
       return false;
@@ -106,6 +113,7 @@ public:
 
 private:
   bool done_;
+  bool first_;
 };
 
 int main(int argc, char** argv){
@@ -143,6 +151,7 @@ int main(int argc, char** argv){
   stifle_history(100);
 
   for(;;){
+    parser.reset();
     nvar v = parser.parse();
 
     if(parser.done()){
@@ -158,14 +167,16 @@ int main(int argc, char** argv){
 
     try{
       nvar r = o.process(v);
-      
+
+      cout << "r is: " << r << endl;
+     
       if(r.some()){
         generator.generate(cout, r);
         cout << endl;
       }
     }
     catch(NError& e){
-      cerr << e.msg() << endl;
+      cerr << e << endl;
     }
   }
   

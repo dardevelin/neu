@@ -67,7 +67,8 @@ namespace neu{
     NError_(NError* o, const nstr& msg)
     : o_(o),
     msg_(msg){
-      
+      //cout << "msg is: " << msg << endl;
+      //assert(false);
     }
     
     NError_(NError* o, const nstr& msg, const nvar& var)
