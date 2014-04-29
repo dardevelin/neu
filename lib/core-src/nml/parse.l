@@ -130,6 +130,7 @@ KW_UNDEF undef
 KW_NEW new
 KW_IF if
 KW_ELSE else
+KW_FOR for
 KW_WHILE while
 KW_RETURN return
 KW_BREAK break
@@ -250,6 +251,11 @@ KW_CLASS class
 {KW_ELSE} {
   PS->advance(yytext, "keyword");
   return KW_ELSE;
+}
+
+{KW_FOR} {
+  PS->advance(yytext, "keyword");
+  return KW_FOR;
 }
 
 {KW_WHILE} {

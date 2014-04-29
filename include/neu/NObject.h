@@ -255,6 +255,14 @@ namespace neu{
     
     nvar Class(const nvar& v1);
     
+    nvar If(const nvar& v1, const nvar& v2);
+    
+    nvar If(const nvar& v1, const nvar& v2, const nvar& v3);
+    
+    nvar For(const nvar& v1, const nvar& v2, const nvar& v3, const nvar& v4);
+    
+    nvar While(const nvar& v1, const nvar& v2);
+    
     void dumpScopes();
     
     friend class NObject_;

@@ -455,6 +455,8 @@ namespace neu{
               throw e;
             }
           }
+          
+          return Throw(v, "failed to process function");
         }
         case nvar::Symbol:{
           nvar p;
@@ -1283,6 +1285,76 @@ namespace neu{
       return none;
     }
     
+    nvar For(const nvar& v1, const nvar& v2, const nvar& v3, const nvar& v4){
+      process(v1);
+      
+      for(;;){
+        nvar c = process(v2);
+        if(!c){
+          return none;
+        }
+
+        nvar r = process(v4);
+
+        bool should = true;
+        if(r.isFunction()){
+          NFunc f = (*r).func();
+          if(f == _ret0Func || f == _ret1Func){
+            return r;
+          }
+          else if(f == _breakFunc){
+            return none;
+          }
+          else if(f == _continueFunc){
+            should = false;
+          }
+        }
+        
+        if(should){
+          process(v3);
+        }
+      }
+      
+      return none;
+    }
+    
+    nvar While(const nvar& v1, const nvar& v2){
+      for(;;){
+        nvar c = process(v1);
+        if(!c){
+          return none;
+        }
+        
+        nvar r = process(v2);
+        
+        bool should = true;
+        if(r.isFunction()){
+          NFunc f = (*r).func();
+          if(f == _ret0Func || f == _ret1Func){
+            return r;
+          }
+          else if(f == _breakFunc){
+            return none;
+          }
+        }
+      }
+    }
+    
+    nvar If(const nvar& v1, const nvar& v2){
+      if(process(v1)){
+        return process(v2);
+      }
+    }
+    
+    nvar If(const nvar& v1, const nvar& v2, const nvar& v3){
+      if(process(v1)){
+        return process(v2);
+      }
+      else{
+        return process(v3);
+      }
+    }
+    
     void foo(nvar& x){
       cout << "called foo" << endl;
       
@@ -1828,6 +1900,30 @@ FuncMap::FuncMap(){
         return NObject_::inner(static_cast<NObject*>(o))->
         OuterMerge(v[0], v[1]);
       });
+
+  add("If", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        If(v[0], v[1]);
+      });
+  
+  add("If", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        If(v[0], v[1], v[2]);
+      });
+  
+  add("For", 4,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        For(v[0], v[1], v[2], v[3]);
+      });
+  
+  add("While", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        While(v[0], v[1]);
+      });
   
   add("Class", 1,
       [](void* o, const nvar& v) -> nvar{
@@ -2202,6 +2298,25 @@ nvar NObject::Merge(const nvar& v1, const nvar& v2){
 
 nvar NObject::OuterMerge(const nvar& v1, const nvar& v2){
   return x_->OuterMerge(v1, v2);
+}
+
+nvar NObject::For(const nvar& v1,
+                  const nvar& v2,
+                  const nvar& v3,
+                  const nvar& v4){
+  return x_->For(v1, v2, v3, v4);
+}
+
+nvar NObject::While(const nvar& v1, const nvar& v2){
+  return x_->While(v1, v2);
+}
+
+nvar NObject::If(const nvar& v1, const nvar& v2){
+  return x_->If(v1, v2);
+}
+
+nvar NObject::If(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->If(v1, v2, v3);
 }
 
 void NObject::foo(nvar& x){
