@@ -351,11 +351,12 @@ namespace neu{
       }
     }
     
-    nvar createSwitch(const nvar& v, const nvar& cs){
+    void createSwitch(nvar& out, const nvar& v, const nvar& cs){
       const nmmap& mm = cs;
       
-      nvar ret = func("Switch") << v;
-      nvar d = none;
+      out = func("Switch") << v << none << undef;
+      nvar& d = out[1];
+      nvar& m = out[2];
       
       for(auto& itr : mm){
         const nvar& k = itr.first;
@@ -369,7 +370,7 @@ namespace neu{
           continue;
         }
         
-        if(ret.hasKey(k)){
+        if(m.hasKey(k)){
           error(k, "duplicate case in switch");
           continue;
         }
@@ -379,12 +380,8 @@ namespace neu{
           continue;
         }
         
-        ret(k) = v;
+        m(k) = v;
       }
-      
-      ret << d;
-      
-      return ret;
     }
     
     void createClass(nvar& c, const nstr& name, nvar& block){

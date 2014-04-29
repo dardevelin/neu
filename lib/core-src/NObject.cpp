@@ -1390,6 +1390,21 @@ namespace neu{
       }
     }
     
+    nvar Switch(const nvar& v1, const nvar& v2, const nvar& v3){
+      nvar p1 = process(v1);
+      const nmap& m = v3;
+      
+      auto itr = m.find(p1);
+      if(itr == m.end()){
+        process(v2);
+        return none;
+      }
+      
+      process(itr->second);
+      
+      return none;
+    }
+    
     void foo(nvar& x){
       cout << "called foo" << endl;
       
@@ -1966,6 +1981,12 @@ FuncMap::FuncMap(){
         While(v[0], v[1]);
       });
   
+  add("Switch", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Switch(v[0], v[1], v[2]);
+      });
+  
   add("Class", 1,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
@@ -2358,6 +2379,10 @@ nvar NObject::If(const nvar& v1, const nvar& v2){
 
 nvar NObject::If(const nvar& v1, const nvar& v2, const nvar& v3){
   return x_->If(v1, v2, v3);
+}
+
+nvar NObject::Switch(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->Switch(v1, v2, v3);
 }
 
 void NObject::foo(nvar& x){

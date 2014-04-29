@@ -263,6 +263,8 @@ namespace neu{
     
     nvar While(const nvar& v1, const nvar& v2);
     
+    nvar Switch(const nvar& v1, const nvar& v2, const nvar& v3);
+    
     void dumpScopes();
     
     friend class NObject_;

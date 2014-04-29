@@ -423,7 +423,7 @@ stmt: expr end {
   $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
 }
 | KW_SWITCH '(' expr ')' '{' case_stmts '}' {
-  $$ = PS->createSwitch($3, $6);
+  PS->createSwitch($$, $3, $6);
 }
 | func '{' expr '}'{
   $$ = PS->func("Def") << move($1) << move($3);
