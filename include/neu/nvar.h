@@ -3669,12 +3669,9 @@ namespace neu{
       if(hasKey("__file")){
         loc = (*this)["__file"].str() + ":";
       }
-      else{
-        loc = "<unknown>:";
-      }
       
       if(hasKey("__line")){
-        loc = (*this)["__line"].toStr();
+        loc += (*this)["__line"].toStr();
       }
       
       return loc;

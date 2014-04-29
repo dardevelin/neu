@@ -247,7 +247,7 @@ namespace neu{
       
       ostream& estr = *estr_;
       
-      estr << "NPLParser error: ";
+      estr << "NMLParser error: ";
       
       nstr loc = n.getLocation();
       
@@ -261,7 +261,19 @@ namespace neu{
     }
     
     void error(const nstr& type){
-      error(none, "NML parser error");
+      *estr_ << "NMLParser error: " << getLocation() << ": " << type << endl;
+    }
+    
+    nstr getLocation(){
+      nstr loc;
+      
+      if(!file_.empty()){
+        loc += file_ + ":";
+      }
+      
+      loc += nvar(line_);
+      
+      return loc;
     }
     
     nvar func(const nstr& f){
