@@ -3663,6 +3663,39 @@ namespace neu{
       return ret;
     }
   
+    nstr getLocation() const{
+      nstr loc;
+      
+      if(hasKey("__file")){
+        loc = (*this)["__file"].str() + ":";
+      }
+      else{
+        loc = "<unknown>:";
+      }
+      
+      if(hasKey("__line")){
+        loc = (*this)["__line"].toStr();
+      }
+      
+      return loc;
+    }
+    
+    void setFile(const nstr& file){
+      (*this)("__file") = file;
+    }
+    
+    nstr getFile() const{
+      return get("__file", "");
+    }
+    
+    void setLine(size_t line){
+      (*this)("__line") = line;
+    }
+    
+    size_t getLine() const{
+      return get("__line", 0);
+    }
+    
   private:
     char* pack_(char* buf, uint32_t& size, uint32_t& pos) const;
     void unpack_(char* buf, uint32_t& pos);

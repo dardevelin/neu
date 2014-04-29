@@ -134,18 +134,22 @@ int main(int argc, char** argv){
   Parser parser;
   NMLGenerator generator;
 
-  for(size_t i = 0; i < args.size(); ++i){
-    nvar n = parser.parseFile(args[i]);
+  if(!args.empty()){
+    for(size_t i = 0; i < args.size(); ++i){
+      nvar n = parser.parseFile(args[i]);
+      
+      cout << "n is: " << n << endl;
+      
+      if(!n.some()){
+        NProgram::exit(1);
+      }
+      
+      nvar r = o.process(n);
 
-    cout << "n is: " << n << endl;
+      cout << "r is: " << r << endl;
+    }   
 
-    if(!n.some()){
-      NProgram::exit(1);
-    }
-
-    nvar r = o.process(n);
-
-    cout << "r is: " << r << endl;
+    NProgram::exit(0);
   }
 
   stifle_history(100);

@@ -249,17 +249,12 @@ namespace neu{
       
       estr << "NPLParser error: ";
       
-      if(n.hasKey("__file")){
-        estr << n["__file"].str() << ":";
-      }
+      nstr loc = n.getLocation();
       
-      if(n.hasKey("__line")){
-        estr << n["__line"] << ": ";
+      if(!loc.empty()){
+        estr << loc << ": ";
       }
-      else{
-        estr << " ";
-      }
-      
+
       estr << message << endl;
       
       return nsym("Error");
@@ -271,10 +266,10 @@ namespace neu{
     
     nvar func(const nstr& f){
       nvar v = nfunc(f);
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;
@@ -282,10 +277,10 @@ namespace neu{
     
     nvar func(const char* f){
       nvar v = nfunc(f);
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;
@@ -297,10 +292,10 @@ namespace neu{
     
     nvar sym(const nstr& s){
       nvar v = nsym(s);
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;
@@ -312,10 +307,10 @@ namespace neu{
     
     nvar sym(const char* s){
       nvar v = nsym(s);
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;

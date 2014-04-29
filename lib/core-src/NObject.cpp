@@ -400,7 +400,7 @@ namespace neu{
     }
     
     nvar process(const nvar& v, uint32_t flags=0){
-      cout << "processing: " << v << endl;
+      //cout << "processing: " << v << endl;
       
       const nvar& vd = *v;
       
@@ -469,11 +469,18 @@ namespace neu{
     }
     
     nvar Throw(const nvar& v1, const nvar& v2){
-      nstr msg = process(v2);
+      nstr msg = v1.toStr() + ": ";
+      
+      nstr loc = v1.getLocation();
+      if(!loc.empty()){
+        msg += loc + ": ";
+      }
+      
+      msg += process(v2).str();
       
       NERROR(msg);
       
-      return 0;
+      return none;
     }
     
     nvar Reset(){
@@ -1110,6 +1117,31 @@ namespace neu{
       return r;
     }
     
+    nvar Print_n(const nvar& v){
+      nstr s = process(v[0]);
+      
+      size_t size = v.size();
+      size_t pos = 0;
+
+      for(size_t i = 1; i < size; ++i){
+        size_t p = s.find("%v", pos);
+      
+        if(p == nstr::npos){
+          return Throw(v, "Print[" + nvar(i) + "] missing token");
+        }
+
+        nstr ri = process(v[i]).toStr();
+        
+        s.replace(p, 2, ri);
+
+        pos = p + ri.length();
+      }
+      
+      cout << s << endl;
+      
+      return none;
+    }
+    
     nvar PushScope(const nvar& v){
       nvar p = process(v);
       
@@ -1668,6 +1700,12 @@ FuncMap::FuncMap(){
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
         Block_n(v);
+      });
+  
+  add("Print",
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        Print_n(v);
       });
   
   _ret0Func =

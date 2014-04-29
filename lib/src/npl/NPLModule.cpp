@@ -519,8 +519,8 @@ namespace{
     }
     
     Value* error(const nstr& msg, const nvar& n){
-      size_t line = n.get("__line", 0);
-      nstr file = n.get("__file", "");
+      size_t line = n.getLine();
+      nstr file = n.getFile();
       
       *estr_ << "NPL compiler error: ";
       

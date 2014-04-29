@@ -300,10 +300,10 @@ namespace neu{
     
     nvar func(const nstr& f){
       nvar v = nfunc(f);
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;
@@ -311,10 +311,10 @@ namespace neu{
     
     nvar func(const char* f){
       nvar v = nfunc(f);
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;
@@ -334,10 +334,10 @@ namespace neu{
         v = nsym(s);
       }
 
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;
@@ -357,10 +357,10 @@ namespace neu{
         v = nsym(s);
       }
       
-      v("__line") = line_;
+      v.setLine(line_);
       
       if(!file_.empty()){
-        v("__file") = file_;
+        v.setFile(file_);
       }
       
       return v;
