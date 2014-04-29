@@ -1101,8 +1101,8 @@ namespace neu{
     
     nvar Block_n(const nvar& v){
       size_t size = v.size();
-      
       nvar r = none;
+
       for(size_t i = 0; i < size; ++i){
         r = process(v[i]);
         if(r.isFunction()){
@@ -1115,6 +1115,41 @@ namespace neu{
           }
         }
       }
+      
+      return r;
+    }
+    
+    nvar ScopedBlock_n(const nvar& v){
+      ThreadContext* context = getContext();
+      
+      NScope scope;
+      context->pushScope(&scope);
+      
+      size_t size = v.size();
+      nvar r = none;
+
+      for(size_t i = 0; i < size; ++i){
+        try{
+          r = process(v[i]);
+        }
+        catch(NError& e){
+          context->popScope();
+          throw e;
+        }
+        
+        if(r.isFunction()){
+          NFunc f = (*r).func();
+          if(f == _ret0Func ||
+             f == _ret1Func ||
+             f == _breakFunc ||
+             f == _continueFunc){
+            context->popScope();
+            return r;
+          }
+        }
+      }
+      
+      context->popScope();
       
       return r;
     }
@@ -1772,6 +1807,12 @@ FuncMap::FuncMap(){
       [](void* o, const nvar& v) -> nvar{
         return NObject_::inner(static_cast<NObject*>(o))->
         Block_n(v);
+      });
+  
+  add("ScopedBlock",
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::inner(static_cast<NObject*>(o))->
+        ScopedBlock_n(v);
       });
   
   add("Print",

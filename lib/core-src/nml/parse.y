@@ -415,9 +415,11 @@ stmt: expr end {
   $$ = PS->func("Continue");
 }
 | KW_WHILE '(' expr ')' block {
+  $3.str() = "ScopedBlock";
   $$ = PS->func("While") << move($3) << move($5);
 }
 | KW_FOR '(' stmt stmt expr ')' block {
+  $7.str() = "ScopedBlock";
   $$ = PS->func("For") << move($3) << move($4) << move($5) << move($7);
 }
 | KW_SWITCH '(' expr ')' '{' case_stmts '}' {
@@ -435,12 +437,16 @@ stmt: expr end {
 ;
 
 if_stmt: KW_IF '(' expr ')' block {
+  $5.str() = "ScopedBlock";
   $$ = PS->func("If") << move($3) << move($5);
 }
 | KW_IF '(' expr ')' block KW_ELSE block {
+  $5.str() = "ScopedBlock";
+  $7.str() = "ScopedBlock";
   $$ = PS->func("If") << move($3) << move($5) << move($7);
 }
 | KW_IF '(' expr ')' block KW_ELSE if_stmt {
+  $5.str() = "ScopedBlock";
   $$ = PS->func("If") << move($3) << move($5) << move($7);
 }
 ;
@@ -487,7 +493,7 @@ case_labels: case_labels case_label {
 ;
 
 block: '{' stmts '}' {
-  $$ = $2;
+  $$ = move($2);
 }
 | '{' '}' {
   $$ = PS->func("Block");
