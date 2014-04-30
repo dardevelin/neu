@@ -296,8 +296,8 @@ namespace neu{
       }
     }
     
-    static NObject_* inner(NObject* o){
-      return o->x_;
+    static NObject_* obj(void* o){
+      return static_cast<NObject*>(o)->x_;
     }
     
     void setStrict(bool flag){
@@ -1405,6 +1405,319 @@ namespace neu{
       return none;
     }
     
+    nvar IsFalse(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isFalse();
+    }
+    
+    nvar IsTrue(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isTrue();
+    }
+    
+    nvar IsDefined(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isDefined();
+    }
+    
+    nvar IsString(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isString();
+    }
+    
+    nvar IsSymbol(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isSymbol();
+    }
+    
+    nvar IsFunction(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isFunction();
+    }
+    
+    nvar IsFunction(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      return p1.isFunction(p2);
+    }
+    
+    nvar IsFunction(const nvar& v1, const nvar& v2, const nvar& v3){
+      nvar p1 = process(v1);
+      nstr f = process(v2);
+      size_t arity = process(v3);
+      
+      return p1.isFunction(f, arity);
+    }
+    
+    nvar IsSymbolic(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isSymbolic();
+    }
+    
+    nvar IsNumeric(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isNumeric();
+    }
+    
+    nvar IsReference(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isReference();
+    }
+    
+    nvar IsPointer(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isPointer();
+    }
+    
+    nvar IsInteger(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isInteger();
+    }
+    
+    nvar IsRational(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isRational();
+    }
+    
+    nvar IsReal(const nvar& v){
+      nvar p = process(v);
+      
+      return p.isReal();
+    }
+    
+    nvar GetStr(const nvar& v){
+      nvar p = process(v);
+      
+      return p.str();
+    }
+    
+    nvar GetVec(const nvar& v){
+      nvar p = process(v);
+      
+      return p.vec();
+    }
+    
+    nvar GetList(const nvar& v){
+      nvar p = process(v);
+      
+      return p.list();
+    }
+    
+    nvar GetAnySequence(const nvar& v){
+      nvar p = process(v);
+      
+      return p.anySequence();
+    }
+    
+    nvar GetMap(const nvar& v){
+      nvar p = process(v);
+      
+      return p.map();
+    }
+    
+    nvar GetMultimap(const nvar& v){
+      nvar p = process(v);
+      
+      return p.multimap();
+    }
+    
+    nvar GetAnyMap(const nvar& v){
+      nvar p = process(v);
+      
+      return p.anyMap();
+    }
+    
+    nvar Append(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.append(p2);
+      
+      return none;
+    }
+    
+    nvar Normalize(const nvar& v){
+      nvar p = process(v);
+      
+      return p.normalize();
+    }
+    
+    nvar Head(const nvar& v){
+      nvar p = process(v);
+      
+      return p.head();
+    }
+    
+    nvar SetHead(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.setHead(p2);
+      
+      return none;
+    }
+    
+    nvar ClearHead(const nvar& v){
+      nvar p = process(v);
+      p.clearHead();
+      
+      return none;
+    }
+    
+    nvar NumKeys(const nvar& v){
+      nvar p = process(v);
+      
+      return p.numKeys();
+    }
+    
+    nvar Size(const nvar& v){
+      nvar p = process(v);
+      
+      return p.size();
+    }
+    
+    nvar MapEmpty(const nvar& v){
+      nvar p = process(v);
+      
+      return p.mapEmpty();
+    }
+    
+    nvar AllEmpty(const nvar& v){
+      nvar p = process(v);
+      
+      return p.allEmpty();
+    }
+    
+    nvar HasVector(const nvar& v){
+      nvar p = process(v);
+      
+      return p.hasVector();
+    }
+    
+    nvar HasList(const nvar& v){
+      nvar p = process(v);
+      
+      return p.hasList();
+    }
+    
+    nvar HasMap(const nvar& v){
+      nvar p = process(v);
+      
+      return p.hasMap();
+    }
+    
+    nvar HasMultimap(const nvar& v){
+      nvar p = process(v);
+      
+      return p.hasMultimap();
+    }
+    
+    nvar PopFront(const nvar& v){
+      nvar p = process(v);
+      
+      return p.popFront();
+    }
+    
+    nvar AllKeys(const nvar& v){
+      nvar p = process(v);
+      
+      return p.allKeys();
+    }
+    
+    nvar TouchVector(const nvar& v){
+      nvar p = process(v);
+      
+      p.touchVector();
+      
+      return none;
+    }
+    
+    nvar TouchMap(const nvar& v){
+      nvar p = process(v);
+      
+      p.touchMap();
+      
+      return none;
+    }
+    
+    nvar Open(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.open(p2);
+      
+      return none;
+    }
+    
+    nvar Save(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.save(p2);
+      
+      return none;
+    }
+    
+    nvar Unite(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.unite(p2);
+      
+      return p1;
+    }
+    
+    nvar Unite(const nvar& v1, const nvar& v2, const nvar& v3){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      nvar p3 = process(v3);
+      
+      p1.unite(p2, p3);
+      
+      return p1;
+    }
+    
+    nvar Intersect(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.intersect(p2);
+      
+      return p1;
+    }
+    
+    nvar Intersect(const nvar& v1, const nvar& v2, const nvar& v3){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      nvar p3 = process(v3);
+      
+      p1.intersect(p2, p3);
+      
+      return p1;
+    }
+    
+    nvar Complement(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      p1.complement(p2);
+      
+      return p1;
+    }
+    
     void foo(nvar& x){
       cout << "called foo" << endl;
       
@@ -1460,380 +1773,317 @@ namespace neu{
 FuncMap::FuncMap(){
   add("Reset", 0,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Reset();
+        return NObject_::obj(o)->Reset();
       });
   
   add("Add", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Add(v[0], v[1]);
+        return NObject_::obj(o)->Add(v[0], v[1]);
       });
   
   add("Sub", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Sub(v[0], v[1]);
+        return NObject_::obj(o)->Sub(v[0], v[1]);
       });
   
   add("Mul", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Mul(v[0], v[1]);
+        return NObject_::obj(o)->Mul(v[0], v[1]);
       });
   
   add("Div", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Div(v[0], v[1]);
+        return NObject_::obj(o)->Div(v[0], v[1]);
       });
   
   add("Mod", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Mod(v[0], v[1]);
+        return NObject_::obj(o)->Mod(v[0], v[1]);
       });
   
   add("Neg", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Neg(v[0]);
+        return NObject_::obj(o)->Neg(v[0]);
       });
   
   add("AddBy", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        AddBy(v[0], v[1]);
+        return NObject_::obj(o)->AddBy(v[0], v[1]);
       });
   
   add("SubBy", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        SubBy(v[0], v[1]);
+        return NObject_::obj(o)->SubBy(v[0], v[1]);
       });
   
   add("MulBy", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        MulBy(v[0], v[1]);
+        return NObject_::obj(o)->MulBy(v[0], v[1]);
       });
   
   add("DivBy", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        DivBy(v[0], v[1]);
+        return NObject_::obj(o)->DivBy(v[0], v[1]);
       });
   
   add("ModBy", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        ModBy(v[0], v[1]);
+        return NObject_::obj(o)->ModBy(v[0], v[1]);
       });
   
   add("Inc", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Inc(v[0]);
+        return NObject_::obj(o)->Inc(v[0]);
       });
   
   add("PostInc", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        PostInc(v[0]);
+        return NObject_::obj(o)->PostInc(v[0]);
       });
   
   add("Dec", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Dec(v[0]);
+        return NObject_::obj(o)->Dec(v[0]);
       });
   
   add("PostDec", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        PostDec(v[0]);
+        return NObject_::obj(o)->PostDec(v[0]);
       });
   
   add("LT", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        LT(v[0], v[1]);
+        return NObject_::obj(o)->LT(v[0], v[1]);
       });
   
   add("LE", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        LE(v[0], v[1]);
+        return NObject_::obj(o)->LE(v[0], v[1]);
       });
   
   add("GT", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        GT(v[0], v[1]);
+        return NObject_::obj(o)->GT(v[0], v[1]);
       });
   
   add("GE", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        GE(v[0], v[1]);
+        return NObject_::obj(o)->GE(v[0], v[1]);
       });
   
   add("EQ", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        EQ(v[0], v[1]);
+        return NObject_::obj(o)->EQ(v[0], v[1]);
       });
   
   add("NE", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        NE(v[0], v[1]);
+        return NObject_::obj(o)->NE(v[0], v[1]);
       });
   
   add("And", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        And(v[0], v[1]);
+        return NObject_::obj(o)->And(v[0], v[1]);
       });
   
   add("Or", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Or(v[0], v[1]);
+        return NObject_::obj(o)->Or(v[0], v[1]);
       });
   
   add("Not", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Not(v[0]);
+        return NObject_::obj(o)->Not(v[0]);
       });
   
   add("Sqrt", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Sqrt(v[0]);
+        return NObject_::obj(o)->Sqrt(v[0]);
       });
   
   add("Exp", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Exp(v[0]);
+        return NObject_::obj(o)->Exp(v[0]);
       });
   
   add("Abs", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Abs(v[0]);
+        return NObject_::obj(o)->Abs(v[0]);
       });
   
   add("Floor", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Floor(v[0]);
+        return NObject_::obj(o)->Floor(v[0]);
       });
   
   add("Ceil", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Ceil(v[0]);
+        return NObject_::obj(o)->Ceil(v[0]);
       });
   
   add("Log10", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Log10(v[0]);
+        return NObject_::obj(o)->Log10(v[0]);
       });
   
   add("Log", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Log(v[0]);
+        return NObject_::obj(o)->Log(v[0]);
       });
   
   add("Cos", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Cos(v[0]);
+        return NObject_::obj(o)->Cos(v[0]);
       });
   
   add("Acos", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Acos(v[0]);
+        return NObject_::obj(o)->Acos(v[0]);
       });
   
   add("Cosh", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Cosh(v[0]);
+        return NObject_::obj(o)->Cosh(v[0]);
       });
   
   add("Sin", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Sin(v[0]);
+        return NObject_::obj(o)->Sin(v[0]);
       });
   
   add("Asin", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Asin(v[0]);
+        return NObject_::obj(o)->Asin(v[0]);
       });
   
   add("Sinh", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Sinh(v[0]);
+        return NObject_::obj(o)->Sinh(v[0]);
       });
   
   add("Tan", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Tan(v[0]);
+        return NObject_::obj(o)->Tan(v[0]);
       });
   
   add("Atan", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Atan(v[0]);
+        return NObject_::obj(o)->Atan(v[0]);
       });
   
   add("Tanh", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Tanh(v[0]);
+        return NObject_::obj(o)->Tanh(v[0]);
       });
   
   add("Var", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Var(v[0]);
+        return NObject_::obj(o)->Var(v[0]);
       });
   
   add("Var", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Var(v[0], v[1]);
+        return NObject_::obj(o)->Var(v[0], v[1]);
       });
   
   add("Var", 3,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Var(v[0], v[1], v[2]);
+        return NObject_::obj(o)->Var(v[0], v[1], v[2]);
       });
   
   add("Set", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Set(v[0], v[1]);
+        return NObject_::obj(o)->Set(v[0], v[1]);
       });
   
   add("VarSet", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        VarSet(v[0], v[1]);
+        return NObject_::obj(o)->VarSet(v[0], v[1]);
       });
   
   add("Get", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Get(v[0]);
+        return NObject_::obj(o)->Get(v[0]);
       });
 
   add("Get", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Get(v[0], v[1]);
+        return NObject_::obj(o)->Get(v[0], v[1]);
       });
   
   add("Idx", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Idx(v[0], v[1]);
+        return NObject_::obj(o)->Idx(v[0], v[1]);
       });
   
   add("Dot", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Dot(v[0], v[1]);
+        return NObject_::obj(o)->Dot(v[0], v[1]);
       });
   
   add("Put", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Put(v[0], v[1]);
+        return NObject_::obj(o)->Put(v[0], v[1]);
       });
   
   add("DotPut", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        DotPut(v[0], v[1]);
+        return NObject_::obj(o)->DotPut(v[0], v[1]);
       });
   
   add("Cs", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Cs(v[0]);
+        return NObject_::obj(o)->Cs(v[0]);
       });
   
   add("In", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        In(v[0], v[1]);
+        return NObject_::obj(o)->In(v[0], v[1]);
       });
   
   add("Call", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Call(v[0]);
+        return NObject_::obj(o)->Call(v[0]);
       });
   
   add("Call", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Call(v[0], v[1]);
+        return NObject_::obj(o)->Call(v[0], v[1]);
       });
   
   add("Def", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Def(v[0], v[1]);
+        return NObject_::obj(o)->Def(v[0], v[1]);
       });
   
   add("Def", 3,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Def(v[0], v[1], v[2]);
+        return NObject_::obj(o)->Def(v[0], v[1], v[2]);
       });
   
   add("New", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        New(v[0]);
+        return NObject_::obj(o)->New(v[0]);
       });
   
   add("New", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        New(v[0], v[1]);
+        return NObject_::obj(o)->New(v[0], v[1]);
       });
   
   add("Block",
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Block_n(v);
+        return NObject_::obj(o)->Block_n(v);
       });
   
   add("ScopedBlock",
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        ScopedBlock_n(v);
+        return NObject_::obj(o)->ScopedBlock_n(v);
       });
   
   add("Print",
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Print_n(v);
+        return NObject_::obj(o)->Print_n(v);
       });
   
   _ret0Func =
@@ -1845,8 +2095,7 @@ FuncMap::FuncMap(){
   _ret1Func =
   add("Ret", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Ret(v[0]);
+        return NObject_::obj(o)->Ret(v[0]);
       });
   
   _breakFunc =
@@ -1863,146 +2112,354 @@ FuncMap::FuncMap(){
   
   add("PushScope", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        PushScope(v[0]);
+        return NObject_::obj(o)->PushScope(v[0]);
       });
   
   add("PopScope", 0,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        PopScope();
+        return NObject_::obj(o)->PopScope();
       });
   
   add("PushBack", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        PushBack(v[0], v[1]);
+        return NObject_::obj(o)->PushBack(v[0], v[1]);
       });
   
   add("TouchMultimap", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        TouchMultimap(v[0]);
+        return NObject_::obj(o)->TouchMultimap(v[0]);
       });
   
   add("TouchList", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        TouchList(v[0]);
+        return NObject_::obj(o)->TouchList(v[0]);
       });
   
   add("Keys", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Keys(v[0]);
+        return NObject_::obj(o)->Keys(v[0]);
       });
   
   add("PushFront", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        PushFront(v[0], v[1]);
+        return NObject_::obj(o)->PushFront(v[0], v[1]);
       });
   
   add("PopBack", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        PopBack(v[0]);
+        return NObject_::obj(o)->PopBack(v[0]);
       });
   
   add("HasKey", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        HasKey(v[0], v[1]);
+        return NObject_::obj(o)->HasKey(v[0], v[1]);
       });
   
   add("Insert", 3,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Insert(v[0], v[1], v[2]);
+        return NObject_::obj(o)->Insert(v[0], v[1], v[2]);
       });
   
   add("Clear", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Clear(v[0]);
+        return NObject_::obj(o)->Clear(v[0]);
       });
   
   add("Empty", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Empty(v[0]);
+        return NObject_::obj(o)->Empty(v[0]);
       });
   
   add("Back", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Back(v[0]);
+        return NObject_::obj(o)->Back(v[0]);
       });
   
   add("Erase", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Erase(v[0], v[1]);
+        return NObject_::obj(o)->Erase(v[0], v[1]);
       });
   
   add("Merge", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Merge(v[0], v[1]);
+        return NObject_::obj(o)->Merge(v[0], v[1]);
       });
   
   add("OuterMerge", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        OuterMerge(v[0], v[1]);
+        return NObject_::obj(o)->OuterMerge(v[0], v[1]);
       });
 
   add("If", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        If(v[0], v[1]);
+        return NObject_::obj(o)->If(v[0], v[1]);
       });
   
   add("If", 3,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        If(v[0], v[1], v[2]);
+        return NObject_::obj(o)->If(v[0], v[1], v[2]);
       });
   
   add("For", 4,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        For(v[0], v[1], v[2], v[3]);
+        return NObject_::obj(o)->For(v[0], v[1], v[2], v[3]);
       });
   
   add("While", 2,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        While(v[0], v[1]);
+        return NObject_::obj(o)->While(v[0], v[1]);
       });
   
   add("Switch", 3,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Switch(v[0], v[1], v[2]);
+        return NObject_::obj(o)->Switch(v[0], v[1], v[2]);
       });
-  
+
   add("Class", 1,
       [](void* o, const nvar& v) -> nvar{
-        return NObject_::inner(static_cast<NObject*>(o))->
-        Class(v[0]);
+        return NObject_::obj(o)->Class(v[0]);
+      });
+  
+  add("IsFalse", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsFalse(v[0]);
+      });
+  
+  add("IsTrue", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsTrue(v[0]);
+      });
+  
+  add("IsDefined", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsDefined(v[0]);
+      });
+  
+  add("IsString", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsString(v[0]);
+      });
+  
+  add("IsSymbol", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsSymbol(v[0]);
+      });
+  
+  add("IsFunction", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsFunction(v[0]);
+      });
+  
+  add("IsFunction", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsFunction(v[0], v[1]);
+      });
+  
+  add("IsFunction", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsFunction(v[0], v[1], v[2]);
+      });
+
+  add("IsSymbolic", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsSymbolic(v[0]);
+      });
+  
+  add("IsNumeric", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsNumeric(v[0]);
+      });
+  
+  add("IsReference", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsReference(v[0]);
+      });
+  
+  add("IsPointer", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsPointer(v[0]);
+      });
+  
+  add("IsInteger", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsInteger(v[0]);
+      });
+  
+  add("IsRational", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsRational(v[0]);
+      });
+  
+  add("IsReal", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->IsReal(v[0]);
+      });
+  
+  add("GetStr", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->GetStr(v[0]);
+      });
+  
+  add("GetVec", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->GetVec(v[0]);
+      });
+  
+  add("GetList", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->GetList(v[0]);
+      });
+  
+  add("GetAnySequence", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->GetAnySequence(v[0]);
+      });
+  
+  add("GetMap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->GetMap(v[0]);
+      });
+  
+  add("GetMultimap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->GetMultimap(v[0]);
+      });
+  
+  add("GetAnyMap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->GetAnyMap(v[0]);
+      });
+  
+  add("Append", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Append(v[0], v[1]);
+      });
+  
+  add("Normalize", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Normalize(v[0]);
+      });
+  
+  add("Head", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Head(v[0]);
+      });
+  
+  add("SetHead", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->SetHead(v[0], v[1]);
+      });
+  
+  add("ClearHead", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->ClearHead(v[0]);
+      });
+  
+  add("NumKeys", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->NumKeys(v[0]);
+      });
+  
+  add("Size", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Size(v[0]);
+      });
+  
+  add("MapEmpty", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->MapEmpty(v[0]);
+      });
+  
+  add("AllEmpty", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->AllEmpty(v[0]);
+      });
+  
+  add("HasVector", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->HasVector(v[0]);
+      });
+  
+  add("HasList", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->HasList(v[0]);
+      });
+  
+  add("HasMap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->HasMap(v[0]);
+      });
+  
+  add("HasMultimap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->HasMultimap(v[0]);
+      });
+  
+  add("PopFront", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->PopFront(v[0]);
+      });
+  
+  add("AllKeys", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->AllKeys(v[0]);
+      });
+  
+  add("TouchVector", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchVector(v[0]);
+      });
+  
+  add("TouchMap", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->TouchMap(v[0]);
+      });
+  
+  add("Open", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Open(v[0], v[1]);
+      });
+  
+  add("Save", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Save(v[0], v[1]);
+      });
+  
+  add("Unite", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Unite(v[0], v[1]);
+      });
+  
+  add("Unite", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Unite(v[0], v[1], v[2]);
+      });
+  
+  add("Intersect", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Intersect(v[0], v[1]);
+      });
+  
+  add("Intersect", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Intersect(v[0], v[1], v[2]);
+      });
+  
+  add("Complement", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Complement(v[0], v[1]);
       });
   
   add("foo", 1,
       [](void* o, const nvar& v) -> nvar{
-        NObject_::inner(static_cast<NObject*>(o))->
-        foo(*v[0]); return none;
+        NObject_::obj(o)->foo(*v[0]);
+        return none;
       });
   
   add("dumpScopes", 0,
       [](void* o, const nvar& v) -> nvar{
-        NObject_::inner(static_cast<NObject*>(o))->
-        dumpScopes(); return none;
+        NObject_::obj(o)->dumpScopes();
+        return none;
       });
 }
 
@@ -2383,6 +2840,190 @@ nvar NObject::If(const nvar& v1, const nvar& v2, const nvar& v3){
 
 nvar NObject::Switch(const nvar& v1, const nvar& v2, const nvar& v3){
   return x_->Switch(v1, v2, v3);
+}
+
+nvar NObject::IsFalse(const nvar& v){
+  return x_->IsFalse(v);
+}
+
+nvar NObject::IsTrue(const nvar& v){
+  return x_->IsTrue(v);
+}
+
+nvar NObject::IsDefined(const nvar& v){
+  return x_->IsDefined(v);
+}
+
+nvar NObject::IsString(const nvar& v){
+  return x_->IsString(v);
+}
+
+nvar NObject::IsSymbol(const nvar& v){
+  return x_->IsSymbol(v);
+}
+
+nvar NObject::IsFunction(const nvar& v){
+  return x_->IsFunction(v);
+}
+
+nvar NObject::IsFunction(const nvar& v1, const nvar& v2){
+  return x_->IsFunction(v1, v2);
+}
+
+nvar NObject::IsFunction(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->IsFunction(v1, v2, v3);
+}
+
+nvar NObject::IsSymbolic(const nvar& v){
+  return x_->IsSymbolic(v);
+}
+
+nvar NObject::IsNumeric(const nvar& v){
+  return x_->IsNumeric(v);
+}
+
+nvar NObject::IsReference(const nvar& v){
+  return x_->IsReference(v);
+}
+
+nvar NObject::IsPointer(const nvar& v){
+  return x_->IsPointer(v);
+}
+
+nvar NObject::IsInteger(const nvar& v){
+  return x_->IsInteger(v);
+}
+
+nvar NObject::IsRational(const nvar& v){
+  return x_->IsRational(v);
+}
+
+nvar NObject::IsReal(const nvar& v){
+  return x_->IsReal(v);
+}
+
+nvar NObject::GetStr(const nvar& v){
+  return x_->GetStr(v);
+}
+
+nvar NObject::GetVec(const nvar& v){
+  return x_->GetVec(v);
+}
+
+nvar NObject::GetList(const nvar& v){
+  return x_->GetList(v);
+}
+
+nvar NObject::GetAnySequence(const nvar& v){
+  return x_->GetAnySequence(v);
+}
+
+nvar NObject::GetMap(const nvar& v){
+  return x_->GetMap(v);
+}
+
+nvar NObject::GetMultimap(const nvar& v){
+  return x_->GetMultimap(v);
+}
+
+nvar NObject::GetAnyMap(const nvar& v){
+  return x_->GetAnyMap(v);
+}
+
+nvar NObject::Append(const nvar& v1, const nvar& v2){
+  return x_->Append(v1, v2);
+}
+
+nvar NObject::Normalize(const nvar& v){
+  return x_->Normalize(v);
+}
+
+nvar NObject::Head(const nvar& v){
+  return x_->Head(v);
+}
+
+nvar NObject::SetHead(const nvar& v1, const nvar& v2){
+  return x_->SetHead(v1, v2);
+}
+
+nvar NObject::ClearHead(const nvar& v){
+  return x_->ClearHead(v);
+}
+
+nvar NObject::NumKeys(const nvar& v){
+  return x_->NumKeys(v);
+}
+
+nvar NObject::Size(const nvar& v){
+  return x_->Size(v);
+}
+
+nvar NObject::MapEmpty(const nvar& v){
+  return x_->MapEmpty(v);
+}
+
+nvar NObject::AllEmpty(const nvar& v){
+  return x_->AllEmpty(v);
+}
+
+nvar NObject::HasVector(const nvar& v){
+  return x_->HasVector(v);
+}
+
+nvar NObject::HasList(const nvar& v){
+  return x_->HasList(v);
+}
+
+nvar NObject::HasMap(const nvar& v){
+  return x_->HasMap(v);
+}
+
+nvar NObject::HasMultimap(const nvar& v){
+  return x_->HasMultimap(v);
+}
+
+nvar NObject::PopFront(const nvar& v){
+  return x_->PopFront(v);
+}
+
+nvar NObject::AllKeys(const nvar& v){
+  return x_->AllKeys(v);
+}
+
+nvar NObject::TouchVector(const nvar& v){
+  return x_->TouchVector(v);
+}
+
+nvar NObject::TouchMap(const nvar& v){
+  return x_->TouchMap(v);
+}
+
+nvar NObject::Open(const nvar& v1, const nvar& v2){
+  return x_->Open(v1, v2);
+}
+
+nvar NObject::Save(const nvar& v1, const nvar& v2){
+  return x_->Save(v1, v2);
+}
+
+nvar NObject::Unite(const nvar& v1, const nvar& v2){
+  return x_->Unite(v1, v2);
+}
+
+nvar NObject::Unite(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->Unite(v1, v2, v3);
+}
+
+nvar NObject::Intersect(const nvar& v1, const nvar& v2){
+  return x_->Intersect(v1, v2);
+}
+
+nvar NObject::Intersect(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->Intersect(v1, v2, v3);
+}
+
+nvar NObject::Complement(const nvar& v1, const nvar& v2){
+  return x_->Complement(v1, v2);
 }
 
 void NObject::foo(nvar& x){

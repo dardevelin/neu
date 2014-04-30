@@ -265,6 +265,98 @@ namespace neu{
     
     nvar Switch(const nvar& v1, const nvar& v2, const nvar& v3);
     
+    nvar IsFalse(const nvar& v);
+    
+    nvar IsTrue(const nvar& v);
+    
+    nvar IsDefined(const nvar& v);
+    
+    nvar IsString(const nvar& v);
+    
+    nvar IsSymbol(const nvar& v);
+    
+    nvar IsFunction(const nvar& v);
+    
+    nvar IsFunction(const nvar& v1, const nvar& v2);
+    
+    nvar IsFunction(const nvar& v1, const nvar& v2, const nvar& v3);
+    
+    nvar IsSymbolic(const nvar& v);
+    
+    nvar IsNumeric(const nvar& v);
+    
+    nvar IsReference(const nvar& v);
+    
+    nvar IsPointer(const nvar& v);
+    
+    nvar IsInteger(const nvar& v);
+    
+    nvar IsRational(const nvar& v);
+    
+    nvar IsReal(const nvar& v);
+    
+    nvar GetStr(const nvar& v);
+    
+    nvar GetVec(const nvar& v);
+    
+    nvar GetList(const nvar& v);
+    
+    nvar GetAnySequence(const nvar& v);
+    
+    nvar GetMap(const nvar& v);
+    
+    nvar GetMultimap(const nvar& v);
+    
+    nvar GetAnyMap(const nvar& v);
+    
+    nvar Append(const nvar& v1, const nvar& v2);
+    
+    nvar Normalize(const nvar& v);
+    
+    nvar Head(const nvar& v);
+    
+    nvar SetHead(const nvar& v1, const nvar& v2);
+    
+    nvar ClearHead(const nvar& v);
+        
+    nvar NumKeys(const nvar& v);
+    
+    nvar Size(const nvar& v);
+    
+    nvar MapEmpty(const nvar& v);
+    
+    nvar AllEmpty(const nvar& v);
+    
+    nvar HasVector(const nvar& v);
+    
+    nvar HasList(const nvar& v);
+    
+    nvar HasMap(const nvar& v);
+    
+    nvar HasMultimap(const nvar& v);
+    
+    nvar PopFront(const nvar& v);
+    
+    nvar AllKeys(const nvar& v);
+    
+    nvar TouchVector(const nvar& v);
+    
+    nvar TouchMap(const nvar& v);
+    
+    nvar Open(const nvar& v1, const nvar& v2);
+    
+    nvar Save(const nvar& v1, const nvar& v2);
+    
+    nvar Unite(const nvar& v1, const nvar& v2);
+    
+    nvar Unite(const nvar& v1, const nvar& v2, const nvar& v3);
+
+    nvar Intersect(const nvar& v1, const nvar& v2);
+    
+    nvar Intersect(const nvar& v1, const nvar& v2, const nvar& v3);
+    
+    nvar Complement(const nvar& v1, const nvar& v2);
+    
     void dumpScopes();
     
     friend class NObject_;
