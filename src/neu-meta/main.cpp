@@ -676,13 +676,21 @@ public:
       
     stringstream ostr;
     
+    bool foundDist = false;
+    
     for(CXXRecordDecl::method_iterator mitr = rd->method_begin(),
           mitrEnd = rd->method_end(); mitr != mitrEnd; ++mitr){
     
       CXXMethodDecl* md = *mitr;
       
-      if(md->isUserProvided() && isa<CXXConstructorDecl>(md)){
-        //md->dump();
+      if(!foundDist){
+        QualType qt = md->getResultType();
+        QualType ct = context_->getCanonicalType(qt);
+        
+        if(qt.getAsString() == "ndist" &&
+           ct.getAsString() == "class neu::nvar"){
+          foundDist = true;
+        }
       }
     }
 
@@ -763,6 +771,13 @@ public:
       }
       ostr << "    return 0;" << endl;
       ostr << "  }" << endl;
+      
+      if(foundDist){
+        ostr << endl;
+        ostr << "  neu::NObject* constructRemote(neu::NBroker* broker){" << endl;
+        ostr << "    return new " << fullName << "(broker);" << endl;
+        ostr << "  }" << endl;
+      }
     }
 
     if(enableMetadata_){
