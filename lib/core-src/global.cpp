@@ -62,7 +62,6 @@ namespace neu{
   bool _improper = false;
   uint32_t _packBlockSize = 8192;
   nstr _tempPath;
-  ostream* _outputStream = &cout;
   NProgram* _nprogram = 0;
   NRWMutex _argsMutex;
   nvar _args;

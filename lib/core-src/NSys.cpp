@@ -305,23 +305,6 @@ bool NSys::setEnv(const nstr& key, const nstr& value, bool redef){
   }
 }
 
-nstr NSys::hiddenInput(){
-  tcgetattr(0, &stored_settings);
-  signal(SIGINT, sigint_handler);
-  
-  struct termios new_settings;
-  new_settings = stored_settings;
-  new_settings.c_lflag &= (~ECHO);
-  tcsetattr(0, TCSANOW, &new_settings);
-  char buf[8192];
-  cin.getline(buf, 8192);
-  
-  tcsetattr(0,TCSANOW, &stored_settings);
-  NProgram::resetSignalHandlers();
-  *_outputStream << endl;
-  return buf;
-}
-
 void NSys::setTimeZone(const nstr& zone){
   setenv("TZ", zone.c_str(), true);
   tzset();

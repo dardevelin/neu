@@ -83,8 +83,6 @@ namespace neu{
     
     static void setTimeZone(const nstr& zone);
     
-    static nstr hiddenInput();
-    
     static bool rename(const nstr& sourcePath, const nstr& destPath);
     
     static nstr fileExtension(const nstr& filePath);

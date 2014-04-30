@@ -68,19 +68,9 @@ namespace neu{
   extern nstr _tempPath;
   
   extern NResourceManager* _resourceManager;
-  
-  extern std::ostream* _outputStream;
-  
+    
   extern NProgram* _nprogram;
-  
-  extern NRWMutex _argsMutex;
-  
-  extern nvar _args;
-  
-  extern nvar _argMap;
-  
-  extern nvar _configArgMap;
-  
+    
   extern double _timeout;
   
 } // end namespace neu

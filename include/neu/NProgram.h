@@ -67,37 +67,9 @@ namespace neu{
     
     virtual void onExit();
     
-    static nvar parseArgs(int argc, char** argv);
-    
-    static nstr toArgStr(const nvar& v);
-    
     static void exit(int status);
     
     static NProgram* instance();
-    
-    static nvar args();
-    
-    static bool hasArg(const nstr& key);
-    
-    static void setArgs(const nvar& args);
-    
-    static nvar arg(const nstr& key);
-    
-    static void setArg(const nstr& key, const nvar& value);
-    
-    static void argDefault(const nstr& key,
-                           const nvar& value,
-                           const nstr& description="");
-    
-    static void argDefault(const nstr& key,
-                           const nstr& alias,
-                           const nvar& value,
-                           const nstr& description);
-    
-    static void requireArg(const nstr& key,
-                           const nstr& description="");
-    
-    static nstr usage(const nstr& msg);
     
     virtual void onFatalSignal();
     
@@ -151,7 +123,18 @@ namespace neu{
     
     static void resetSignalHandlers();
     
-    static void setOutputStream(std::ostream& outputStream);
+    static void opt(const nstr& name,
+                    const nstr& alias="",
+                    const nvar& def=none,
+                    bool required=false,
+                    bool multi=false,
+                    const nstr& description="");
+
+    static void parseArgs(int argc, char** argv, nvar& args);
+    
+    static const nvar& args();
+    
+    static nstr usage(const nstr& msg);
     
     static int argc;
     

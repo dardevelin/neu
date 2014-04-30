@@ -1961,6 +1961,21 @@ namespace neu{
       }
     }
     
+    bool isBool() const{
+      switch(t_){
+        case False:
+          return true;
+        case True:
+          return true;
+        case Reference:
+          return h_.ref->v->isBool();
+        case Pointer:
+          return h_.vp->isBool();
+        default:
+          return false;
+      }
+    }
+    
     bool isSymbol() const{
       switch(t_){
         case Symbol:

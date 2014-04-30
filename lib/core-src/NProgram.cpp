@@ -210,6 +210,20 @@ namespace{
     }
   }
   
+  class Opt{
+  public:
+    nstr name;
+    nstr alias;
+    nvar def;
+    bool required;
+    nstr description;
+    bool multi;
+  };
+  
+  typedef NMap<nstr, Opt*> OptMap;
+  OptMap _optMap;
+  nvar _args;
+  
 } // end namespace
 
 namespace neu{
@@ -231,7 +245,7 @@ namespace neu{
       
       init_();
       
-      _args = NProgram::parseArgs(argc, argv);
+      NProgram::parseArgs(argc, argv, _args);
       _args.merge(args);
       
       NProgram::argc = argc;
@@ -471,213 +485,157 @@ NProgram* NProgram::instance(){
   return _nprogram;
 }
 
-nvar NProgram::parseArgs(int argc, char** argv){
-  nvar ret;
-  
-  for(int i = 0; i < argc; ++i){
-    ret("raw").pushBack(argv[i]);
+void NProgram::opt(const nstr& name,
+                   const nstr& alias,
+                   const nvar& def,
+                   bool required,
+                   bool multi,
+                   const nstr& description){
+  if(name.empty()){
+    NERROR("empty option name");
   }
   
-  ret("bin") = argv[0];
+  if(_optMap.hasKey(name) || (!alias.empty() && _optMap.hasKey(alias))){
+    NERROR("duplicate option name: " + name);
+  }
+
+  Opt* opt = new Opt;
+  opt->name = name;
+  opt->alias = alias;
+  opt->def = def;
+  opt->multi = multi;
+  opt->required = required;
+  opt->description = description;
   
-  nstr lastKey;
-  bool lastStr = false;
+  _optMap[name] = opt;
+
+  if(!alias.empty()){
+    _optMap[alias] = opt;
+  }
+}
+
+void NProgram::parseArgs(int argc, char** argv, nvar& args){
+  _args("bin") = argv[0];
   
-  for(int i = 1; i < argc; ++i){
-    nstr arg = argv[i];
-    
-    if(arg == "-" || arg == "--"){
-      nstr text;
-      bool first = true;
-      for(int j = i + 1; j < argc; ++j){
-        if(first){
-          first = false;
-        }
-        else{
-          text += " ";
-        }
-        
-        text += argv[j];
-      }
+  if(_optMap.empty()){
+    nstr lastKey;
+
+    for(size_t i = 1; i < argc; ++i){
+      char* arg = argv[i];
       
-      ret("text") = text;
-      break;
-    }
-    
-    if(arg.beginsWith("--")){
-      if(!lastKey.empty()){
-        NERROR("expected a value");
-      }
-      
-      lastKey = arg.substr(2, arg.length() - 2);
-      lastStr = true;
-    }
-    else if(arg.beginsWith("-")){
-      if(!lastKey.empty()){
-        NERROR("expected a value");
-      }
-      
-      lastKey = arg.substr(1, arg.length() - 1);
-      lastStr = false;
-    }
-    else if(lastKey.empty()){
-      ret.pushBack(arg);
-    }
-    else{
-      nvar v = lastStr ? nvar(arg) : nml(arg);
-      
-      if(ret.hasKey(lastKey)){
-        ret[lastKey].pushBack(v);
+      if(arg[0] == '-'){
+        lastKey = &arg[1];
       }
       else{
-        ret(lastKey) = v;
+        if(lastKey.empty()){
+          for(size_t j = i; j < argc; ++j){
+            args.pushBack(argv[j]);
+          }
+          break;
+        }
+        else{
+          args(lastKey) = nvar::fromStr(argv[i]);
+        }
       }
+    }
+  }
+  else{
+    Opt* lastOpt = 0;
+    
+    for(size_t i = 1; i < argc; ++i){
+      char* arg = argv[i];
       
-      lastKey = "";
-      lastStr = false;
-    }
-  }
-  
-  if(!lastKey.empty()){
-    NERROR("expected a value");
-  }
-  
-  if(!ret.hasKey("name")){
-    ret("name") = NSys::basename(argv[0]);
-  }
-  
-  return ret;
-}
+      if(arg[0] == '-'){
+        nstr key = &arg[1];
 
-nstr NProgram::toArgStr(const nvar& v){
-  nstr ret;
-  
-  nvec keys;
-  v.keys(keys);
-  
-  size_t size = keys.size();
-  
-  bool first = true;
-  
-  for(size_t i = 0; i < size; ++i){
-    if(first){
-      first = false;
-    }
-    else{
-      ret += " ";
+        auto itr = _optMap.find(key);
+        if(itr == _optMap.end()){
+          NERROR("unknown option: " + key);
+        }
+        
+        lastOpt = itr->second;
+        const nvar& def = lastOpt->def;
+        
+        if(def.isBool()){
+          nvar& k = args(lastOpt->name);
+          if(lastOpt->multi){
+            k << true;
+          }
+          else{
+            k = true;
+          }
+        
+          lastOpt = 0;
+        }
+      }
+      else{
+        if(lastOpt){
+          
+          const nvar& def = lastOpt->def;
+          nvar v;
+          switch(def.type()){
+            case nvar::String:
+              v = argv[i];
+              break;
+            case nvar::False:
+            case nvar::True:
+              v = nvar::fromStr(argv[i]);
+              v = v.toBool();
+              break;
+            case nvar::Rational:
+              v = nvar::fromStr(argv[i]);
+              v = v.toRat();
+              break;
+            case nvar::Integer:
+              v = nvar::fromStr(argv[i]);
+              v = v.toLong();
+              break;
+            case nvar::Float:
+              v = nvar::fromStr(argv[i]);
+              v = v.toDouble();
+              break;
+            default:
+              v = nvar::fromStr(argv[i]);
+              break;
+          }
+          
+          nvar& k = args(lastOpt->name);
+          
+          if(lastOpt->multi){
+            k << move(v);
+          }
+          else{
+            k = move(v);
+          }
+          
+          lastOpt = 0;
+        }
+        else{
+          for(size_t j = i; j < argc; ++j){
+            args.pushBack(argv[j]);
+          }
+          break;
+        }
+      }
     }
     
-    if(v[keys[i]].isTrue()){
-      ret += "-" + keys[i].str();
-    }
-    else{
-      ret += "--" + keys[i].str();
-      ret += " '" + v[keys[i]] + "'";
+    for(auto& itr : _optMap){
+      Opt* o = itr.second;
+      if(args.hasKey(o->name)){
+        
+      }
+      else if(o->required){
+        NERROR("missing option: " + o->name);
+      }
+      else{
+        args(o->name) = o->def;
+      }
     }
   }
-  
-  size = v.size();
-  
-  for(size_t i = 0; i < size; ++i){
-    if(first){
-      first = false;
-    }
-    else{
-      ret += " ";
-    }
-
-    ret += v[i];
-  }
-  
-  return ret;
 }
 
-nvar NProgram::args(){
-  NReadGuard guard(_argsMutex);
-  
+const nvar& NProgram::args(){
   return _args;
-}
-
-void NProgram::setArgs(const nvar& args){
-  _argsMutex.writeLock();
-  _args = args;
-  _argsMutex.unlock();
-}
-
-bool NProgram::hasArg(const nstr& key){
-  NReadGuard guard(_argsMutex);
-  
-  return _args.hasKey(key);
-}
-
-nvar NProgram::arg(const nstr& key){
-  NReadGuard guard(_argsMutex);
-  
-  try{
-    return _args[key];
-  }
-  catch(NError& e){
-    NERROR("invalid key: " + key);
-  }
-}
-
-void NProgram::setArg(const nstr& key, const nvar& value){
-  _argsMutex.writeLock();
-  _args(key) = value;
-  _argsMutex.unlock();
-}
-
-void NProgram::argDefault(const nstr& key,
-                          const nstr& alias,
-                          const nvar& value,
-                          const nstr& description){
-  _argsMutex.writeLock();
-  
-  if(!_argMap.hasKey(key)){
-    _argMap(key)("value") = value;
-    _argMap(key)("description") = description;
-    
-    if(!alias.empty()){
-      _argMap(key)("alias") = alias;
-    }
-  }
-  
-  bool has = !_args.hasKey(key);
-  
-  if((has || (_configArgMap.hasKey(key) && !_configArgMap.hasKey(alias))) &&
-     !alias.empty() && _args.hasKey(alias)){
-    _args(key) = _args[alias];
-  }
-  else if(has){
-    _args(key) = value;
-  }
-  
-  _argsMutex.unlock();
-}
-
-void NProgram::requireArg(const nstr& key,
-                          const nstr& description){
-  _argsMutex.writeLock();
-  if(!_argMap.hasKey(key)){
-    _argMap(key)("description") = description;
-  }
-  
-  bool found = _args.hasKey(key);
-  _argsMutex.unlock();
-  if(!found){
-    cerr << "NProgram: missing required arg: " << key;
-    if(!description.empty()){
-      cerr << ": " << description;
-    }
-    cerr << endl;
-    NProgram::exit(1);
-  }
-}
-
-void NProgram::argDefault(const nstr& key,
-                          const nvar& value,
-                          const nstr& description){
-  argDefault(key, "", value, description);
 }
 
 nstr NProgram::usage(const nstr& msg){
@@ -688,42 +646,29 @@ nstr NProgram::usage(const nstr& msg){
   ostr << idt << msg << endl << endl;
   ostr << "DESCRIPTION" << endl;
   
-  _argsMutex.readLock();
-  
-  nvec keys;
-  _argMap.keys(keys);
-  
-  for(size_t i = 0; i < keys.size(); ++i){
-    const nstr& key = keys[i];
+  for(auto& itr : _optMap){
+    Opt* opt = itr.second;
     
-    ostr << idt << "-" << key;
+    ostr << idt << "-" << opt->name;
     
-    if(_argMap[key].hasKey("alias")){
-      ostr << ", -" << _argMap[key]["alias"].str();
+    const nstr& alias = opt->alias;
+    
+    if(!alias.empty()){
+      ostr << ", -" << alias;
     }
     
-    if(_argMap[key].hasKey("value")){
-      ostr << "=" << _argMap[key]["value"];
+    if(!opt->required){
+      ostr << "=" << opt->def;
     }
     
     ostr << endl;
     
-    const nstr& desc = _argMap[key]["description"];
-    
-    if(!desc.empty()){
-      ostr << idt << idt << desc;
-    }
+    ostr << idt << idt << opt->description;
     
     ostr << endl << endl;
   }
   
-  _argsMutex.unlock();
-  
   return ostr.str();
-}
-
-void NProgram::setOutputStream(ostream& outputStream){
-  _outputStream = &outputStream;
 }
 
 int NProgram::argc = 0;

@@ -1147,27 +1147,27 @@ void printUsage(){
 }
 
 int main(int argc, char** argv){
+  NProgram::opt("class", "c", "", false , true,
+                "Class name to generate metadata for. "
+                "Defaults to the name of the source file.");
+  
+  NProgram::opt("handle", "h", true, false, false,
+                "True to generate handler.");
+
+  NProgram::opt("factory", "f", true, false, false,
+                "True to generate class.");
+  
+  NProgram::opt("metadata", "m", true, false, false,
+                "True to generate class metadata.");
+  
+  NProgram::opt("outer", "o", true, false, false,
+                "True to generate outer.");
+  
+  NProgram::opt("include", "I", "", false, true,
+                "Include paths.");
+  
   NProgram program(argc, argv);
 
-  program.argDefault("class", "c", "",
-                     "Class name to generate metadata for. "
-                     "Defaults to the name of the source file.");
-
-  program.argDefault("handle", "h", true,
-                     "True to generate handler.");
-  
-  program.argDefault("factory", "f", true,
-                     "True to generate class.");
-  
-  program.argDefault("metadata", "m", true,
-                     "True to generate class metadata.");
-  
-  program.argDefault("outer", "o", true,
-                     "True to generate outer.");
-
-  program.argDefault("include", "I", none,
-                     "Include paths.");
-  
   const nvar& args = program.args();
 
   //cout << "args is: " << args << endl;
@@ -1203,15 +1203,8 @@ int main(int argc, char** argv){
 
   const nvar& is = args["include"];
 
-  if(is.some()){
-    if(is.empty()){
-      gen.addInclude(is);
-    }
-    else{
-      for(const nvar& i : is){
-        gen.addInclude(i);
-      }
-    }
+  for(const nvar& i : is){
+    gen.addInclude(i);
   }
   
   if(!gen.generate(ostr, filePath, className)){
