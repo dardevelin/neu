@@ -1147,20 +1147,20 @@ void printUsage(){
 }
 
 int main(int argc, char** argv){
-  NProgram::opt("class", "c", "", false , true,
+  NProgram::opt("class", "c", "", false , false,
                 "Class name to generate metadata for. "
                 "Defaults to the name of the source file.");
   
-  NProgram::opt("handle", "h", true, false, false,
+  NProgram::opt("no-handle", "", false, false, false,
                 "True to generate handler.");
 
-  NProgram::opt("factory", "f", true, false, false,
+  NProgram::opt("no-factory", "", false, false, false,
                 "True to generate class.");
   
-  NProgram::opt("metadata", "m", true, false, false,
+  NProgram::opt("no-metadata", "", false, false, false,
                 "True to generate class metadata.");
   
-  NProgram::opt("outer", "o", true, false, false,
+  NProgram::opt("no-outer", "", false, false, false,
                 "True to generate outer.");
   
   NProgram::opt("include", "I", "", false, true,
@@ -1196,10 +1196,10 @@ int main(int argc, char** argv){
   stringstream ostr;
   MetaGenerator gen;
   
-  gen.enableHandle(args["handle"]);
-  gen.enableClass(args["factory"]);
-  gen.enableMetadata(args["metadata"]);
-  gen.enableOuter(args["outer"]);
+  gen.enableHandle(!args["no-handle"]);
+  gen.enableClass(!args["no-factory"]);
+  gen.enableMetadata(!args["no-metadata"]);
+  gen.enableOuter(!args["no-outer"]);
 
   const nvar& is = args["include"];
 

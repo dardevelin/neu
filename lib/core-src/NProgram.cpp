@@ -526,16 +526,15 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
       if(arg[0] == '-'){
         lastKey = &arg[1];
       }
+      else if(lastKey.empty()){
+        for(size_t j = i; j < argc; ++j){
+          args.pushBack(argv[j]);
+        }
+        break;
+      }
       else{
-        if(lastKey.empty()){
-          for(size_t j = i; j < argc; ++j){
-            args.pushBack(argv[j]);
-          }
-          break;
-        }
-        else{
-          args(lastKey) = nvar::fromStr(argv[i]);
-        }
+        args(lastKey) = nvar::fromStr(argv[i]);
+        lastKey = "";
       }
     }
   }
@@ -557,12 +556,11 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
         const nvar& def = lastOpt->def;
         
         if(def.isBool()){
-          nvar& k = args(lastOpt->name);
           if(lastOpt->multi){
-            k << true;
+            args(lastOpt->name) << true;
           }
           else{
-            k = true;
+            args(lastOpt->name) = true;
           }
         
           lastOpt = 0;
@@ -570,9 +568,9 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
       }
       else{
         if(lastOpt){
-          
           const nvar& def = lastOpt->def;
           nvar v;
+
           switch(def.type()){
             case nvar::String:
               v = argv[i];
@@ -599,21 +597,21 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
               break;
           }
           
-          nvar& k = args(lastOpt->name);
-          
           if(lastOpt->multi){
-            k << move(v);
+            args(lastOpt->name) << move(v);
           }
           else{
-            k = move(v);
+            args(lastOpt->name) = move(v);
           }
           
           lastOpt = 0;
         }
         else{
+          
           for(size_t j = i; j < argc; ++j){
             args.pushBack(argv[j]);
           }
+
           break;
         }
       }
@@ -621,14 +619,14 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
     
     for(auto& itr : _optMap){
       Opt* o = itr.second;
-      if(args.hasKey(o->name)){
-        
-      }
-      else if(o->required){
-        NERROR("missing option: " + o->name);
-      }
-      else{
-        args(o->name) = o->def;
+
+      if(!args.hasKey(o->name)){
+        if(o->required){
+          NERROR("missing option: " + o->name);
+        }
+        else{
+          args(o->name) = o->def;
+        }
       }
     }
   }

@@ -68,13 +68,13 @@ $(CPP_MODULES): $(@.o=.cpp)
 	$(COMPILE) -c $< -o $@
 
 NConcept.o: $(@.o=.cpp)
-	neu-meta --class NConcept NConcept.cpp
+	neu-meta -class NConcept NConcept.cpp
 	$(COMPILE) -c $< -o $@
 
 NCOntology.o: $(@.o=.cpp)
-	neu-meta --class Method -factory 0 NCOntology.cpp
-	neu-meta --class NCOntology -factory 0 NCOntology.cpp
-	neu-meta --class NCCodeGen -factory 0 NCOntology.cpp
+	neu-meta -class Method -no-factory NCOntology.cpp
+	neu-meta -class NCOntology -no-factory NCOntology.cpp
+	neu-meta -class NCCodeGen -no-factory NCOntology.cpp
 	$(COMPILE) -c $< -o $@
 
 clean:
