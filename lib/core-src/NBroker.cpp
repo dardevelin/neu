@@ -53,9 +53,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NProc.h>
 #include <neu/NServer.h>
 #include <neu/NBasicMutex.h>
+#include <neu/NRWMutex.h>
 #include <neu/NObject.h>
 #include <neu/NClass.h>
 #include <neu/global.h>
+#include <neu/NReadGuard.h>
+#include <neu/NServerProc.h>
 
 using namespace std;
 using namespace neu;
@@ -70,17 +73,13 @@ namespace{
   
   class DistributedObject;
   
-  class ServerProc : public NCommunicator, public NProc{
+  class ServerProc : public NServerProc{
   public:
     ServerProc(NProcTask* task, NBroker_* broker);
     
     void onClose(bool manual);
     
     void run(nvar& r);
-    
-    NProcTask* task(){
-      return NProc::task();
-    }
     
   private:
     NBroker_* broker_;
@@ -134,14 +133,19 @@ namespace{
     }
     
     void addServerProc(ServerProc* proc){
+      mutex_.lock();
       serverProcMap_.insert({proc, true});
+      mutex_.unlock();
     }
     
     void removeServerProc(ServerProc* proc){
+      mutex_.lock();
       serverProcMap_.erase(proc);
+      mutex_.unlock();
     }
     
     void revoke(){
+      mutex_.lock();
       for(auto& itr : serverProcMap_){
         ServerProc* serverProc = itr.first;
         serverProc->close();
@@ -149,12 +153,14 @@ namespace{
           delete serverProc;
         }
       }
+      mutex_.unlock();
     }
     
   private:
     typedef NMap<ServerProc*, bool> ServerProcMap_;
 
     ServerProcMap_ serverProcMap_;
+    NBasicMutex mutex_;
   };
   
 } // end namespace
@@ -200,13 +206,16 @@ namespace neu{
       o->className = className;
       o->obj = object;
       
+      serverMutex_.writeLock();
       distributedObjectMap_[objectName] = o;
+      serverMutex_.unlock();
     }
     
     void revoke(const nstr& objectName){
+      serverMutex_.readLock();
       auto itr = distributedObjectMap_.find(objectName);
       assert(itr != distributedObjectMap_.end());
-      
+      serverMutex_.unlock();
       DistributedObject* o = itr->second;
       o->revoke();
     }
@@ -252,20 +261,26 @@ namespace neu{
       }
       
       client->setObj(obj);
+      clientMutex_.writeLock();
       objectClientMap_.insert({obj, client});
+      clientMutex_.unlock();
       
       return obj;
     }
     
     void release(NObject* object){
+      clientMutex_.writeLock();
+      
       auto itr = objectClientMap_.find(object);
       if(itr == objectClientMap_.end()){
+        clientMutex_.unlock();
         return;
       }
       
       Client* client = itr->second;
-      delete client;
       objectClientMap_.erase(itr);
+      clientMutex_.unlock();
+      delete client;
     }
     
     void setLogStream(std::ostream& ostr){
@@ -285,6 +300,8 @@ namespace neu{
     }
     
     nvar process_(NObject* obj, const nvar& n){
+      NReadGuard guard(clientMutex_);
+      
       auto itr = objectClientMap_.find(obj);
       assert(itr != objectClientMap_.end());
 
@@ -314,6 +331,8 @@ namespace neu{
     }
     
     DistributedObject* obtain_(ServerProc* proc, const nstr& objName){
+      NReadGuard guard(serverMutex_);
+      
       auto itr = distributedObjectMap_.find(objName);
       if(itr == distributedObjectMap_.end()){
         return 0;
@@ -325,8 +344,10 @@ namespace neu{
     }
     
     void removeClient(NObject* obj){
+      clientMutex_.writeLock();
       auto itr = objectClientMap_.find(obj);
       objectClientMap_.erase(itr);
+      clientMutex_.unlock();
       delete obj;
       // ndm - need to delete the client
     }
@@ -342,6 +363,8 @@ namespace neu{
     ObjectClientMap_ objectClientMap_;
     DistributedObjectMap_ distributedObjectMap_;
     ostream* logStream_;
+    NRWMutex clientMutex_;
+    NRWMutex serverMutex_;
   };
   
 } // end namespace neu
@@ -400,8 +423,7 @@ void ServerProc::run(nvar& r){
 }
 
 ServerProc::ServerProc(NProcTask* task, NBroker_* broker)
-: NCommunicator(task),
-NProc(task),
+: NServerProc(task),
 broker_(broker),
 obj_(0){
   setEncoder(broker_->encoder());
