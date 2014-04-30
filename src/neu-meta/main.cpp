@@ -70,7 +70,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NRegex.h>
 #include <neu/NBasicMutex.h>
 #include <neu/NProgram.h>
-#include <neu/NMetaGenerator.h>
 
 using namespace std;
 using namespace llvm;
@@ -363,57 +362,32 @@ public:
 
     return status == 0;
   }
-    
-  CXXRecordDecl* getSuperClass(CXXRecordDecl* rd, const string& className){
+  
+  CXXRecordDecl* getFirstSubClass(CXXRecordDecl* rd,
+                                  const string& className){
     if(!rd->hasDefinition()){
       return 0;
     }
       
     for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
           bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
-      
+        
       CXXBaseSpecifier b = *bitr;
       QualType qt = b.getType();
-      QualType ct = sema_->Context.getCanonicalType(qt);
         
+      QualType ct = sema_->Context.getCanonicalType(qt);
+      
       if(ct.getAsString() == "class " + className){
         return rd;
       }
-        
+      
       const Type* t = ct.getTypePtr();
-
+        
       if(const RecordType* rt = dyn_cast<RecordType>(t)){
         if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
-          CXXRecordDecl* s = getSuperClass(srd, className);
+          CXXRecordDecl* s = getFirstSubClass(rd, className);
           if(s){
             return s;
-          }
-        }
-      }
-    }
-      
-    return 0;
-  }
-    
-  CXXRecordDecl* getFirstSuperClass(CXXRecordDecl* rd,
-                                    const string& className){
-    if(!rd->hasDefinition()){
-      return 0;
-    }
-      
-    for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
-          bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
-        
-      CXXBaseSpecifier b = *bitr;
-      QualType qt = b.getType();
-        
-      QualType ct = sema_->Context.getCanonicalType(qt);
-      const Type* t = ct.getTypePtr();
-        
-      if(const RecordType* rt = dyn_cast<RecordType>(t)){
-        if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
-          if(getSuperClass(srd, className)){
-            return srd;
           }
         }
       }
@@ -447,7 +421,7 @@ public:
       generateOuter(d);
     }
     
-    CXXRecordDecl* s = getSuperClass(d, "neu::NObject");
+    CXXRecordDecl* s = getFirstSubClass(d, "neu::NObject");
     
     if(!s){
       return true;
@@ -673,7 +647,7 @@ public:
     }
     else{
       ostr << "  return _" << className << "_FuncMap.map(n) ? : ";
-      ostr << getQualifiedName(getFirstSuperClass(rd, "neu::NObject"));
+      ostr << getQualifiedName(getFirstSubClass(rd, "neu::NObject"));
       ostr << "::handle(n, flags);";
     }
       
@@ -902,12 +876,11 @@ public:
         
           if(qrt.getAsString() == "ndist" &&
              crt.getAsString() == "class neu::nvar"){
-          
-            if(CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject")){
+            
+            if(CXXRecordDecl* srd = getFirstSubClass(rd, "neu::NObject")){
               int m = isNCallable(md);
               if(m == 1){
                 isDist = true;
-                //md->dump();
               }
             }
           }
@@ -996,7 +969,7 @@ public:
   void generateMetadata(ostream& ostr, CXXRecordDecl* rd){
     nstr className = rd->getNameAsString();
       
-    CXXRecordDecl* srd = getFirstSuperClass(rd, "neu::NObject");
+    CXXRecordDecl* srd = getFirstSubClass(rd, "neu::NObject");
       
     ostr << "  neu::nvar metadata_(){" << endl;
       
