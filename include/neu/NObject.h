@@ -357,6 +357,32 @@ namespace neu{
     
     nvar Complement(const nvar& v1, const nvar& v2);
     
+    nvar Inf();
+    
+    nvar NegInf();
+    
+    nvar Nan();
+    
+    nvar Min();
+    
+    nvar Max();
+    
+    nvar Epsilon();
+    
+    nvar Max(const nvar& v1, const nvar& v2);
+    
+    nvar Min(const nvar& v1, const nvar& v2);
+    
+    nvar Func(const nvar& v);
+    
+    nvar Sym(const nvar& v);
+    
+    nvar VarRef(const nvar& v);
+    
+    nvar VarPtr(const nvar& v);
+    
+    nvar NML(const nvar& v);
+    
     void dumpScopes();
     
     friend class NObject_;

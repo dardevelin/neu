@@ -1718,6 +1718,74 @@ namespace neu{
       return p1;
     }
     
+    nvar Inf(){
+      return nvar::inf();
+    }
+    
+    nvar NegInf(){
+      return nvar::negInf();
+    }
+    
+    nvar Nan(){
+      return nvar::nan();
+    }
+    
+    nvar Min(){
+      return nvar::min();
+    }
+    
+    nvar Max(){
+      return nvar::max();
+    }
+    
+    nvar Epsilon(){
+      return nvar::epsilon();
+    }
+    
+    nvar Max(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      return nvar::max(p1, p2);
+    }
+    
+    nvar Min(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      return nvar::min(p1, p2);
+    }
+    
+    nvar Func(const nvar& v){
+      nvar p = process(v);
+      
+      return nfunc(p);
+    }
+    
+    nvar Sym(const nvar& v){
+      nvar p = process(v);
+      
+      return nsym(p);
+    }
+    
+    nvar VarRef(const nvar& v){
+      nvar p = process(v);
+      
+      return nref(p);
+    }
+    
+    nvar VarPtr(const nvar& v){
+      nvar p = process(v);
+      
+      return nptr(p);
+    }
+    
+    nvar NML(const nvar& v){
+      nvar p = process(v);
+      
+      return nml(p);
+    }
+    
     void foo(nvar& x){
       cout << "called foo" << endl;
       
@@ -2448,6 +2516,71 @@ FuncMap::FuncMap(){
   add("Complement", 2,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::obj(o)->Complement(v[0], v[1]);
+      });
+  
+  add("Inf", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Inf();
+      });
+  
+  add("NegInf", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->NegInf();
+      });
+  
+  add("Nan", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Nan();
+      });
+  
+  add("Min", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Min();
+      });
+  
+  add("Max", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Max();
+      });
+  
+  add("Epsilon", 0,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Epsilon();
+      });
+  
+  add("Max", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Max(v[0], v[1]);
+      });
+  
+  add("Min", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Min(v[0], v[1]);
+      });
+  
+  add("Func", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Func(v[0]);
+      });
+  
+  add("Sym", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Sym(v[0]);
+      });
+  
+  add("VarRef", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->VarRef(v[0]);
+      });
+  
+  add("VarPtr", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->VarPtr(v[0]);
+      });
+  
+  add("NML", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->NML(v[0]);
       });
   
   add("foo", 1,
