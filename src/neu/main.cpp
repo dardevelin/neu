@@ -117,8 +117,10 @@ private:
 };
 
 int main(int argc, char** argv){
-  Program::opt("help", "h", false);
-  
+  Program::opt("help", "h", false, "Display usage");
+
+  Program::opt("math", "m", false, "Use Mathematica");  
+
   Program program(argc, argv);
 
   nvar args = program.args();
@@ -127,9 +129,9 @@ int main(int argc, char** argv){
     cout << program.usage("neu [OPTION]... [NML FILE]...");
     program.exit(0);
   }
+  
+  NObject* o = args["math"] ? new NMObject : new NObject;
 
-  //NObject o;
-  NMObject o;
   Parser parser;
   NMLGenerator generator;
 
@@ -143,7 +145,7 @@ int main(int argc, char** argv){
         NProgram::exit(1);
       }
       
-      nvar r = o.process(n);
+      nvar r = o->process(n);
 
       cout << "r is: " << r << endl;
     }   
@@ -169,7 +171,7 @@ int main(int argc, char** argv){
     cout << "<<< " << v << endl;
 
     try{
-      nvar r = o.process(v);
+      nvar r = o->process(v);
 
       cout << "r is: " << r << endl;
      

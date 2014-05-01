@@ -1147,24 +1147,24 @@ void printUsage(){
 }
 
 int main(int argc, char** argv){
-  NProgram::opt("class", "c", "", false , false,
+  NProgram::opt("class", "c", "",
                 "Class name to generate metadata for. "
                 "Defaults to the name of the source file.");
   
-  NProgram::opt("no-handle", "", false, false, false,
+  NProgram::opt("no-handle", "", false,
                 "True to generate handler.");
 
-  NProgram::opt("no-factory", "", false, false, false,
+  NProgram::opt("no-factory", "", false,
                 "True to generate class.");
   
-  NProgram::opt("no-metadata", "", false, false, false,
+  NProgram::opt("no-metadata", "", false,
                 "True to generate class metadata.");
   
-  NProgram::opt("no-outer", "", false, false, false,
+  NProgram::opt("no-outer", "", false,
                 "True to generate outer.");
   
-  NProgram::opt("include", "I", "", false, true,
-                "Include paths.");
+  NProgram::opt("include", "I", "",
+                "Include paths.", false, true);
   
   NProgram program(argc, argv);
 

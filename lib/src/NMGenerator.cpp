@@ -385,10 +385,6 @@ namespace{
     _functionMap[{"Composition", -1}] = {FKEY_Composition_n, R};
     _functionMap[{"Fit", 3}] = {FKEY_Fit_3, R};
     _functionMap[{"Prime", 1}] = {FKEY_Prime_1, R};
-    
-    _functionMap[{"InterpolatingPolynomial", 2}] =
-    {FKEY_InterpolatingPolynomial_2, R};
-    
     _functionMap[{"Refine", 1}] = {FKEY_Refine_1, R};
     _functionMap[{"Refine", 2}] = {FKEY_Refine_2, R};
     _functionMap[{"FindMinimum", 2}] = {FKEY_FindMinimum_2, R};
@@ -400,18 +396,20 @@ namespace{
     _functionMap[{"ImportData", 2}] = {FKEY_ImportData_2, R};
     _functionMap[{"ExportData", 2}] = {FKEY_ExportData_2, R};
     _functionMap[{"ExportData", 3}] = {FKEY_ExportData_3, R};
+    _functionMap[{"IdentityMatrix", 1}] = {FKEY_IdentityMatrix_1, R};
+    _functionMap[{"DiagonalMatrix", 1}] = {FKEY_DiagonalMatrix_1, R};
+    _functionMap[{"DiagonalMatrix", 2}] = {FKEY_DiagonalMatrix_2, R};
+    _functionMap[{"DiagonalMatrix", 3}] = {FKEY_DiagonalMatrix_3, R};
+    _functionMap[{"ContinuedFraction", 1}] = {FKEY_ContinuedFraction_1, R};
+    
+    _functionMap[{"InterpolatingPolynomial", 2}] =
+    {FKEY_InterpolatingPolynomial_2, R};
     
     _functionMap[{"FindSequenceFunction", 1}] =
     {FKEY_FindSequenceFunction_1, R};
     
     _functionMap[{"FindSequenceFunction", 2}] =
     {FKEY_FindSequenceFunction_2, R};
-    
-    _functionMap[{"IdentityMatrix", 1}] = {FKEY_IdentityMatrix_1, R};
-    _functionMap[{"DiagonalMatrix", 1}] = {FKEY_DiagonalMatrix_1, R};
-    _functionMap[{"DiagonalMatrix", 2}] = {FKEY_DiagonalMatrix_2, R};
-    _functionMap[{"DiagonalMatrix", 3}] = {FKEY_DiagonalMatrix_3, R};
-    _functionMap[{"ContinuedFraction", 1}] = {FKEY_ContinuedFraction_1, R};
   };
   
   class _FunctionMapLoader{

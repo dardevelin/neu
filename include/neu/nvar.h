@@ -1960,7 +1960,7 @@ namespace neu{
           return false;
       }
     }
-    
+
     bool isBool() const{
       switch(t_){
         case False:

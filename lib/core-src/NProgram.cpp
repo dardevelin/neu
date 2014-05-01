@@ -210,9 +210,20 @@ namespace{
     }
   }
   
+  enum BuiltinKey{
+    BKEY_improper,
+    BKEY_packBlockSize,
+    BKEY_tempPath,
+    BKEY_timeout
+  };
+  
+  typedef NMap<nstr, BuiltinKey> BuiltinMap;
+  
+  BuiltinMap _builtinMap;
+  
   class Opt{
   public:
-    nstr name;
+    nstr key;
     nstr alias;
     nvar def;
     bool required;
@@ -222,6 +233,7 @@ namespace{
   
   typedef NMap<nstr, Opt*> OptMap;
   OptMap _optMap;
+  OptMap _builtinOptMap;
   nvar _args;
   
 } // end namespace
@@ -235,21 +247,21 @@ namespace neu{
     NProgram_(NProgram* program, const nvar& args)
     : o_(program){
 
-      init_();
-      
+      init();
       _args = args;
+      setBuiltins();
     }
     
     NProgram_(NProgram* program, int& argc, char** argv, const nvar& args)
     : o_(program){
-      
-      init_();
-      
-      NProgram::parseArgs(argc, argv, _args);
-      _args.merge(args);
-      
+
       NProgram::argc = argc;
       NProgram::argv = argv;
+      
+      init();
+      NProgram::parseArgs(argc, argv, _args);
+      _args.merge(args);
+      setBuiltins();
     }
     
     ~NProgram_(){
@@ -259,8 +271,74 @@ namespace neu{
     void onExit(){
       
     }
+
+    void builtinOpt(BuiltinKey key,
+                    const nstr& name,
+                    const nstr& alias,
+                    const nvar& def,
+                    const nstr& description="",
+                    bool multi=false){
+      
+      nstr k = "_" + name;
+      
+      Opt* opt = new Opt;
+      opt->key = k;
+      opt->alias = alias;
+      opt->def = def;
+      opt->multi = multi;
+      opt->required = false;
+      opt->description = description;
+      
+      _builtinOptMap[name] = opt;
+      
+      if(!alias.empty()){
+        _builtinOptMap[alias] = opt;
+      }
+      
+      _builtinMap[k] = key;
+    }
+
+    void setBuiltins(){
+      nmap& m = _args;
+      
+      for(auto& itr : m){
+        const nvar& k = itr.first;
+        const nvar& v = itr.second;
+        
+        if(!k.isSymbol()){
+          continue;
+        }
+        
+        const nstr& ks = k.str();
+        
+        if(ks[0] != '_'){
+          continue;
+        }
+        
+        auto bitr = _builtinMap.find(ks);
+        if(bitr == _builtinMap.end()){
+          continue;
+        }
+        
+        BuiltinKey key = bitr->second;
+        switch(key){
+          case BKEY_improper:
+            _improper = v;
+            break;
+          case BKEY_packBlockSize:
+            _packBlockSize = v;
+            break;
+          case BKEY_tempPath:
+            _tempPath = v;
+            break;
+          case BKEY_timeout:
+            _timeout = v;
+            break;
+        }
+      }
+    }
     
-    void init_(){
+    void init(){
       if(_nprogram){
         NERROR("NProgram exists");
       }
@@ -283,6 +361,11 @@ namespace neu{
       if(!NSys::getEnv("NEU_HOME", h)){
         NERROR("NEU_HOME environment variable is undefined");
       }
+      
+      builtinOpt(BKEY_improper, "improper", "", _improper);
+      builtinOpt(BKEY_packBlockSize, "packBlockSize", "", _packBlockSize);
+      builtinOpt(BKEY_tempPath, "tempPath", "", _tempPath);
+      builtinOpt(BKEY_timeout, "timeout", "", _timeout);
     }
     
   private:
@@ -488,9 +571,9 @@ NProgram* NProgram::instance(){
 void NProgram::opt(const nstr& name,
                    const nstr& alias,
                    const nvar& def,
+                   const nstr& description,
                    bool required,
-                   bool multi,
-                   const nstr& description){
+                   bool multi){
   if(name.empty()){
     NERROR("empty option name");
   }
@@ -500,7 +583,7 @@ void NProgram::opt(const nstr& name,
   }
 
   Opt* opt = new Opt;
-  opt->name = name;
+  opt->key = name;
   opt->alias = alias;
   opt->def = def;
   opt->multi = multi;
@@ -524,7 +607,28 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
       char* arg = argv[i];
       
       if(arg[0] == '-'){
+        if(!lastKey.empty()){
+          NERROR("expected a value at arg: " + nvar(i));
+        }
+        
         lastKey = &arg[1];
+
+        if(lastKey.empty()){
+          nstr text;
+        
+          for(size_t j = i; j < args; ++j){
+            if(j > 0){
+              text += " ";
+            }
+            text += argv[j];
+          }
+          
+          args("text") = move(text);
+          break;
+        }
+        else if(lastKey[0] == '_'){
+          lastKey[0] = '_';
+        }
       }
       else if(lastKey.empty()){
         for(size_t j = i; j < argc; ++j){
@@ -545,22 +649,52 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
       char* arg = argv[i];
       
       if(arg[0] == '-'){
-        nstr key = &arg[1];
-
-        auto itr = _optMap.find(key);
-        if(itr == _optMap.end()){
-          NERROR("unknown option: " + key);
+        if(lastOpt){
+          NERROR("expected a value at arg: " + nvar(i));
         }
         
-        lastOpt = itr->second;
+        nstr key = &arg[1];
+
+        if(key.empty()){
+          nstr text;
+          
+          for(size_t j = i; j < args; ++j){
+            if(j > 0){
+              text += " ";
+            }
+            text += argv[j];
+          }
+          
+          args("text") = move(text);
+          break;
+        }
+        else if(key[0] == '-'){
+          auto itr = _builtinOptMap.find(&arg[2]);
+          if(itr == _builtinOptMap.end()){
+            key[0] = '_';
+          }
+          else{
+            lastOpt = itr->second;
+          }
+        }
+        
+        if(!lastOpt){
+          auto itr = _optMap.find(key);
+          if(itr == _optMap.end()){
+            NERROR("unknown option: " + key);
+          }
+          
+          lastOpt = itr->second;
+        }
+
         const nvar& def = lastOpt->def;
         
         if(def.isBool()){
           if(lastOpt->multi){
-            args(lastOpt->name) << true;
+            args(lastOpt->key) << true;
           }
           else{
-            args(lastOpt->name) = true;
+            args(lastOpt->key) = true;
           }
         
           lastOpt = 0;
@@ -598,10 +732,10 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
           }
           
           if(lastOpt->multi){
-            args(lastOpt->name) << move(v);
+            args(lastOpt->key) << move(v);
           }
           else{
-            args(lastOpt->name) = move(v);
+            args(lastOpt->key) = move(v);
           }
           
           lastOpt = 0;
@@ -620,12 +754,12 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
     for(auto& itr : _optMap){
       Opt* o = itr.second;
 
-      if(!args.hasKey(o->name)){
+      if(!args.hasKey(o->key)){
         if(o->required){
-          NERROR("missing option: " + o->name);
+          NERROR("missing option: " + o->key);
         }
         else{
-          args(o->name) = o->def;
+          args(o->key) = o->def;
         }
       }
     }
@@ -647,7 +781,7 @@ nstr NProgram::usage(const nstr& msg){
   for(auto& itr : _optMap){
     Opt* opt = itr.second;
     
-    ostr << idt << "-" << opt->name;
+    ostr << idt << "-" << opt->key;
     
     const nstr& alias = opt->alias;
     

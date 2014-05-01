@@ -126,9 +126,9 @@ namespace neu{
     static void opt(const nstr& name,
                     const nstr& alias="",
                     const nvar& def=none,
+                    const nstr& description="",
                     bool required=false,
-                    bool multi=false,
-                    const nstr& description="");
+                    bool multi=false);
 
     static void parseArgs(int argc, char** argv, nvar& args);
     
