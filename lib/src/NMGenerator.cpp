@@ -68,6 +68,27 @@ namespace{
     FKEY_Mul_2,
     FKEY_Div_2,
     FKEY_Pow_2,
+    FKEY_Mod_2,
+    FKEY_LT_2,
+    FKEY_GT_2,
+    FKEY_LE_2,
+    FKEY_GE_2,
+    FKEY_EQ_2,
+    FKEY_NE_2,
+    FKEY_And_2,
+    FKEY_Or_2,
+    FKEY_Not_1,
+    FKEY_Neg_1,
+    FKEY_Inc_1,
+    FKEY_PostInc_1,
+    FKEY_Dec_1,
+    FKEY_PostDec_1,
+    FKEY_AddBy_2,
+    FKEY_SubBy_2,
+    FKEY_MulBy_2,
+    FKEY_DivBy_2,
+    FKEY_ModBy_2,
+    FKEY_Set_2,
     FKEY_Integrate_2,
   };
   
@@ -85,12 +106,36 @@ namespace{
   }
   
   static void _initFunctionMap(){
-    _functionMap[{"Add", 2}] = {FKEY_Add_2, NMGenerator::Supported};
-    _functionMap[{"Sub", 2}] = {FKEY_Sub_2, NMGenerator::Supported};
-    _functionMap[{"Mul", 2}] = {FKEY_Mul_2, NMGenerator::Supported};
-    _functionMap[{"Div", 2}] = {FKEY_Div_2, NMGenerator::Supported};
-    _functionMap[{"Pow", 2}] = {FKEY_Pow_2, NMGenerator::Supported};
-    _functionMap[{"Integrate", 2}] = {FKEY_Integrate_2, NMGenerator::Requested};
+    auto S = NMGenerator::Supported;
+    auto R = NMGenerator::Requested;
+    
+    _functionMap[{"Add", 2}] = {FKEY_Add_2, S};
+    _functionMap[{"Sub", 2}] = {FKEY_Sub_2, S};
+    _functionMap[{"Mul", 2}] = {FKEY_Mul_2, S};
+    _functionMap[{"Div", 2}] = {FKEY_Div_2, S};
+    _functionMap[{"Pow", 2}] = {FKEY_Pow_2, S};
+    _functionMap[{"Mod", 2}] = {FKEY_Mod_2, S};
+    _functionMap[{"Set", 2}] = {FKEY_Set_2, S};
+    _functionMap[{"LT", 2}] = {FKEY_LT_2, S};
+    _functionMap[{"GT", 2}] = {FKEY_GT_2, S};
+    _functionMap[{"LE", 2}] = {FKEY_LE_2, S};
+    _functionMap[{"GE", 2}] = {FKEY_GE_2, S};
+    _functionMap[{"EQ", 2}] = {FKEY_EQ_2, S};
+    _functionMap[{"NE", 2}] = {FKEY_NE_2, S};
+    _functionMap[{"Not", 1}] = {FKEY_Not_1, S};
+    _functionMap[{"Neg", 1}] = {FKEY_Neg_1, S};
+    _functionMap[{"And", 2}] = {FKEY_And_2, S};
+    _functionMap[{"Or", 2}] = {FKEY_Or_2, S};
+    _functionMap[{"Inc", 1}] = {FKEY_Inc_1, S};
+    _functionMap[{"PostInc", 1}] = {FKEY_PostInc_1, S};
+    _functionMap[{"Dec", 1}] = {FKEY_Dec_1, S};
+    _functionMap[{"PostDec", 1}] = {FKEY_PostDec_1, S};
+    _functionMap[{"AddBy", 2}] = {FKEY_AddBy_2, S};
+    _functionMap[{"SubBy", 2}] = {FKEY_SubBy_2, S};
+    _functionMap[{"MulBy", 2}] = {FKEY_MulBy_2, S};
+    _functionMap[{"DivBy", 2}] = {FKEY_DivBy_2, S};
+    _functionMap[{"ModBy", 2}] = {FKEY_ModBy_2, S};
+    _functionMap[{"Integrate", 2}] = {FKEY_Integrate_2, R};
   };
   
   class _FunctionMapLoader{
@@ -180,6 +225,44 @@ namespace neu{
       }
     }
     
+    void emitUnaryOp(ostream& ostr,
+                     const nvar& n,
+                     const nstr& op,
+                     int prec){
+      int p = NObject::precedence(n);
+      
+      ostr << op;
+      
+      if(p > prec){
+        ostr << "(";
+      }
+      
+      emitExpression(ostr, "", n[0], p);
+      
+      if(p > prec){
+        ostr << ")";
+      }
+    }
+    
+    void emitPostUnaryOp(ostream& ostr,
+                         const nvar& n,
+                         const nstr& op,
+                         int prec){
+      int p = NObject::precedence(n);
+      
+      if(p > prec){
+        ostr << "(";
+      }
+      
+      emitExpression(ostr, "", n[0], p);
+      
+      if(p > prec){
+        ostr << ")";
+      }
+      
+      ostr << op;
+    }
+    
     void emitExpression(ostream& ostr,
                         const nstr& indent,
                         const nvar& n,
@@ -209,13 +292,72 @@ namespace neu{
         case FKEY_Div_2:
           emitBinOp(ostr, n, "/", prec);
           break;
+        case FKEY_Mod_2:
+          emitBinOp(ostr, n, "%", prec);
+          break;
         case FKEY_Pow_2:
           emitBinOp(ostr, n, "^", prec);
           break;
-        case FKEY_Integrate_2:{
+        case FKEY_LT_2:
+          emitBinOp(ostr, n, " < ", prec);
+          break;
+        case FKEY_GT_2:
+          emitBinOp(ostr, n, " > ", prec);
+          break;
+        case FKEY_LE_2:
+          emitBinOp(ostr, n, " <= ", prec);
+          break;
+        case FKEY_GE_2:
+          emitBinOp(ostr, n, " >= ", prec);
+          break;
+        case FKEY_EQ_2:
+          emitBinOp(ostr, n, " == ", prec);
+          break;
+        case FKEY_NE_2:
+          emitBinOp(ostr, n, " != ", prec);
+          break;
+        case FKEY_And_2:
+          emitBinOp(ostr, n, " && ", prec);
+          break;
+        case FKEY_Or_2:
+          emitBinOp(ostr, n, " || ", prec);
+          break;
+        case FKEY_AddBy_2:
+          emitBinOp(ostr, n, " += ", prec);
+          break;
+        case FKEY_SubBy_2:
+          emitBinOp(ostr, n, " -= ", prec);
+          break;
+        case FKEY_MulBy_2:
+          emitBinOp(ostr, n, " *= ", prec);
+          break;
+        case FKEY_DivBy_2:
+          emitBinOp(ostr, n, " /= ", prec);
+          break;
+        case FKEY_ModBy_2:
+          emitBinOp(ostr, n, " %= ", prec);
+          break;
+        case FKEY_Not_1:
+          emitUnaryOp(ostr, n, "!", prec);
+          break;
+        case FKEY_Neg_1:
+          emitUnaryOp(ostr, n, "-", prec);
+          break;
+        case FKEY_Inc_1:
+          emitUnaryOp(ostr, n, "++", prec);
+          break;
+        case FKEY_PostInc_1:
+          emitPostUnaryOp(ostr, n, "++", prec);
+          break;
+        case FKEY_Dec_1:
+          emitUnaryOp(ostr, n, "--", prec);
+          break;
+        case FKEY_PostDec_1:
+          emitPostUnaryOp(ostr, n, "--", prec);
+          break;
+        case FKEY_Integrate_2:
           emitFunc(ostr, n);
           break;
-        }
         default:
           NERROR("function not implemented: " + n);
       }
