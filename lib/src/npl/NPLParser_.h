@@ -137,21 +137,14 @@ namespace neu{
       npl_lex_init(&scanner_);
       npl_set_extra(this, scanner_);
       
-      nstr tempPath = NSys::tempFilePath();
-      FILE* file = fopen(tempPath.c_str(), "w+");
+      FILE* file = tmpfile();
       fwrite(code.c_str(), 1, code.length(), file);
-      fclose(file);
-      
-      file = fopen(tempPath.c_str(), "r");
+      rewind(file);
       npl_set_in(file, scanner_);
       
       npl_parse(this, scanner_);
       fclose(file);
-      
-      if(remove(tempPath.c_str()) != 0){
-        NERROR("failed to delete to delete temp file: " + tempPath);
-      }
-      
+            
       npl_lex_destroy(scanner_);
       
       if(status_ != 0){

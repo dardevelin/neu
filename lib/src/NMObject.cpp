@@ -62,6 +62,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NRegex.h>
 #include <neu/NBasicMutex.h>
 #include <neu/NSys.h>
+#include <neu/global.h>
 
 using namespace std;
 using namespace neu;
@@ -149,12 +150,12 @@ namespace neu{
     void init(){
       _mutex.lock();
       if(!_initialized){
-        nstr p;
-        if(!NSys::getEnv("NEU_HOME", p)){
-          NERROR("NEU_HOME environment variable is undefined");
-        }
 
-        p += "/bin/MathKernel";
+        if(!_program){
+          NERROR("NProgram has not been initialized");
+        }
+        
+        nstr p = _home + "/bin/MathKernel";
         
         if(!NSys::exists(p)){
           NERROR("MathKernel not found: " + p);

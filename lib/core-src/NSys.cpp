@@ -232,17 +232,8 @@ nstr NSys::tempPath(){
 }
 
 nstr NSys::tempFilePath(const nstr& extension){
-  if(_tempPath.empty()){
-    nstr h;
-    if(!getEnv("NEU_HOME", h)){
-      NERROR("NEU_HOME environment variable is undefined");
-    }
-    
-    _tempPath = h + "/scratch";
-    
-    if(!exists(_tempPath)){
-      NERROR("temp path does not exist: " + _tempPath);
-    }
+  if(!_program){
+    NERROR("NProgram has not been initialized");
   }
   
   nstr p = _tempPath;

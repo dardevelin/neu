@@ -70,6 +70,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NRegex.h>
 #include <neu/NBasicMutex.h>
 #include <neu/NProgram.h>
+#include <neu/global.h>
 
 using namespace std;
 using namespace llvm;
@@ -201,12 +202,11 @@ public:
     enableMetadata_(true),
     enableOuter_(true){
     
-    nstr h;
-    if(!NSys::getEnv("NEU_HOME", h)){
-      NERROR("NEU_HOME environment variable is undefined");
+    if(!_program){
+      NERROR("NProgram has not been initialized");
     }
       
-    includes_.push_back(h + "/include");
+    includes_.push_back(_home + "/include");
 
     nTypeMap_["void"] = true;
     nTypeMap_["bool"] = true;

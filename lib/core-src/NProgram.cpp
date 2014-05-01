@@ -63,6 +63,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NResourceManager.h>
 #include <neu/global.h>
 #include <neu/NMutex.h>
+#include <neu/NMLParser.h>
 
 #include <sys/resource.h>
 #include <signal.h>
@@ -89,122 +90,122 @@ namespace{
     switch(signo){
       case SIGHUP:
       {
-        _nprogram->onSigHup();
+        _program->onSigHup();
         break;
       }
       case SIGINT:
       {
-        _nprogram->onSigInt();
+        _program->onSigInt();
         break;
       }
       case SIGQUIT:
       {
-        _nprogram->onSigQuit();
+        _program->onSigQuit();
         break;
       }
       case SIGILL:
       {
-        _nprogram->onSigIll();
+        _program->onSigIll();
         break;
       }
       case SIGTRAP:
       {
-        _nprogram->onSigTrap();
+        _program->onSigTrap();
         break;
       }
       case SIGABRT:
       {
-        _nprogram->onSigAbrt();
+        _program->onSigAbrt();
         break;
       }
       case SIGFPE:
       {
-        _nprogram->onSigFpe();
+        _program->onSigFpe();
         break;
       }
       case SIGBUS:
       {
-        _nprogram->onSigBus();
+        _program->onSigBus();
         break;
       }
       case SIGSEGV:
       {
-        _nprogram->onSigSegv();
+        _program->onSigSegv();
         break;
       }
       case SIGSYS:
       {
-        _nprogram->onSigSys();
+        _program->onSigSys();
         break;
       }
       case SIGPIPE:
       {
-        _nprogram->onSigPipe();
+        _program->onSigPipe();
         break;
       }
       case SIGALRM:
       {
-        _nprogram->onSigAlrm();
+        _program->onSigAlrm();
         break;
       }
       case SIGTERM:
       {
-        _nprogram->onSigTerm();
+        _program->onSigTerm();
         break;
       }
       case SIGURG:
       {
-        _nprogram->onSigUrg();
+        _program->onSigUrg();
         break;
       }
       case SIGCONT:
       {
-        _nprogram->onSigCont();
+        _program->onSigCont();
         break;
       }
       case SIGCHLD:
       {
-        _nprogram->onSigChld();
+        _program->onSigChld();
         break;
       }
       case SIGIO:
       {
-        _nprogram->onSigIo();
+        _program->onSigIo();
         break;
       }
       case SIGXCPU:
       {
-        _nprogram->onSigXCPU();
+        _program->onSigXCPU();
         break;
       }
       case SIGXFSZ:
       {
-        _nprogram->onSigXFSz();
+        _program->onSigXFSz();
         break;
       }
       case SIGVTALRM:
       {
-        _nprogram->onSigVtAlrm();
+        _program->onSigVtAlrm();
         break;
       }
       case SIGPROF:
       {
-        _nprogram->onSigProf();
+        _program->onSigProf();
         break;
       }
       case SIGWINCH:
       {
-        _nprogram->onSigWInch();
+        _program->onSigWInch();
         break;
       }
       case SIGUSR1:
       {
-        _nprogram->onSigUsr1();
+        _program->onSigUsr1();
         break;
       }
       case SIGUSR2:
       {
-        _nprogram->onSigUsr2();
+        _program->onSigUsr2();
         break;
       }
     }
@@ -214,7 +215,9 @@ namespace{
     BKEY_improper,
     BKEY_packBlockSize,
     BKEY_tempPath,
-    BKEY_timeout
+    BKEY_timeout,
+    BKEY_name,
+    BKEY_home
   };
   
   typedef NMap<nstr, BuiltinKey> BuiltinMap;
@@ -249,7 +252,9 @@ namespace neu{
 
       init();
       _args = args;
+      
       setBuiltins();
+      setBuiltinDefaults();
     }
     
     NProgram_(NProgram* program, int& argc, char** argv, const nvar& args)
@@ -257,15 +262,47 @@ namespace neu{
 
       NProgram::argc = argc;
       NProgram::argv = argv;
-      
+
       init();
       NProgram::parseArgs(argc, argv, _args);
       _args.merge(args);
+      
       setBuiltins();
+      
+      nstr p = _name + "_conf.nml";
+      if(NSys::exists(p)){
+        nvar c;
+        parseConfig(p, c);
+        _args.merge(c);
+        setBuiltins();
+      }
+      else{
+        p = _home + "/conf/" + _name + "_conf.nml";
+        if(NSys::exists(p)){
+          nvar c;
+          parseConfig(p, c);
+          _args.merge(c);
+          setBuiltins();
+        }
+      }
+      
+      setBuiltinDefaults();
     }
     
     ~NProgram_(){
       
+    }
+    
+    void parseConfig(const nstr& path, nvar& config){
+      stringstream estr;
+      NMLParser parser;
+      parser.setErrorStream(estr);
+      config = parser.parseFile(path);
+      
+      if(config == none){
+        nstr err = estr.str();
+        NERROR("error parsing config file: " + path + ": " + err);
+      }
     }
     
     void onExit(){
@@ -334,16 +371,28 @@ namespace neu{
           case BKEY_timeout:
             _timeout = v;
             break;
+          case BKEY_name:
+            _name = v;
+            break;
+          case BKEY_home:
+            _home = v;
+            break;
         }
       }
     }
     
+    void setBuiltinDefaults(){
+      if(_tempPath.empty()){
+        _tempPath = _home + "/scratch";
+      }
+    }
+    
     void init(){
-      if(_nprogram){
+      if(_program){
         NERROR("NProgram exists");
       }
       
-      _nprogram = o_;
+      _program = o_;
       
       NProgram::resetSignalHandlers();
       
@@ -357,11 +406,10 @@ namespace neu{
       mpfr_set_default_prec(precision);
 #endif
       
-      nstr h;
-      if(!NSys::getEnv("NEU_HOME", h)){
-        NERROR("NEU_HOME environment variable is undefined");
-      }
-      
+      NSys::getEnv("NEU_HOME", _home);
+
+      builtinOpt(BKEY_home, "home", "", _home);
+      builtinOpt(BKEY_name, "name", "", _name);
       builtinOpt(BKEY_improper, "improper", "", _improper);
       builtinOpt(BKEY_packBlockSize, "packBlockSize", "", _packBlockSize);
       builtinOpt(BKEY_tempPath, "tempPath", "", _tempPath);
@@ -555,8 +603,8 @@ void NProgram::resetSignalHandlers(){
 
 void NProgram::exit(int status){
   if(_exitMutex.tryLock()){
-    if(_nprogram){
-      _nprogram->onExit();
+    if(_program){
+      _program->onExit();
     }
     
     _resourceManager->release();
@@ -565,7 +613,7 @@ void NProgram::exit(int status){
 }
 
 NProgram* NProgram::instance(){
-  return _nprogram;
+  return _program;
 }
 
 void NProgram::opt(const nstr& name,
@@ -598,7 +646,7 @@ void NProgram::opt(const nstr& name,
 }
 
 void NProgram::parseArgs(int argc, char** argv, nvar& args){
-  _args("bin") = argv[0];
+  _name = NSys::basename(argv[0]);
   
   if(_optMap.empty()){
     nstr lastKey;

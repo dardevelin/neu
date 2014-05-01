@@ -57,6 +57,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NRWMutex.h>
 
 namespace neu{
+  
   class NResourceManager;
   class NProgram;
   
@@ -69,9 +70,13 @@ namespace neu{
   
   extern NResourceManager* _resourceManager;
     
-  extern NProgram* _nprogram;
+  extern NProgram* _program;
     
   extern double _timeout;
+  
+  extern nstr _name;
+  
+  extern nstr _home;
   
 } // end namespace neu
 
