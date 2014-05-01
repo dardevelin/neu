@@ -192,10 +192,10 @@ namespace neu{
     }
     
     void emitStatement(ostream& ostr,
-                       const nstr& indent,
-                       const nvar& v){
+                       const nvar& v,
+                       const nstr& indent){
       if(!v.isFunction()){
-        emitExpression(ostr, indent, v);
+        emitExpression(ostr, v, indent);
         return;
       }
       
@@ -204,22 +204,22 @@ namespace neu{
       switch(key){
         case FKEY_Block_n:{
           for(size_t i = 0; i < v.size(); ++i){
-            emitStatement(ostr, indent, v[i]);
+            emitStatement(ostr, v[i], indent);
           }
           break;
         }
         case FKEY_Var_3:
         case FKEY_Var_2:{
-          emitExpression(ostr, indent, v[0]);
+          emitExpression(ostr, v[0], indent);
           ostr << " = ";
-          emitExpression(ostr, indent, v[1]);
+          emitExpression(ostr, v[1], indent);
           ostr << ";" << endl;
           break;
         }
         default:
         {
           ostr << indent;
-          emitExpression(ostr, indent, v);
+          emitExpression(ostr, v, indent);
           ostr << ";" << endl;
           break;
         }
@@ -236,9 +236,9 @@ namespace neu{
         ostr << "(";
       }
       
-      emitExpression(ostr, "", n[0], p);
+      emitExpression(ostr, n[0], "", p);
       ostr << op;
-      emitExpression(ostr, "", n[1], p);
+      emitExpression(ostr, n[1], "", p);
       
       if(p > prec){
         ostr << ")";
@@ -257,7 +257,7 @@ namespace neu{
         ostr << "(";
       }
 
-      emitExpression(ostr, "", n[0], p);
+      emitExpression(ostr, n[0], "", p);
       
       if(p > prec){
         ostr << ")";
@@ -274,7 +274,7 @@ namespace neu{
         ostr << "(";
       }
       
-      emitExpression(ostr, "", n[0], p);
+      emitExpression(ostr, n[0], "", p);
       
       if(p > prec){
         ostr << ")";
@@ -284,8 +284,8 @@ namespace neu{
     }
     
     void emitExpression(ostream& ostr,
-                        const nstr& indent,
                         const nvar& n,
+                        const nstr& indent="",
                         int prec=100){
       switch(n.type()){
         case nvar::Function:
@@ -379,7 +379,7 @@ namespace neu{
           emitPostUnaryOp(ostr, n, "--", prec);
           break;
         case FKEY_Call_2:{
-          emitExpression(ostr, indent, n[0]);
+          emitExpression(ostr, n[0], indent);
           ostr << ".";
 
           const nvar& v1 = n[1];
@@ -389,7 +389,7 @@ namespace neu{
             if(i > 0){
               ostr << ", ";
             }
-            emitExpression(ostr, indent, v1[i]);
+            emitExpression(ostr, v1[i], indent);
           }
           ostr << ")";
           break;
