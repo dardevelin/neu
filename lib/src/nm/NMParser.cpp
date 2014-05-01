@@ -88,7 +88,8 @@ namespace{
     FKEY_Sinh_1,
     FKEY_Tan_1,
     FKEY_ArcTan_1,
-    FKEY_Tanh_1
+    FKEY_Tanh_1,
+    FKEY_Rational_2
   };
   
   enum SymbolKey{
@@ -136,6 +137,7 @@ namespace{
     _functionMap[{"Tan", 1}] = FKEY_Tan_1;
     _functionMap[{"ArcTan", 1}] = FKEY_ArcTan_1;
     _functionMap[{"Tanh", 1}] = FKEY_Tanh_1;
+    _functionMap[{"Rational", 2}] = FKEY_Rational_2;
   }
   
   void _initSymbolMap(){
@@ -222,6 +224,9 @@ void NMParser_::translate(nvar& v){
       return;
     case FKEY_Power_2:
       v.str() = "Pow";
+      return;
+    case FKEY_Rational_2:
+      v = nrat(v[0], v[1]);
       return;
     case FKEY_Less_2:
       v.str() = "LT";

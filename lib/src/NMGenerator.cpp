@@ -66,7 +66,9 @@ namespace{
     FKEY_Add_2,
     FKEY_Sub_2,
     FKEY_Mul_2,
-    FKEY_Div_2
+    FKEY_Div_2,
+    FKEY_Pow_2,
+    FKEY_Integrate_2,
   };
   
   typedef NMap<nstr, SymbolKey> SymbolMap;
@@ -87,6 +89,8 @@ namespace{
     _functionMap[{"Sub", 2}] = {FKEY_Sub_2, NMGenerator::Supported};
     _functionMap[{"Mul", 2}] = {FKEY_Mul_2, NMGenerator::Supported};
     _functionMap[{"Div", 2}] = {FKEY_Div_2, NMGenerator::Supported};
+    _functionMap[{"Pow", 2}] = {FKEY_Pow_2, NMGenerator::Supported};
+    _functionMap[{"Integrate", 2}] = {FKEY_Integrate_2, NMGenerator::Requested};
   };
   
   class _FunctionMapLoader{
@@ -135,87 +139,85 @@ namespace neu{
       return itr->second.first;
     }
     
+    void emitFunc(ostream& ostr, const nvar& n, const nstr& func=""){
+      if(func.empty()){
+        ostr << n.str();
+      }
+      else{
+        ostr << func;
+      }
+      
+      ostr << "[";
+      
+      size_t size = n.size();
+      for(size_t i = 0; i < size; ++i){
+        if(i > 0){
+          ostr << ", ";
+        }
+        emitExpression(ostr, "", n[i]);
+      }
+      
+      ostr << "]";
+    }
+    
+    void emitBinOp(ostream& ostr,
+                   const nvar& n,
+                   const nstr& op,
+                   int prec){
+      
+      int p = NObject::precedence(n);
+      
+      if(p > prec){
+        ostr << "(";
+      }
+      
+      emitExpression(ostr, "", n[0], p);
+      ostr << op;
+      emitExpression(ostr, "", n[1], p);
+      
+      if(p > prec){
+        ostr << ")";
+      }
+    }
+    
     void emitExpression(ostream& ostr,
                         const nstr& indent,
-                        const nvar& v,
+                        const nvar& n,
                         int prec=100){
-      switch(v.type()){
+      switch(n.type()){
         case nvar::Function:
           break;
         default:
-          ostr << v;
+          ostr << n;
           return;
       }
       
-      FunctionKey key = getFunctionKey(v);
+      FunctionKey key = getFunctionKey(n);
       
       switch(key){
-        case FKEY_Add_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " + ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_NO_KEY:
+          NERROR("invalid function: " + n);
+        case FKEY_Add_2:
+          emitBinOp(ostr, n, " + ", prec);
           break;
-        }
-        case FKEY_Sub_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " - ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_Sub_2:
+          emitBinOp(ostr, n, " - ", prec);
           break;
-        }
-        case FKEY_Mul_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " * ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_Mul_2:
+          emitBinOp(ostr, n, "*", prec);
           break;
-        }
-        case FKEY_Div_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " / ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_Div_2:
+          emitBinOp(ostr, n, "/", prec);
+          break;
+        case FKEY_Pow_2:
+          emitBinOp(ostr, n, "^", prec);
+          break;
+        case FKEY_Integrate_2:{
+          emitFunc(ostr, n);
           break;
         }
         default:
-          NERROR("[1] invalid function: " + v);
+          NERROR("function not implemented: " + n);
       }
     }
     

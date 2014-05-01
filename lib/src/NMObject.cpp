@@ -50,6 +50,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NMObject.h>
 
+#include <atomic>
+
 #include <neu/NFuncMap.h>
 #include <neu/NClass.h>
 #include <neu/NScope.h>
@@ -58,6 +60,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NMGenerator.h>
 #include <neu/NMParser.h>
 #include <neu/NRegex.h>
+#include <neu/NBasicMutex.h>
+#include <neu/NSys.h>
 
 using namespace std;
 using namespace neu;
@@ -89,6 +93,8 @@ namespace{
   class FuncMap : public NFuncMap{
   public:
     FuncMap();
+    
+    NMObject_* obj(void* o);
   };
   
   NFunc _processFunc;
@@ -118,6 +124,9 @@ namespace{
   NRegex _outputRegex("[^]*Out\\[\\d+\\]//FullForm= ([^]+)"
                       "In\\[\\d+\\]:=[^]*");
   
+  bool _initialized = false;
+  NBasicMutex _mutex;
+  
 } // end namespace
 
 namespace neu{
@@ -126,13 +135,35 @@ namespace neu{
   public:
     
     NMObject_(NMObject* o)
-    : o_(o){
-      
+    : o_(o),
+    generator_(o_){
+      init();
     }
     
     NMObject_(NMObject* o, NScope* sharedScope)
-    : o_(o){
-      
+    : o_(o),
+    generator_(o_){
+      init();
+    }
+
+    void init(){
+      _mutex.lock();
+      if(!_initialized){
+        nstr p;
+        if(!NSys::getEnv("NEU_HOME", p)){
+          NERROR("NEU_HOME environment variable is undefined");
+        }
+
+        p += "/bin/MathKernel";
+        
+        if(!NSys::exists(p)){
+          NERROR("MathKernel not found: " + p);
+        }
+
+        _mathKernelPath = p;
+        _initialized = true;
+      }
+      _mutex.unlock();
     }
     
     NFunc handle(const nvar& v, uint32_t flags){
@@ -179,10 +210,10 @@ namespace neu{
     }
     
     nvar process_(const nvar& v){
-      NMGenerator generator(o_);
-      
       stringstream sstr;
-      generator.generate(sstr, v);
+      generator_.generate(sstr, v);
+      
+      cout << "gen: " << sstr.str() << endl;
       
       NCommand* cmd = _commandPool.acquire();
       
@@ -199,24 +230,26 @@ namespace neu{
       
       _commandPool.release(cmd);
       
+      cout << "out: " << m[1] << endl;
+      
       return parser_.parse(m[1]);
     }
     
-    static NMObject_* inner(NMObject* o){
-      return o->x_;
+    static NMObject_* obj(void* o){
+      return static_cast<NMObject*>(o)->x_;
     }
     
   private:
     NMObject* o_;
     NMParser parser_;
+    NMGenerator generator_;
   };
   
 } // end namespace neu
 
 FuncMap::FuncMap(){
   _processFunc = [](void* o, const nvar& v) -> nvar{
-    return NMObject_::inner(static_cast<NMObject*>(o))->
-    process_(v);
+    return NMObject_::obj(o)->process_(v);
   };
 }
 

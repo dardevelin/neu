@@ -66,6 +66,7 @@ namespace{
     FKEY_Var_1,
     FKEY_Var_2,
     FKEY_Var_3,
+    FKEY_VarSet_2,
     FKEY_Throw_2,
     FKEY_Add_2,
     FKEY_Sub_2,
@@ -78,9 +79,10 @@ namespace{
     FKEY_GE_2,
     FKEY_EQ_2,
     FKEY_NE_2,
-    FKEY_Not_1,
     FKEY_And_2,
     FKEY_Or_2,
+    FKEY_Not_1,
+    FKEY_Neg_1,
     FKEY_Inc_1,
     FKEY_PostInc_1,
     FKEY_Dec_1,
@@ -90,7 +92,6 @@ namespace{
     FKEY_MulBy_2,
     FKEY_DivBy_2,
     FKEY_ModBy_2,
-    FKEY_Neg_1,
     FKEY_Pow_2,
     FKEY_Set_2,
     FKEY_Block_n,
@@ -113,6 +114,7 @@ namespace{
     _functionMap[{"Var", 1}] = FKEY_Var_1;
     _functionMap[{"Var", 2}] = FKEY_Var_2;
     _functionMap[{"Var", 3}] = FKEY_Var_3;
+    _functionMap[{"VarSet", 2}] = FKEY_VarSet_2;
     _functionMap[{"Throw", 2}] = FKEY_Throw_2;
     _functionMap[{"Add", 2}] = FKEY_Add_2;
     _functionMap[{"Sub", 2}] = FKEY_Sub_2;
@@ -142,6 +144,7 @@ namespace{
     _functionMap[{"Neg", 1}] = FKEY_Neg_1;
     _functionMap[{"Block", -1}] = FKEY_Block_n;
     _functionMap[{"Call", 2}] = FKEY_Call_2;
+    _functionMap[{"Pow", 2}] = FKEY_Pow_2;
   };
   
   class _FunctionMapLoader{
@@ -223,90 +226,163 @@ namespace neu{
       }
     }
     
+    void emitBinOp(ostream& ostr,
+                   const nvar& n,
+                   const nstr& op,
+                   int prec){
+      int p = NObject::precedence(n);
+      
+      if(p > prec){
+        ostr << "(";
+      }
+      
+      emitExpression(ostr, "", n[0], p);
+      ostr << op;
+      emitExpression(ostr, "", n[1], p);
+      
+      if(p > prec){
+        ostr << ")";
+      }
+    }
+    
+    void emitUnaryOp(ostream& ostr,
+                     const nvar& n,
+                     const nstr& op,
+                     int prec){
+      int p = NObject::precedence(n);
+      
+      ostr << op;
+      
+      if(p > prec){
+        ostr << "(";
+      }
+
+      emitExpression(ostr, "", n[0], p);
+      
+      if(p > prec){
+        ostr << ")";
+      }
+    }
+    
+    void emitPostUnaryOp(ostream& ostr,
+                         const nvar& n,
+                         const nstr& op,
+                         int prec){
+      int p = NObject::precedence(n);
+      
+      if(p > prec){
+        ostr << "(";
+      }
+      
+      emitExpression(ostr, "", n[0], p);
+      
+      if(p > prec){
+        ostr << ")";
+      }
+      
+      ostr << op;
+    }
+    
     void emitExpression(ostream& ostr,
                         const nstr& indent,
-                        const nvar& v,
+                        const nvar& n,
                         int prec=100){
-      switch(v.type()){
+      switch(n.type()){
         case nvar::Function:
           break;
         default:
-          ostr << v;
+          ostr << n;
           return;
       }
       
-      FunctionKey key = getFunctionKey(v);
+      FunctionKey key = getFunctionKey(n);
       
       switch(key){
-        case FKEY_Add_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " + ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_NO_KEY:
+          NERROR("invalid function: " + n);
+        case FKEY_Add_2:
+          emitBinOp(ostr, n, " + ", prec);
           break;
-        }
-        case FKEY_Sub_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " - ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_Sub_2:
+          emitBinOp(ostr, n, " - ", prec);
           break;
-        }
-        case FKEY_Mul_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " * ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_Mul_2:
+          emitBinOp(ostr, n, "*", prec);
           break;
-        }
-        case FKEY_Div_2:{
-          int p = NObject::precedence(v);
-          
-          if(p > prec){
-            ostr << "(";
-          }
-          
-          emitExpression(ostr, indent, v[0], p);
-          ostr << " / ";
-          emitExpression(ostr, indent, v[1], p);
-          
-          if(p > prec){
-            ostr << ")";
-          }
+        case FKEY_Div_2:
+          emitBinOp(ostr, n, "/", prec);
           break;
-        }
+        case FKEY_Mod_2:
+          emitBinOp(ostr, n, "%", prec);
+          break;
+        case FKEY_Pow_2:
+          emitBinOp(ostr, n, "^", prec);
+          break;
+        case FKEY_VarSet_2:
+          emitBinOp(ostr, n, " = ", prec);
+          break;
+        case FKEY_LT_2:
+          emitBinOp(ostr, n, " < ", prec);
+          break;
+        case FKEY_GT_2:
+          emitBinOp(ostr, n, " > ", prec);
+          break;
+        case FKEY_LE_2:
+          emitBinOp(ostr, n, " <= ", prec);
+          break;
+        case FKEY_GE_2:
+          emitBinOp(ostr, n, " >= ", prec);
+          break;
+        case FKEY_EQ_2:
+          emitBinOp(ostr, n, " == ", prec);
+          break;
+        case FKEY_NE_2:
+          emitBinOp(ostr, n, " != ", prec);
+          break;
+        case FKEY_And_2:
+          emitBinOp(ostr, n, " && ", prec);
+          break;
+        case FKEY_Or_2:
+          emitBinOp(ostr, n, " || ", prec);
+          break;
+        case FKEY_AddBy_2:
+          emitBinOp(ostr, n, " += ", prec);
+          break;
+        case FKEY_SubBy_2:
+          emitBinOp(ostr, n, " -= ", prec);
+          break;
+        case FKEY_MulBy_2:
+          emitBinOp(ostr, n, " *= ", prec);
+          break;
+        case FKEY_DivBy_2:
+          emitBinOp(ostr, n, " /= ", prec);
+          break;
+        case FKEY_ModBy_2:
+          emitBinOp(ostr, n, " %= ", prec);
+          break;
+        case FKEY_Not_1:
+          emitUnaryOp(ostr, n, "!", prec);
+          break;
+        case FKEY_Neg_1:
+          emitUnaryOp(ostr, n, "-", prec);
+          break;
+        case FKEY_Inc_1:
+          emitUnaryOp(ostr, n, "++", prec);
+          break;
+        case FKEY_PostInc_1:
+          emitPostUnaryOp(ostr, n, "++", prec);
+          break;
+        case FKEY_Dec_1:
+          emitUnaryOp(ostr, n, "--", prec);
+          break;
+        case FKEY_PostDec_1:
+          emitPostUnaryOp(ostr, n, "--", prec);
+          break;
         case FKEY_Call_2:{
-          emitExpression(ostr, indent, v[0]);
+          emitExpression(ostr, indent, n[0]);
           ostr << ".";
 
-          const nvar& v1 = v[1];
+          const nvar& v1 = n[1];
           
           ostr << v1.str() << "(";
           for(size_t i = 0; i < v1.size(); ++i){
@@ -319,7 +395,7 @@ namespace neu{
           break;
         }
         default:
-          NERROR("[1] invalid function: " + v);
+          NERROR("function not implemented: " + n);
       }
     }
     

@@ -210,7 +210,7 @@ namespace neu{
     nvar func(const nstr& f){
       nvar v = nfunc(f);
       v.setLine(line_);
-      v("_token") = token_;
+      v("__token") = token_;
       
       if(!file_.empty()){
         v.setFile(file_);
@@ -222,7 +222,7 @@ namespace neu{
     nvar func(const char* f){
       nvar v = nfunc(f);
       v.setLine(line_);
-      v("_token") = token_;
+      v("__token") = token_;
       
       if(!file_.empty()){
         v.setFile(file_);
@@ -238,7 +238,7 @@ namespace neu{
     nvar sym(const nstr& s){
       nvar v = nsym(s);
       v.setLine(line_);
-      v("_token") = token_;
+      v("__token") = token_;
       
       if(!file_.empty()){
         v.setFile(file_);
@@ -254,7 +254,7 @@ namespace neu{
     nvar sym(const char* s){
       nvar v = nsym(s);
       v.setLine(line_);
-      v("_token") = token_;
+      v("__token") = token_;
       
       if(!file_.empty()){
         v.setFile(file_);
@@ -264,13 +264,13 @@ namespace neu{
     }
     
     nvar& var(nvar& v){
-      v("_token") = token_;
+      v("__token") = token_;
       return v;
     }
     
     nvar var(const nvar& v){
       nvar r = v;
-      r("_token") = token_;
+      r("__token") = token_;
       return r;
     }
     

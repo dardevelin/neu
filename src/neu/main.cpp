@@ -117,10 +117,9 @@ private:
 };
 
 int main(int argc, char** argv){
+  Program::opt("help", "h", false);
+  
   Program program(argc, argv);
-
-  program.argDefault("help", false,
-                     "Display usage message");
 
   nvar args = program.args();
     
@@ -129,8 +128,8 @@ int main(int argc, char** argv){
     program.exit(0);
   }
 
-  NObject o;
-  //NMObject o;
+  //NObject o;
+  NMObject o;
   Parser parser;
   NMLGenerator generator;
 

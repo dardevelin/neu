@@ -74,6 +74,7 @@ namespace{
     Global()
     : globalScope_(new NScope){
       
+      precedenceMap_("VarSet") = 17;
       precedenceMap_("Set") = 17;
       precedenceMap_("Var") = 17;
       precedenceMap_("Def") = 17;
