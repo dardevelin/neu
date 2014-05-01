@@ -58,7 +58,11 @@ using namespace neu;
 namespace{
   
   enum SymbolKey{
-    
+    SKEY_NO_KEY,
+    SKEY_Pi,
+    SKEY_Eu,
+    SKEY_Inf,
+    SKEY_NegInf
   };
   
   enum FunctionKey{
@@ -89,7 +93,7 @@ namespace{
     FKEY_DivBy_2,
     FKEY_ModBy_2,
     FKEY_Set_2,
-    FKEY_Integrate_2,
+    FKEY_Integrate_2
   };
   
   typedef NMap<nstr, SymbolKey> SymbolMap;
@@ -102,7 +106,10 @@ namespace{
   static FunctionMap _functionMap;
   
   static void _initSymbolMap(){
-    
+    _symbolMap["Pi"] = SKEY_Pi;
+    _symbolMap["Eu"] = SKEY_Eu;
+    _symbolMap["Inf"] = SKEY_Inf;
+    _symbolMap["NegInf"] = SKEY_NegInf;
   }
   
   static void _initFunctionMap(){
@@ -170,8 +177,7 @@ namespace neu{
     }
     
     FunctionKey getFunctionKey(const nvar& f){
-      FunctionMap::const_iterator itr =
-      _functionMap.find({f.str(), f.size()});
+      auto itr = _functionMap.find({f.str(), f.size()});
       
       if(itr == _functionMap.end()){
         itr = _functionMap.find({f.str(), -1});
@@ -182,6 +188,16 @@ namespace neu{
       }
       
       return itr->second.first;
+    }
+    
+    SymbolKey getSymbolKey(const nvar& f){
+      auto itr = _symbolMap.find(f);
+      
+      if(itr == _symbolMap.end()){
+        return SKEY_NO_KEY;
+      }
+      
+      return itr->second;
     }
     
     void emitFunc(ostream& ostr, const nvar& n, const nstr& func=""){
@@ -263,16 +279,138 @@ namespace neu{
       ostr << op;
     }
     
+    bool emitSequence(ostream& ostr, const nvar& n){
+      size_t size = n.size();
+
+      if(size == 0){
+        return false;
+      }
+      
+      for(size_t i = 0; i < size; ++i){
+        if(i > 0){
+          ostr << ", ";
+        }
+        emitExpression(ostr, "", n[i]);
+      }
+      
+      return true;
+    }
+    
+    void emitMap(ostream& ostr, const nvar& n, bool first=true){
+      const nmap& m = n;
+
+      for(auto& itr : m){
+        if(first){
+          first = false;
+        }
+        else{
+          ostr << ", ";
+        }
+      
+        emitExpression(ostr, "", itr.first);
+        ostr << "-> ";
+        emitExpression(ostr, "", itr.second);
+      }
+    }
+
+    void emitMultimap(ostream& ostr, const nvar& n, bool first=true){
+      const nmmap& m = n;
+      
+      for(auto& itr : m){
+        if(first){
+          first = false;
+        }
+        else{
+          ostr << ", ";
+        }
+        
+        emitExpression(ostr, "", itr.first);
+        ostr << "-> ";
+        emitExpression(ostr, "", itr.second);
+      }
+    }
+    
     void emitExpression(ostream& ostr,
                         const nstr& indent,
                         const nvar& n,
                         int prec=100){
       switch(n.type()){
+        case nvar::False:
+          ostr << "False";
+          return;
+        case nvar::True:
+          ostr << "True";
+          return;
+        case nvar::Symbol:{
+          SymbolKey key = getSymbolKey(n);
+          switch(key){
+            case SKEY_Pi:
+              ostr << "Pi";
+              return;
+            case SKEY_Eu:
+              ostr << "E";
+              return;
+            case SKEY_Inf:
+              ostr << "Infinity";
+              return;
+            case SKEY_NegInf:
+              ostr << "-Infinity";
+              return;
+            default:
+              ostr << n;
+              return;
+          }
+        }
+        case nvar::Real:
+          ostr << n.real().toStr(false);
+          return;
+        case nvar::Rational:
+        case nvar::Integer:
+        case nvar::String:
+          ostr << n;
+          return;
+        case nvar::Float:{
+          nstr s = n.toStr(false);
+          s.findReplace("e", "`*^");
+          ostr << s;
+          return;
+        }
+        case nvar::List:
+        case nvar::Vector:{
+          ostr << "{";
+          emitSequence(ostr, n);
+          ostr << "}";
+          return;
+        }
+        case nvar::Map:{
+          ostr << "{";
+          emitMap(ostr, n);
+          ostr << "}";
+          return;
+        }
+        case nvar::Multimap:{
+          ostr << "{";
+          emitMultimap(ostr, n);
+          ostr << "}";
+          return;
+        }
+        case nvar::SequenceMap:{
+          ostr << "{";
+          bool first = emitSequence(ostr, n);
+
+          if(n.hasMap()){
+            emitMap(ostr, n, first);
+          }
+          else{
+            emitMultimap(ostr, n, first);
+          }
+          ostr << "}";
+          return;
+        }
         case nvar::Function:
           break;
         default:
-          ostr << n;
-          return;
+          NERROR("invalid expression: " + n);
       }
       
       FunctionKey key = getFunctionKey(n);
