@@ -173,7 +173,7 @@ namespace neu{
     }
     
     void generate(ostream& ostr, const nvar& v){
-      emitStatement(ostr, "", v);
+      emitStatement(ostr, v, "");
     }
     
     FunctionKey getFunctionKey(const nvar& f){

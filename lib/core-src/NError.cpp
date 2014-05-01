@@ -67,15 +67,22 @@ namespace neu{
     NError_(NError* o, const nstr& msg)
     : o_(o),
     msg_(msg){
-      //cout << "msg is: " << msg << endl;
-      //assert(false);
+
+      if(_abort){
+        cerr << "ABORT: " << msg << endl;
+        assert(false);
+      }
     }
     
     NError_(NError* o, const nstr& msg, const nvar& var)
     : o_(o),
     msg_(msg),
     var_(var){
-      
+
+      if(_abort){
+        cerr << "ABORT: " << msg << endl;
+        assert(false);
+      }
     }
     
     NError_(NError* o, const NError_& error)

@@ -217,7 +217,8 @@ namespace{
     BKEY_tempPath,
     BKEY_timeout,
     BKEY_name,
-    BKEY_home
+    BKEY_home,
+    BKEY_abort
   };
   
   typedef NMap<nstr, BuiltinKey> BuiltinMap;
@@ -377,6 +378,9 @@ namespace neu{
           case BKEY_home:
             _home = v;
             break;
+          case BKEY_abort:
+            _abort = v;
+            break;
         }
       }
     }
@@ -410,6 +414,7 @@ namespace neu{
 
       builtinOpt(BKEY_home, "home", "", _home);
       builtinOpt(BKEY_name, "name", "", _name);
+      builtinOpt(BKEY_abort, "abort", "", _abort);
       builtinOpt(BKEY_improper, "improper", "", _improper);
       builtinOpt(BKEY_packBlockSize, "packBlockSize", "", _packBlockSize);
       builtinOpt(BKEY_tempPath, "tempPath", "", _tempPath);

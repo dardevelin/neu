@@ -70,6 +70,7 @@ namespace neu{
   double _timeout = 1.0;
   nstr _name;
   nstr _home;
+  bool _abort = false;
   
   NResourceManager* _resourceManager = new NResourceManager;
   

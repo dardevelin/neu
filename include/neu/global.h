@@ -78,6 +78,8 @@ namespace neu{
   
   extern nstr _home;
   
+  extern bool _abort;
+  
 } // end namespace neu
 
 #endif // NEU_GLOBAL_H
