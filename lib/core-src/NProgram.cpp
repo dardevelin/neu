@@ -255,7 +255,7 @@ namespace neu{
       _args = args;
       
       setBuiltins();
-      setBuiltinDefaults();
+      setDefaults();
     }
     
     NProgram_(NProgram* program, int& argc, char** argv, const nvar& args)
@@ -287,7 +287,7 @@ namespace neu{
         }
       }
       
-      setBuiltinDefaults();
+      setDefaults();
     }
     
     ~NProgram_(){
@@ -337,6 +337,8 @@ namespace neu{
     }
 
     void setBuiltins(){
+      _args.touchMap();
+      
       nmap& m = _args;
       
       for(auto& itr : m){
@@ -385,9 +387,22 @@ namespace neu{
       }
     }
     
-    void setBuiltinDefaults(){
+    void setDefaults(){
       if(_tempPath.empty()){
         _tempPath = _home + "/scratch";
+      }
+      
+      for(auto& itr : _optMap){
+        Opt* o = itr.second;
+        
+        if(!_args.hasKey(o->key)){
+          if(o->required){
+            NERROR("missing option: " + o->key);
+          }
+          else{
+            _args(o->key) = o->def;
+          }
+        }
       }
     }
     
@@ -800,19 +815,6 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
           }
 
           break;
-        }
-      }
-    }
-    
-    for(auto& itr : _optMap){
-      Opt* o = itr.second;
-
-      if(!args.hasKey(o->key)){
-        if(o->required){
-          NERROR("missing option: " + o->key);
-        }
-        else{
-          args(o->key) = o->def;
         }
       }
     }
