@@ -255,6 +255,7 @@ namespace neu{
     }
     
     void error(const nstr& type){
+      status_ = 1;
       *estr_ << "NMLParser error: " << getLocation() << ": " << type << endl;
     }
     

@@ -768,54 +768,51 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
           lastOpt = 0;
         }
       }
-      else{
-        if(lastOpt){
-          const nvar& def = lastOpt->def;
-          nvar v;
-
-          switch(def.type()){
-            case nvar::String:
-              v = argv[i];
-              break;
-            case nvar::False:
-            case nvar::True:
-              v = nvar::fromStr(argv[i]);
-              v = v.toBool();
-              break;
-            case nvar::Rational:
-              v = nvar::fromStr(argv[i]);
-              v = v.toRat();
-              break;
-            case nvar::Integer:
-              v = nvar::fromStr(argv[i]);
-              v = v.toLong();
-              break;
-            case nvar::Float:
-              v = nvar::fromStr(argv[i]);
-              v = v.toDouble();
-              break;
-            default:
-              v = nvar::fromStr(argv[i]);
-              break;
-          }
-          
-          if(lastOpt->multi){
-            args(lastOpt->key) << move(v);
-          }
-          else{
-            args(lastOpt->key) = move(v);
-          }
-          
-          lastOpt = 0;
+      else if(lastOpt){
+        const nvar& def = lastOpt->def;
+        nvar v;
+        
+        switch(def.type()){
+          case nvar::String:
+            v = argv[i];
+            break;
+          case nvar::False:
+          case nvar::True:
+            v = nvar::fromStr(argv[i]);
+            v = v.toBool();
+            break;
+          case nvar::Rational:
+            v = nvar::fromStr(argv[i]);
+            v = v.toRat();
+            break;
+          case nvar::Integer:
+            v = nvar::fromStr(argv[i]);
+            v = v.toLong();
+            break;
+          case nvar::Float:
+            v = nvar::fromStr(argv[i]);
+            v = v.toDouble();
+            break;
+          default:
+            v = nvar::fromStr(argv[i]);
+            break;
+        }
+        
+        if(lastOpt->multi){
+          args(lastOpt->key) << move(v);
         }
         else{
-          
-          for(size_t j = i; j < argc; ++j){
-            args.pushBack(argv[j]);
-          }
-
-          break;
+          args(lastOpt->key) = move(v);
         }
+        
+        lastOpt = 0;
+      }
+      else{
+        for(size_t j = i; j < argc; ++j){
+          args.pushBack(argv[j]);
+        }
+        
+        break;
       }
     }
   }
