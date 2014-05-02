@@ -2712,6 +2712,23 @@ namespace neu{
       }
     }
     
+    bool hasSequence() const{
+      switch(t_){
+        case Vector:
+        case List:
+        case HeadSequence:
+        case SequenceMap:
+        case HeadSequenceMap:
+          return true;
+        case Reference:
+          return h_.ref->v->hasSequence();
+        case Pointer:
+          return h_.vp->hasSequence();
+        default:
+          return false;
+      }
+    }
+    
     bool hasMap() const{
       switch(t_){
         case Function:

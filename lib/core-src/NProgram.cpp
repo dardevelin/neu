@@ -266,7 +266,7 @@ namespace neu{
 
       init();
       NProgram::parseArgs(argc, argv, _args);
-      _args.merge(args);
+      merge(_args, args);
       
       setBuiltins();
       
@@ -274,7 +274,7 @@ namespace neu{
       if(NSys::exists(p)){
         nvar c;
         parseConfig(p, c);
-        _args.merge(c);
+        merge(_args, c);
         setBuiltins();
       }
       else{
@@ -282,7 +282,7 @@ namespace neu{
         if(NSys::exists(p)){
           nvar c;
           parseConfig(p, c);
-          _args.merge(c);
+          merge(_args, c);
           setBuiltins();
         }
       }
@@ -294,6 +294,61 @@ namespace neu{
       
     }
     
+    void merge(nvar& args, const nvar& readArgs){
+      if(!args.hasMap() || !readArgs.hasMap()){
+        return;
+      }
+      
+      args.merge(readArgs);
+      
+      nmap& m = args;
+      const nmap& rm = readArgs;
+      
+      for(auto& itr : m){
+        const nvar& k = itr.first;
+
+        if(!k.isSymbol()){
+          continue;
+        }
+
+        auto mitr = rm.find(k);
+        if(mitr == rm.end()){
+          continue;
+        }
+        
+        const nvar& rv = mitr->second;
+        
+        nvar& v = itr.second;
+        
+        if(!v.hasSequence() || !rv.hasSequence()){
+          continue;
+        }
+        
+        const nstr& ks = k;
+        
+        if(ks[0] == '_'){
+          auto oitr = _builtinOptMap.find(ks);
+          if(oitr == _builtinOptMap.end()){
+            continue;
+          }
+          Opt* opt = oitr->second;
+          if(opt->multi){
+            v.append(rv);
+          }
+        }
+        else{
+          auto oitr = _optMap.find(ks);
+          if(oitr == _optMap.end()){
+            continue;
+          }
+          Opt* opt = oitr->second;
+          if(opt->multi){
+            v.append(rv);
+          }
+        }
+      }
+    }
+
     void parseConfig(const nstr& path, nvar& config){
       stringstream estr;
       NMLParser parser;
@@ -337,7 +392,9 @@ namespace neu{
     }
 
     void setBuiltins(){
-      _args.touchMap();
+      if(!_args.hasMap()){
+        return;
+      }
       
       nmap& m = _args;
       
@@ -398,6 +455,9 @@ namespace neu{
         if(!_args.hasKey(o->key)){
           if(o->required){
             NERROR("missing option: " + o->key);
+          }
+          else if(o->multi){
+            _args(o->key).touchVector();
           }
           else{
             _args(o->key) = o->def;
@@ -830,8 +890,16 @@ nstr NProgram::usage(const nstr& msg){
   ostr << idt << msg << endl << endl;
   ostr << "DESCRIPTION" << endl;
   
+  NMap<Opt*, bool> m;
+  
   for(auto& itr : _optMap){
     Opt* opt = itr.second;
+
+    if(m.hasKey(opt)){
+      continue;
+    }
+    
+    m[opt] = true;
     
     ostr << idt << "-" << opt->key;
     

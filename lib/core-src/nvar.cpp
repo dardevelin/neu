@@ -16885,10 +16885,12 @@ void nvar::touchList(){
       break;
     case Reference:
       h_.ref->v->touchList();
+      break;
     case Pointer:
       h_.vp->touchList();
+      break;
     default:
-      NERROR("invalid operand");
+      NERROR("invalid operand: " + *this);
   }
 }
 
