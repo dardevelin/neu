@@ -1790,12 +1790,6 @@ namespace neu{
           return h_.hm->h->type();
         case HeadSequenceMap:
           return h_.hsm->h->type();
-        case Vector:
-        case List:
-        case Map:
-        case Multimap:
-        case SequenceMap:
-          return Undefined;
         case Reference:
           return h_.ref->v->type();
         case Pointer:

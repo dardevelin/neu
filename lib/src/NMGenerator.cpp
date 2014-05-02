@@ -694,6 +694,7 @@ namespace neu{
         case nvar::Function:
           break;
         default:
+          cout << "type is: " << int(n.type()) << endl;
           NERROR("invalid expression: " + n);
       }
       
