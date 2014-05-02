@@ -338,7 +338,6 @@ namespace neu{
       }
     }
 
-
     void parseConfig(const nstr& path, nvar& config){
       stringstream estr;
       NMLParser parser;
@@ -362,12 +361,18 @@ namespace neu{
         }
         
         const nstr& ks = k;
+        
+        nvar& v = config[k];
+        
+        if(v.isString()){
+          NSys::replaceEnvs(v.str());
+        }
+        
         if(ks[0] == '_'){
           auto itr = _builtinOptMap.find(ks);
           if(itr != _builtinOptMap.end()){
             Opt* opt = itr->second;
             
-            nvar& v = config[k];
             if(opt->multi && !v.hasSequence()){
               v = nvec() << move(v);
             }
@@ -383,7 +388,6 @@ namespace neu{
           if(itr != _optMap.end()){
             Opt* opt = itr->second;
             
-            nvar& v = config[k];
             if(opt->multi && !v.hasSequence()){
               v = nvec() << move(v);
             }

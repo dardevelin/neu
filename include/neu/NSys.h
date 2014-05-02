@@ -101,6 +101,8 @@ namespace neu{
     
     static void sleep(double dt);
     
+    static void replaceEnvs(nstr& s);
+    
   };
   
 } // end namespace neu

@@ -413,3 +413,36 @@ void NSys::sleep(double dt){
   
   nanosleep(&ts, 0);
 }
+
+void NSys::replaceEnvs(nstr& s){
+  size_t len = s.length();
+
+  for(size_t i = 0; i < len; ++i){
+    if(s[i] == '$' && (i == 0 || s[i - 1] != '\\')){
+      size_t begin = i++;
+      nstr env;
+    
+      bool first = true;
+      for(; i < len; ++i){
+        if(nstr::isAlpha(s[i]) ||
+           s[i] == '_' ||
+           (!first && nstr::isDigit(s[i]))){
+          env += s[i];
+          first = false;
+        }
+        else{
+          break;
+        }
+      }
+
+      nstr v;
+      if(!getEnv(env, v)){
+        NERROR("invalid environment variable: " + env);
+      }
+      
+      s.replace(begin, i - begin, v);
+      i = begin + v.length();
+      len = s.length();
+    }
+  }
+}
