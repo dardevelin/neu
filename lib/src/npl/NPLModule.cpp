@@ -396,8 +396,6 @@ namespace{
     }
     
     Type* type(const nvar& t){
-      cout << "t is: " << t << endl;
-      
       if(t.isString()){
         return type(NPLParser::parseType(t));
       }

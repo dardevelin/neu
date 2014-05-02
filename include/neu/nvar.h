@@ -1942,6 +1942,21 @@ namespace neu{
       }
     }
     
+    bool isBool() const{
+      switch(t_){
+        case False:
+          return true;
+        case True:
+          return true;
+        case Reference:
+          return h_.ref->v->isBool();
+        case Pointer:
+          return h_.vp->isBool();
+        default:
+          return false;
+      }
+    }
+    
     bool isString() const{
       switch(t_){
         case String:
@@ -1960,24 +1975,29 @@ namespace neu{
           return false;
       }
     }
-
-    bool isBool() const{
+    
+    bool isSymbol() const{
       switch(t_){
-        case False:
+        case Symbol:
           return true;
-        case True:
-          return true;
+        case HeadSequence:
+          return h_.hs->h->isSymbol();
+        case HeadMap:
+          return h_.hm->h->isSymbol();
+        case HeadSequenceMap:
+          return h_.hsm->h->isSymbol();
         case Reference:
-          return h_.ref->v->isBool();
+          return h_.ref->v->isSymbol();
         case Pointer:
-          return h_.vp->isBool();
+          return h_.vp->isSymbol();
         default:
           return false;
       }
     }
     
-    bool isSymbol() const{
+    bool hasString() const{
       switch(t_){
+        case String:
         case Symbol:
           return true;
         case HeadSequence:

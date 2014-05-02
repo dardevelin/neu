@@ -18132,6 +18132,9 @@ void nvar::merge(const nvar& x){
     case HeadMap:
       h_.hm->m->merge(x);
       break;
+    case SequenceMap:
+      h_.sm->m->merge(x);
+      break;
     case HeadSequenceMap:
       h_.hsm->m->merge(x);
       break;
@@ -18262,6 +18265,9 @@ void nvar::outerMerge(const nvar& x){
       break;
     case HeadMap:
       h_.hm->m->outerMerge(x);
+      break;
+    case SequenceMap:
+      h_.sm->m->outerMerge(x);
       break;
     case HeadSequenceMap:
       h_.hsm->m->outerMerge(x);

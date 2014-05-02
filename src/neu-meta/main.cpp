@@ -123,8 +123,9 @@ public:
     
   class Database : public CompilationDatabase{
   public:
-    Database(const nvec& includes)
-    : includes_(includes){
+    Database(const nstr& resourceDir, const nvec& includes)
+    : resourceDir_(resourceDir),
+    includes_(includes){
         
     }
       
@@ -136,21 +137,12 @@ public:
       CompileCommand c;
       c.Directory = ".";
         
-      c.CommandLine = {"clang-tool", "-std=c++11"};
+      c.CommandLine =
+      {"clang-tool", "-std=c++11", "-DMETA_GUARD", "-Wno-undefined-internal",
+      "-resource-dir", resourceDir_};
 
-      c.CommandLine.push_back("-DMETA_GUARD");
-      c.CommandLine.push_back("-Wno-undefined-internal");
-      
 #ifdef __APPLE__
       c.CommandLine.push_back("-stdlib=libc++");
-        
-      c.CommandLine.push_back("-resource-dir");
-      c.CommandLine.push_back("/Users/nickm/llvm-3.4/build-release/bin/../"
-                              "lib/clang/3.4");
-        
-      c.CommandLine.push_back("-I/Applications/Xcode.app/Contents/Developer/"
-                              "Platforms/MacOSX.platform/Developer/SDKs/"
-                              "MacOSX10.9.sdk/usr/include");
 #endif
         
       for(const nstr& i : includes_){
@@ -163,7 +155,7 @@ public:
       }
         
       c.CommandLine.push_back(p);
-        
+      
       cv.push_back(c);
         
       return cv;
@@ -179,6 +171,7 @@ public:
       
   private:
     const nvec& includes_;
+    nstr resourceDir_;
   };
     
   class Factory : public FrontendActionFactory{
@@ -334,7 +327,11 @@ public:
   void addInclude(const nstr& path){
     includes_.push_back(path);
   }
-    
+  
+  void setResourceDir(const nstr& path){
+    resourceDir_ = path;
+  }
+  
   bool generate(ostream& ostr, const nstr& filePath, const nstr& className){
     className_ = className;
     fullClassName_ = className_.find("::") != nstr::npos;
@@ -351,7 +348,7 @@ public:
 
     ostr_ = &ostr;
 
-    Database db(includes_);
+    Database db(resourceDir_, includes_);
 
     StringVec files = {filePath};
     ClangTool tool(db, files);
@@ -1140,6 +1137,7 @@ private:
   bool enableOuter_;
   nstr className_;
   bool fullClassName_;
+  nstr resourceDir_;
 };
 
 void printUsage(){
@@ -1165,6 +1163,9 @@ int main(int argc, char** argv){
   
   NProgram::opt("include", "I", "",
                 "Include paths.", false, true);
+
+  NProgram::opt("resourceDir", "", "",
+                "Clang resource directory.", true);
   
   NProgram program(argc, argv);
 
@@ -1196,6 +1197,7 @@ int main(int argc, char** argv){
   stringstream ostr;
   MetaGenerator gen;
   
+  gen.setResourceDir(args["resourceDir"]);
   gen.enableHandle(!args["no-handle"]);
   gen.enableClass(!args["no-factory"]);
   gen.enableMetadata(!args["no-metadata"]);
@@ -1203,7 +1205,7 @@ int main(int argc, char** argv){
 
   const nvar& is = args["include"];
 
-  for(const nvar& i : is){
+  for(const nstr& i : is){
     gen.addInclude(i);
   }
   

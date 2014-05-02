@@ -295,69 +295,49 @@ namespace neu{
     }
     
     void merge(nvar& args, const nvar& readArgs){
-      if(!args.hasMap() || !readArgs.hasMap()){
+      if(!readArgs.hasMap()){
         return;
       }
       
-      args.merge(readArgs);
-      
-      nmap& m = args;
       const nmap& rm = readArgs;
       
-      for(auto& itr : m){
+      for(auto& itr : rm){
         const nvar& k = itr.first;
-
-        if(!k.isSymbol()){
-          continue;
-        }
-
-        auto mitr = rm.find(k);
-        if(mitr == rm.end()){
+        
+        if(!k.hasString()){
           continue;
         }
         
-        const nvar& rv = mitr->second;
-        
-        nvar& v = itr.second;
-        
-        if(!v.hasSequence()){
-          continue;
-        }
-        
-        const nstr& ks = k;
-        
-        if(ks[0] == '_'){
-          auto oitr = _builtinOptMap.find(ks);
-          if(oitr == _builtinOptMap.end()){
-            continue;
-          }
-          Opt* opt = oitr->second;
-          if(opt->multi){
-            if(rv.hasSequence()){
-              v.append(rv);
+        if(args.hasKey(k)){
+          const nstr& ks = k;
+          
+          if(ks[0] == '_'){
+            auto oitr = _builtinOptMap.find(ks);
+            if(oitr == _builtinOptMap.end()){
+              continue;
             }
-            else{
-              v.pushBack(rv);
+            Opt* opt = oitr->second;
+            if(opt->multi){
+              args[k].append(itr.second);
+            }
+          }
+          else{
+            auto oitr = _optMap.find(ks);
+            if(oitr == _optMap.end()){
+              continue;
+            }
+            Opt* opt = oitr->second;
+            if(opt->multi){
+              args[k].append(itr.second);
             }
           }
         }
         else{
-          auto oitr = _optMap.find(ks);
-          if(oitr == _optMap.end()){
-            continue;
-          }
-          Opt* opt = oitr->second;
-          if(opt->multi){
-            if(rv.hasSequence()){
-              v.append(rv);
-            }
-            else{
-              v.pushBack(rv);
-            }
-          }
+          args(k) = itr.second;
         }
       }
     }
+
 
     void parseConfig(const nstr& path, nvar& config){
       stringstream estr;
@@ -377,7 +357,7 @@ namespace neu{
       nvec keys;
       config.keys(keys);
       for(const nvar& k : keys){
-        if(!k.isSymbol()){
+        if(!k.hasString()){
           continue;
         }
         
@@ -386,8 +366,13 @@ namespace neu{
           auto itr = _builtinOptMap.find(ks);
           if(itr != _builtinOptMap.end()){
             Opt* opt = itr->second;
+            
+            nvar& v = config[k];
+            if(opt->multi && !v.hasSequence()){
+              v = nvec() << move(v);
+            }
+            
             if(opt->key != ks){
-              nvar v = move(config[k]);
               config.erase(k);
               config(opt->key) = move(v);
             }
@@ -397,8 +382,13 @@ namespace neu{
           auto itr = _optMap.find(ks);
           if(itr != _optMap.end()){
             Opt* opt = itr->second;
+            
+            nvar& v = config[k];
+            if(opt->multi && !v.hasSequence()){
+              v = nvec() << move(v);
+            }
+            
             if(opt->key != ks){
-              nvar v = move(config[k]);
               config.erase(k);
               config(opt->key) = move(v);
             }
@@ -448,7 +438,7 @@ namespace neu{
         const nvar& k = itr.first;
         const nvar& v = itr.second;
         
-        if(!k.isSymbol()){
+        if(!k.hasString()){
           continue;
         }
         
