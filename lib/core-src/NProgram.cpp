@@ -320,7 +320,7 @@ namespace neu{
         
         nvar& v = itr.second;
         
-        if(!v.hasSequence() || !rv.hasSequence()){
+        if(!v.hasSequence()){
           continue;
         }
         
@@ -333,7 +333,12 @@ namespace neu{
           }
           Opt* opt = oitr->second;
           if(opt->multi){
-            v.append(rv);
+            if(rv.hasSequence()){
+              v.append(rv);
+            }
+            else{
+              v.pushBack(rv);
+            }
           }
         }
         else{
@@ -343,7 +348,12 @@ namespace neu{
           }
           Opt* opt = oitr->second;
           if(opt->multi){
-            v.append(rv);
+            if(rv.hasSequence()){
+              v.append(rv);
+            }
+            else{
+              v.pushBack(rv);
+            }
           }
         }
       }
@@ -358,6 +368,42 @@ namespace neu{
       if(config == none){
         nstr err = estr.str();
         NERROR("error parsing config file: " + path + ": " + err);
+      }
+      
+      if(!config.hasMap()){
+        return;
+      }
+      
+      nvec keys;
+      config.keys(keys);
+      for(const nvar& k : keys){
+        if(!k.isSymbol()){
+          continue;
+        }
+        
+        const nstr& ks = k;
+        if(ks[0] == '_'){
+          auto itr = _builtinOptMap.find(ks);
+          if(itr != _builtinOptMap.end()){
+            Opt* opt = itr->second;
+            if(opt->key != ks){
+              nvar v = move(config[k]);
+              config.erase(k);
+              config(opt->key) = move(v);
+            }
+          }
+        }
+        else{
+          auto itr = _optMap.find(ks);
+          if(itr != _optMap.end()){
+            Opt* opt = itr->second;
+            if(opt->key != ks){
+              nvar v = move(config[k]);
+              config.erase(k);
+              config(opt->key) = move(v);
+            }
+          }
+        }
       }
     }
     
