@@ -680,8 +680,13 @@ namespace neu{
               return;
             default:{
               nvar p = obj_->process(n);
-              cout << "p is: " << p << endl;
-              emitExpression(ostr, p, indent);
+              if(p.isSymbol() && p.str() == n.str()){
+                ostr << p;
+              }
+              else{
+                emitExpression(ostr, p, indent);
+              }
+              
               return;
             }
           }
