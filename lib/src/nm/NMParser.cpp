@@ -89,12 +89,19 @@ namespace{
     FKEY_Tan_1,
     FKEY_ArcTan_1,
     FKEY_Tanh_1,
-    FKEY_Rational_2
+    FKEY_Rational_2,
+    FKEY_List_n,
+    FKEY_Integrate_2,
+    FKEY_D_2,
+    FKEY_GCD_n,
+    FKEY_LCM_n,
+    FKEY_Factorial_1
   };
   
   enum SymbolKey{
     SKEY_True=1,
-    SKEY_False
+    SKEY_False,
+    SKEY_E
   };
   
   typedef NMap<nstr, SymbolKey> SymbolMap;
@@ -138,11 +145,18 @@ namespace{
     _functionMap[{"ArcTan", 1}] = FKEY_ArcTan_1;
     _functionMap[{"Tanh", 1}] = FKEY_Tanh_1;
     _functionMap[{"Rational", 2}] = FKEY_Rational_2;
+    _functionMap[{"List", -1}] = FKEY_List_n;
+    _functionMap[{"Integrate", 2}] = FKEY_Integrate_2;
+    _functionMap[{"D", 2}] = FKEY_D_2;
+    _functionMap[{"GCD", -1}] = FKEY_GCD_n;
+    _functionMap[{"LCM", -1}] = FKEY_LCM_n;
+    _functionMap[{"Factorial", 1}] = FKEY_Factorial_1;
   }
   
   void _initSymbolMap(){
     _symbolMap["True"] = SKEY_True;
     _symbolMap["False"] = SKEY_False;
+    _symbolMap["E"] = SKEY_E;
   }
   
   class _FunctionMapLoader{
@@ -157,18 +171,21 @@ namespace{
   
 } // end namespace
 
-void NMParser_::translate(nvar& v){
-  if(v.isSymbol()){
-    SymbolMap::const_iterator itr = _symbolMap.find(v.str());
+void NMParser_::translate(nvar& n){
+  if(n.isSymbol()){
+    SymbolMap::const_iterator itr = _symbolMap.find(n.str());
     
     SymbolKey key = itr->second;
     
     switch(key){
       case SKEY_True:
-        v = true;
+        n = true;
         break;
       case SKEY_False:
-        v = false;
+        n = false;
+        break;
+      case SKEY_E:
+        n.str() = "Eu";
         break;
       default:
         break;
@@ -176,17 +193,16 @@ void NMParser_::translate(nvar& v){
     return;
   }
   
-  size_t size = v.size();
+  size_t size = n.size();
   
-  FunctionMap::const_iterator itr =
-  _functionMap.find({v.str(), size});
+  FunctionMap::const_iterator itr = _functionMap.find({n.str(), size});
   
   if(itr == _functionMap.end()){
-    itr = _functionMap.find({v.str(), -1});
+    itr = _functionMap.find({n.str(), -1});
   }
   
   if(itr == _functionMap.end()){
-    error(v, "unrecognized function: " + v);
+    error(n, "unrecognized function: " + n);
     return;
   }
   
@@ -207,72 +223,92 @@ void NMParser_::translate(nvar& v){
     case FKEY_Sinh_1:
     case FKEY_Tan_1:
     case FKEY_Tanh_1:
+    case FKEY_Integrate_2:
+    case FKEY_GCD_n:
+    case FKEY_LCM_n:
+    case FKEY_Factorial_1:
       return;
     case FKEY_Times_n:
       if(size < 2){
         break;
       }
       
-      v.str() = "Mul";
+      n.str() = "Mul";
+      n.foldRight();
       return;
     case FKEY_Plus_n:
       if(size < 2){
         break;
       }
       
-      v.str() = "Add";
+      n.str() = "Add";
+      n.foldRight();
       return;
     case FKEY_Power_2:
-      v.str() = "Pow";
+      n.str() = "Pow";
       return;
     case FKEY_Rational_2:
-      v = nrat(v[0], v[1]);
+      n = nrat(n[0], n[1]);
       return;
     case FKEY_Less_2:
-      v.str() = "LT";
+      n.str() = "LT";
       return;
     case FKEY_Greater_2:
-      v.str() = "GT";
+      n.str() = "GT";
       return;
     case FKEY_LessEqual_2:
-      v.str() = "LE";
+      n.str() = "LE";
       return;
     case FKEY_GreaterEqual_2:
-      v.str() = "GE";
+      n.str() = "GE";
       return;
     case FKEY_Equal_2:
-      v.str() = "EQ";
+      n.str() = "EQ";
       return;
     case FKEY_Unequal_2:
-      v.str() = "NE";
+      n.str() = "NE";
       return;
     case FKEY_Increment_1:
-      v.str() = "PostInc";
+      n.str() = "PostInc";
       return;
     case FKEY_PreIncrement_1:
-      v.str() = "Inc";
+      n.str() = "Inc";
       return;
     case FKEY_Decrement_1:
-      v.str() = "PostDec";
+      n.str() = "PostDec";
       return;
     case FKEY_PreDecrement_1:
-      v.str() = "Dec";
+      n.str() = "Dec";
       return;
     case FKEY_ArcCos_1:
-      v.str() = "ACos";
+      n.str() = "Acos";
       return;
     case FKEY_Cosh_1:
-      v.str() = "CosH";
+      n.str() = "Cosh";
       return;
     case FKEY_ArcSin_1:
-      v.str() = "ASin";
+      n.str() = "Asin";
       return;
     case FKEY_ArcTan_1:
-      v.str() = "Atan";
+      n.str() = "Atan";
+      return;
+    case FKEY_List_n:{
+      size_t size = n.size();
+      nvar v;
+
+      for(size_t i = 0; i < size; ++i){
+        v << move(n[i]);
+      }
+      
+      n = move(v);
+      return;
+    }
+    case FKEY_D_2:
+      n.str() = "Derivative";
       return;
   }
   
-  error(v, "unrecognized function: " + v);
+  error(n, "unrecognized function: " + n);
 }
 
 NMParser::NMParser(){

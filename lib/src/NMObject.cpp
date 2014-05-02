@@ -214,7 +214,7 @@ namespace neu{
       stringstream sstr;
       generator_.generate(sstr, v);
       
-      cout << "gen: " << sstr.str() << endl;
+      //cout << "gen: " << sstr.str() << endl;
       
       NCommand* cmd = _commandPool.acquire();
       
@@ -231,7 +231,7 @@ namespace neu{
       
       _commandPool.release(cmd);
       
-      cout << "out: " << m[1] << endl;
+      //cout << "out: " << m[1] << endl;
       
       return parser_.parse(m[1]);
     }

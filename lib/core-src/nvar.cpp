@@ -20681,3 +20681,35 @@ nvar& nvar::complement(const nvar& x){
 
   return *this;
 }
+
+void nvar::foldLeft(){
+  if(!isFunction()){
+    return;
+  }
+  
+  while(size() > 2){
+    nvar f = nfunc(str()) << move((*this)[0]) << move((*this)[1]);
+    popFront();
+    popFront();
+    pushFront(f);
+  }
+}
+
+void nvar::foldRight(){
+  if(!isFunction()){
+    return;
+  }
+  
+  for(;;){
+    size_t s = size();
+
+    if(s <= 2){
+      break;
+    }
+    
+    nvar f = nfunc(str()) << move((*this)[s - 2]) << move((*this)[s - 1]);
+    popBack();
+    popBack();
+    (*this) << move(f);
+  }
+}

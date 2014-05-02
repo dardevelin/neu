@@ -381,6 +381,8 @@ namespace neu{
     
     nvar VarPtr(const nvar& v);
     
+    nvar LRec(const nvar& n);
+    
     nvar NML(const nvar& v);
     
     void dumpScopes();

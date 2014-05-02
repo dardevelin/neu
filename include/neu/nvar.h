@@ -3628,6 +3628,10 @@ namespace neu{
 
     nvar& complement(const nvar& x);
 
+    void foldRight();
+    
+    void foldLeft();
+    
     static nvar parseFuncSpec(const char* fs){
       nvar ret;
       
