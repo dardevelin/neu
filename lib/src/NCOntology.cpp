@@ -382,7 +382,7 @@ public:
       nvar& vv = vt(returnTemp);
 
       if(obj){
-        obj->Def(nsym("ret"), nvar(&vv, nvar::Ptr));
+        obj->DefSym("ret", nvar(&vv, nvar::Ptr));
       }
 
       vv = return_->attributes();
@@ -408,7 +408,7 @@ public:
     nvar& vv = vt[v0];
 
     if(obj){
-      obj->Def(nsym("self"), nvar(&vv, nvar::Ptr));
+      obj->DefSym("self", nvar(&vv, nvar::Ptr));
     }
 
     vv("in") = true;
@@ -459,7 +459,7 @@ public:
       nvar& vv = vt[vi];
 
       if(obj){
-        obj->Def(nsym(paramVec_[i - 1].first), nvar(&vv, nvar::Ptr));
+        obj->DefSym(paramVec_[i - 1].first, nvar(&vv, nvar::Ptr));
       }
 
       if(pi->getOut()){
@@ -717,14 +717,14 @@ public:
 
     if(post_ != none){
       NObject o;
-      o.Def(nsym("self"), true);
+      o.DefSym("self", true);
 
       if(return_){
-        o.Def(nsym("ret"), true);
+        o.DefSym("ret", true);
       }
       
       for(auto& itr : paramMap_){
-        o.Def(nsym(itr.first), true);
+        o.DefSym(itr.first, true);
       }
       
       validatePost(o, post_);
@@ -811,7 +811,7 @@ public:
         o.PopScope();
       }
       else if(n.isFunction("VarSet", 2)){
-        o.Def(n[0], true);
+        o.DefSym(n[0], true);
         validatePost(o, n[1]);
       }
       else{
@@ -2392,12 +2392,12 @@ public:
     obj_.Reset();
 
     for(auto& itr : inputMap_){
-      obj_.Def(nsym(itr.first), itr.second);
+      obj_.DefSym(itr.first, itr.second);
     }
 
     for(auto& itr : outputMap_){
       if(!inputMap_.hasKey(itr.first)){
-        obj_.Def(nsym(itr.first), itr.second);
+        obj_.DefSym(itr.first, itr.second);
       }
     }
 

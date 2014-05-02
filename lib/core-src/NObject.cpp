@@ -78,6 +78,7 @@ namespace{
       precedenceMap_("Set") = 17;
       precedenceMap_("Var") = 17;
       precedenceMap_("Def") = 17;
+      precedenceMap_("DefSym") = 17;
       precedenceMap_("AddBy") = 17;
       precedenceMap_("SubBy") = 17;
       precedenceMap_("MulBy") = 17;
@@ -958,25 +959,19 @@ namespace neu{
     }
     
     nvar Def(const nvar& v1, const nvar& v2){
+      assert(v1.isFunction());
+      
       ThreadContext* context = getContext();
       
       NScope* scope = context->topScope();
-      
-      switch(v1.type()){
-        case nvar::Function:
-          scope->setFunction(v1, v2);
-          break;
-        case nvar::Symbol:
-          scope->setSymbol(v1, v2);
-          break;
-        default:
-          return Throw(v2, "Def[1] is invalid");
-      }
-      
+      scope->setFunction(v1, v2);
+
       return none;
     }
     
     nvar Def(const nvar& v1, const nvar& v2, const nvar& v3){
+      assert(v2.isFunction());
+      
       nvar p1 = process(v1);
       
       NScope* scope;
@@ -988,16 +983,33 @@ namespace neu{
         return Throw(v1, "Def[0] is not a scope");
       }
       
-      switch(v2.type()){
-        case nvar::Function:
-          scope->setFunction(v2, v3);
-          break;
-        case nvar::Symbol:
-          scope->setSymbol(v2, v3);
-          break;
-        default:
-          return Throw(v2, "Def[1] is invalid");
+      scope->setFunction(v2, v3);
+
+      return none;
+    }
+    
+    nvar DefSym(const nvar& v1, const nvar& v2){
+      ThreadContext* context = getContext();
+      
+      NScope* scope = context->topScope();
+      scope->setSymbol(v1, v2);
+      
+      return none;
+    }
+    
+    nvar DefSym(const nvar& v1, const nvar& v2, const nvar& v3){
+      nvar p1 = process(v1);
+      
+      NScope* scope;
+      
+      try{
+        scope = toScope(p1);
       }
+      catch(NError& e){
+        return Throw(v1, "DefSym[0] is not a scope");
+      }
+      
+      scope->setSymbol(v2, v3);
       
       return none;
     }
@@ -2130,6 +2142,16 @@ FuncMap::FuncMap(){
         return NObject_::obj(o)->Def(v[0], v[1], v[2]);
       });
   
+  add("DefSym", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->DefSym(v[0], v[1]);
+      });
+  
+  add("DefSym", 3,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->DefSym(v[0], v[1], v[2]);
+      });
+  
   add("New", 1,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::obj(o)->New(v[0]);
@@ -2879,6 +2901,14 @@ nvar NObject::Def(const nvar& v1, const nvar& v2){
 
 nvar NObject::Def(const nvar& v1, const nvar& v2, const nvar& v3){
   return x_->Def(v1, v2, v3);
+}
+
+nvar NObject::DefSym(const nvar& v1, const nvar& v2){
+  return x_->DefSym(v1, v2);
+}
+
+nvar NObject::DefSym(const nvar& v1, const nvar& v2, const nvar& v3){
+  return x_->DefSym(v1, v2, v3);
 }
 
 nvar NObject::New(const nvar& v){

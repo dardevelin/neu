@@ -216,6 +216,10 @@ namespace neu{
     nvar Def(const nvar& v1, const nvar& v2, const nvar& v3);
     
     nvar Def(const nvar& v1, const nvar& v2);
+
+    nvar DefSym(const nvar& v1, const nvar& v2, const nvar& v3);
+    
+    nvar DefSym(const nvar& v1, const nvar& v2);
     
     nvar New(const nvar& v);
     
