@@ -12119,8 +12119,343 @@ bool nvar::greater(const nvar& x) const{
 }
 
 bool nvar::equal(const nvar& x) const{
-  // ndm - implement
-  return false;
+  switch(t_){
+    case None:
+      switch(x.t_){
+        case None:
+          return true;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Undefined:
+      switch(x.t_){
+        case Undefined:
+          return true;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case False:
+      switch(x.t_){
+        case False:
+          return true;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case True:
+      switch(x.t_){
+        case True:
+          return true;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Integer:
+      switch(x.t_){
+        case Integer:
+          return h_.i == x.h_.i;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Rational:
+      switch(x.t_){
+        case Rational:
+          return *h_.r == *x.h_.r;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Float:
+      switch(x.t_){
+        case Float:
+          return h_.d == x.h_.d;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Real:
+      switch(x.t_){
+        case Real:
+          return *h_.x == *x.h_.x;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case StringPointer:
+    case String:
+    case Binary:
+      switch(x.t_){
+        case Binary:
+        case String:
+        case StringPointer:
+          return *h_.s == *x.h_.s;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Symbol:
+      switch(x.t_){
+        case Symbol:
+          return *h_.s == *x.h_.s;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case RawPointer:
+      switch(x.t_){
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return h_.p == x.h_.o;
+        case RawPointer:
+          return h_.p == x.h_.p;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case ObjectPointer:
+    case LocalObject:
+    case SharedObject:
+      switch(x.t_){
+        case ObjectPointer:
+        case LocalObject:
+        case SharedObject:
+          return h_.o == x.h_.o;
+        case RawPointer:
+          return h_.o == x.h_.p;
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Vector:
+      switch(x.t_){
+        case Vector:{
+          size_t size = h_.v->size();
+          
+          if(size != x.h_.v->size()){
+            return false;
+          }
+          
+          for(size_t i = 0; i < size; ++i){
+            if(!(*h_.v)[i].equal((*x.h_.v)[i])){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case List:
+      switch(x.t_){
+        case List:{
+          size_t size = h_.l->size();
+          
+          if(size != x.h_.l->size()){
+            return false;
+          }
+          
+          for(size_t i = 0; i < size; ++i){
+            if(!(*h_.l)[i].equal((*x.h_.l)[i])){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Function:
+      switch(x.t_){
+        case Function:{
+          size_t size = h_.f->v.size();
+          
+          if(size != h_.f->v.size()){
+            return false;
+          }
+
+          for(size_t i = 0; i < size; ++i){
+            if(!h_.f->v[i].equal((x.h_.f->v[i]))){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadSequence:
+      switch(x.t_){
+        case HeadSequence:
+          return h_.hs->h->equal(*x.h_.hs->h) &&
+          h_.hs->s->equal(*x.h_.hs->s);
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Map:
+      switch(x.t_){
+        case Map:{
+          if(h_.m->size() != x.h_.m->size()){
+            return false;
+          }
+
+          for(auto& itr : *h_.m){
+            const nvar& k = itr.first;
+            const nvar& v = itr.second;
+            
+            auto itr2 = x.h_.m->find(k);
+            if(itr2 == x.h_.m->end()){
+              return false;
+            }
+            
+            const nvar& v2 = itr2->second;
+            if(!v.equal(v2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Multimap:
+      switch(x.t_){
+        case Multimap:{
+          if(h_.mm->size() != x.h_.mm->size()){
+            return false;
+          }
+          
+          for(auto& itr : *h_.mm){
+            const nvar& k = itr.first;
+            const nvar& v = itr.second;
+            
+            auto itr2 = x.h_.mm->find(k);
+            if(itr2 == x.h_.mm->end()){
+              return false;
+            }
+            
+            const nvar& v2 = itr2->second;
+            if(!v.equal(v2)){
+              return false;
+            }
+          }
+          
+          return true;
+        }
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadMap:
+      switch(x.t_){
+        case HeadMap:
+          return h_.hm->h->equal(*x.h_.hm->h) &&
+          h_.hm->m->equal(*x.h_.hm->m);
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case SequenceMap:
+      switch(x.t_){
+        case SequenceMap:
+          return h_.sm->s->equal(*x.h_.sm->s) &&
+          h_.sm->m->equal(*x.h_.sm->m);
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case HeadSequenceMap:
+      switch(x.t_){
+        case HeadSequenceMap:
+          return h_.hsm->h->equal(*x.h_.hsm->h) &&
+          h_.hsm->s->equal(*x.h_.hsm->s) &&
+          h_.hsm->m->equal(*x.h_.hsm->m);
+        case Reference:
+          return equal(*x.h_.ref->v);
+        case Pointer:
+          return equal(*x.h_.vp);
+        default:
+          return false;
+      }
+    case Reference:
+      return h_.ref->v->equal(x);
+    case Pointer:
+      return h_.vp->equal(x);
+    default:
+      return false;
+  }
 }
 
 nvar nvar::operator<(long long x) const{

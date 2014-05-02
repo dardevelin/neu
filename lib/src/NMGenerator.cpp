@@ -52,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NObject.h>
 #include <neu/NSys.h>
+#include <neu/NMObject.h>
 
 using namespace std;
 using namespace neu;
@@ -677,9 +678,12 @@ namespace neu{
             case SKEY_NegInf:
               ostr << "-Infinity";
               return;
-            default:
-              ostr << n;
+            default:{
+              nvar p = obj_->process(n);
+              cout << "p is: " << p << endl;
+              emitExpression(ostr, p, indent);
               return;
+            }
           }
         }
         case nvar::Function:
