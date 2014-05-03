@@ -1,2 +1,0 @@
-export LLVM_SRC = $(HOME)/llvm-3.4
-export LLVM_BUILD = $(HOME)/llvm-3.4/build-release

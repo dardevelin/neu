@@ -1,0 +1,3 @@
+# path to LLVM 3.4 install directory
+export LLVM_DIR = $(HOME)/llvm-3.4/build-release
+

@@ -1,3 +1,5 @@
+include Makefile.defs
+
 export MAJOR = 1
 export MINOR = 0
 export RELEASE = 0
