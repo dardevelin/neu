@@ -12,10 +12,10 @@ export LIB = $(NEU_HOME)/lib
 all: neu
 
 neu: libneu
-	(cd src/neu; $(MAKE))
+	(cd src/bin/neu; $(MAKE))
 
 neu-meta: libneu_core
-	(cd src/neu-meta; $(MAKE))
+	(cd src/bin/neu-meta; $(MAKE))
 
 libneu_core:
 	(cd src/lib/core; $(MAKE))
@@ -24,12 +24,14 @@ libneu: libneu_core neu-meta
 	(cd src/lib/neu; $(MAKE))
 
 spotless:
-	(cd src/neu; $(MAKE) spotless)
+	(cd src/bin/neu; $(MAKE) spotless)
+	(cd src/bin/neu-meta; $(MAKE) spotless)
 	(cd src/lib/core; $(MAKE) spotless)
 	(cd src/lib/neu; $(MAKE) spotless)
 
 clean:
-	(cd src/neu; $(MAKE) clean)
+	(cd src/bin/neu; $(MAKE) clean)
+	(cd src/bin/neu-meta; $(MAKE) clean)
 	(cd src/lib/core; $(MAKE) clean)
 	(cd src/lib/neu; $(MAKE) clean)
 
