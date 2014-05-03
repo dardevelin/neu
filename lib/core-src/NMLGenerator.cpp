@@ -440,7 +440,35 @@ namespace neu{
           ostr << indent << "}" << endl;
           break;
         }
-        case FKEY_Switch_3:
+        case FKEY_Switch_3:{
+          ostr << indent << "switch(";
+          emitExpression(ostr, n[0]);
+          ostr << "){" << endl;
+          
+          nstr idt = indent;
+          idt += "  ";
+          
+          const nmap& m = n[2];
+          for(auto& itr : m){
+            const nvar& k = itr.first;
+            const nvar& v = itr.second;
+            
+            ostr << idt << "case ";
+            emitExpression(ostr, k);
+            ostr << ":" << endl;
+            emitStatement(ostr, v, idt + "  ");
+          }
+          
+          const nvar& d = n[1];
+          
+          if(d != none){
+            ostr << idt << "default:" << endl;
+            emitStatement(ostr, d, idt + "  ");
+          }
+          
+          ostr << indent << "}" << endl;
+          break;
+        }
         default:{
           ostr << indent;
           emitExpression(ostr, n, indent);
