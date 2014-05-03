@@ -43,17 +43,22 @@ libneu_core:
 libneu: libneu_core neu-meta
 	(cd src/lib/neu; $(MAKE))
 
+concepts: libneu
+	(cd app/concepts/src/lib; $(MAKE))
+
 spotless:
 	(cd src/bin/neu; $(MAKE) spotless)
 	(cd src/bin/neu-meta; $(MAKE) spotless)
 	(cd src/lib/core; $(MAKE) spotless)
 	(cd src/lib/neu; $(MAKE) spotless)
+	(cd app/concepts/src/lib; $(MAKE) spotless)
 
 clean:
 	(cd src/bin/neu; $(MAKE) clean)
 	(cd src/bin/neu-meta; $(MAKE) clean)
 	(cd src/lib/core; $(MAKE) clean)
 	(cd src/lib/neu; $(MAKE) clean)
+	(cd app/concepts/src/lib; $(MAKE) clean)
 
 fast:
 	$(MAKE) clean

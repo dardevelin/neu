@@ -382,7 +382,7 @@ public:
         
       if(const RecordType* rt = dyn_cast<RecordType>(t)){
         if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
-          CXXRecordDecl* s = getFirstSubClass(rd, className);
+          CXXRecordDecl* s = getFirstSubClass(srd, className);
           if(s){
             return s;
           }
