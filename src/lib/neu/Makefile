@@ -10,7 +10,7 @@ else
   export COMPILE_OBJC = clang++ -g -fPIC
 endif
 
-export LINK = clang++ -L../ -fPIC $(STD_LIB)
+export LINK = clang++ -L$(LIB) -fPIC $(STD_LIB)
 
 COMPILE += -I$(NEU_HOME)/include -I$(NEU_HOME)/lib/src -I/usr/local/include -pthread -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$(HOME)/llvm-3.4/build-release/include -I$(HOME)/llvm-3.4/llvm/include
 
@@ -40,19 +40,19 @@ LLVM_LINK = -L$(HOME)/llvm-3.4/build-release/lib -lLLVMAsmParser -lLLVMInstrumen
 libneu: $(CPP_MODULES) $(META_MODULES) neu_m neu_pl
 
 ifeq ($(PLATFORM), Darwin)
-	$(LINK) -single_module -dynamiclib -o ../libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
-	(cd ..; ln -f -s libneu.$(VERSION).dylib libneu.dylib)
-	(cd ..; ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).dylib)
-	(cd ..; ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).$(MINOR).dylib)
-	rm -f ../libneu_static.a
-	ar rcs ../libneu_static.a $(ALL_MODULES)
+	$(LINK) -single_module -dynamiclib -o $(LIB)/libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
+	(cd $(LIB); ln -f -s libneu.$(VERSION).dylib libneu.dylib)
+	(cd $(LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).dylib)
+	(cd $(LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).$(MINOR).dylib)
+	rm -f $(LIB)/libneu_static.a
+	ar rcs $(LIB)/libneu_static.a $(ALL_MODULES)
 else
-	$(LINK) -shared -Wl,-soname,libneu.so -o ../libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK)
-	(cd ..; ln -f -s libneu.so.$(VERSION) libneu.so)
-	(cd ..; ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR))
-	(cd ..; ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR).$(MINOR))
-	rm -f ../libneu_static.a
-	ar rcs ../libneu_static.a $(ALL_MODULES)
+	$(LINK) -shared -Wl,-soname,libneu.so -o $(LIB)/libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK)
+	(cd $(LIB); ln -f -s libneu.so.$(VERSION) libneu.so)
+	(cd $(LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR))
+	(cd $(LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR).$(MINOR))
+	rm -f $(LIB)/libneu_static.a
+	ar rcs $(LIB)/libneu_static.a $(ALL_MODULES)
 endif
 
 $(CPP_MODULES): $(@.o=.cpp)
@@ -78,7 +78,7 @@ clean:
 	(cd npl; $(MAKE) clean)
 
 spotless: clean
-	rm -f ../libneu.*
-	rm -f ../libneu_static.a	
+	rm -f $(LIB)/libneu.*
+	rm -f $(LIB)/libneu_static.a	
 	(cd nm; $(MAKE) spotless)
 	(cd npl; $(MAKE) spotless)

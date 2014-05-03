@@ -12,7 +12,7 @@ else
   export COMPILE_OBJC = clang++ -g -fPIC
 endif
 
-export LINK = clang++ -L../ -fPIC $(STD_LIB)
+export LINK = clang++ -L$(LIB) -fPIC $(STD_LIB)
 
 COMPILE += -I$(NEU_HOME)/include -I$(NEU_HOME)/lib/src -I/usr/local/include -pthread
 
@@ -37,19 +37,19 @@ neu_ml:
 libneu_core: $(CPP_MODULES) $(C_MODULES) neu_ml
 
 ifeq ($(PLATFORM), Darwin)
-	$(LINK) -single_module -dynamiclib -o ../libneu_core.$(VERSION).dylib $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz -install_name $(NEU_HOME)/lib/libneu_core.$(VERSION).dylib
-	(cd ..; ln -f -s libneu_core.$(VERSION).dylib libneu_core.dylib)
-	(cd ..; ln -f -s libneu_core.$(VERSION).dylib libneu_core.$(MAJOR).dylib)
-	(cd ..; ln -f -s libneu_core.$(VERSION).dylib libneu_core.$(MAJOR).$(MINOR).dylib)
-	rm -f ../libneu_core_static.a
-	ar rcs ../libneu_core_static.a $(ALL_MODULES)
+	$(LINK) -single_module -dynamiclib -o $(LIB)/libneu_core.$(VERSION).dylib $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz -install_name $(NEU_HOME)/lib/libneu_core.$(VERSION).dylib
+	(cd $(LIB); ln -f -s libneu_core.$(VERSION).dylib libneu_core.dylib)
+	(cd $(LIB); ln -f -s libneu_core.$(VERSION).dylib libneu_core.$(MAJOR).dylib)
+	(cd $(LIB); ln -f -s libneu_core.$(VERSION).dylib libneu_core.$(MAJOR).$(MINOR).dylib)
+	rm -f $(LIB)/libneu_core_static.a
+	ar rcs $(LIB)/libneu_core_static.a $(ALL_MODULES)
 else
-	$(LINK) -shared -Wl,-soname,libneu_core.so -o ../libneu_core.so.$(VERSION) $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz
-	(cd ..; ln -f -s libneu_core.so.$(VERSION) libneu_core.so)
-	(cd ..; ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR))
-	(cd ..; ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR).$(MINOR))
-	rm -f ../libneu_core_static.a
-	ar rcs ../libneu_core_static.a $(ALL_MODULES)
+	$(LINK) -shared -Wl,-soname,libneu_core.so -o $(LIB)/libneu_core.so.$(VERSION) $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz
+	(cd $(LIB); ln -f -s libneu_core.so.$(VERSION) libneu_core.so)
+	(cd $(LIB); ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR))
+	(cd $(LIB); ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR).$(MINOR))
+	rm -f $(LIB)/libneu_core_static.a
+	ar rcs $(LIB)/libneu_core_static.a $(ALL_MODULES)
 endif
 
 compress.o: compress.c $(NEU_HOME)/include/neu/compress.h
@@ -65,6 +65,6 @@ clean:
 	(cd nml; $(MAKE) clean)
 
 spotless: clean
-	rm -f ../libneu_core.*
-	rm -f ../libneu_core_static.a
+	rm -f $(LIB)/libneu_core.*
+	rm -f $(LIB)/libneu_core_static.a
 	(cd nml; $(MAKE) spotless)

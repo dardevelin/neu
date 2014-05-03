@@ -7,6 +7,8 @@ export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
 export PLATFORM = $(shell uname)
 export MACHINE = $(shell uname -m)
 
+export LIB = $(NEU_HOME)/lib
+
 all: neu
 
 neu: libneu
@@ -16,20 +18,20 @@ neu-meta: libneu_core
 	(cd src/neu-meta; $(MAKE))
 
 libneu_core:
-	(cd lib/core-src; $(MAKE))
+	(cd src/lib/core; $(MAKE))
 
 libneu: libneu_core neu-meta
-	(cd lib/src; $(MAKE))
+	(cd src/lib/neu; $(MAKE))
 
 spotless:
 	(cd src/neu; $(MAKE) spotless)
-	(cd lib/core-src; $(MAKE) spotless)
-	(cd lib/src; $(MAKE) spotless)
+	(cd src/lib/core; $(MAKE) spotless)
+	(cd src/lib/neu; $(MAKE) spotless)
 
 clean:
 	(cd src/neu; $(MAKE) clean)
-	(cd lib/core-src; $(MAKE) clean)
-	(cd lib/src; $(MAKE) clean)
+	(cd src/lib/core; $(MAKE) clean)
+	(cd src/lib/neu; $(MAKE) clean)
 
 fast:
 	$(MAKE) clean
