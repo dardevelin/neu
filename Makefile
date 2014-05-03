@@ -9,7 +9,25 @@ export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
 export PLATFORM = $(shell uname)
 export MACHINE = $(shell uname -m)
 
-export LIB = $(NEU_HOME)/lib
+export NEU_LIB = $(NEU_HOME)/lib
+
+ifeq ($(PLATFORM), Darwin)
+  STD_LIB = -stdlib=libc++
+endif
+
+export COMPILE = $(CXX) -std=c++11 $(STD_LIB) -I$(NEU_HOME)/include $(INCLUDE_DIRS) -fPIC
+
+export COMPILE_C = $(CC) -fPIC -I$(NEU_HOME)/include
+
+ifdef NEU_RELEASE
+  COMPILE += $(OPT) -DNDEBUG
+  COMPILE_C += $(OPT) -DNDEBUG
+else
+  COMPILE += -g
+  COMPILE_C += -g
+endif
+
+export LINK = $(CXX) $(STD_LIB)
 
 all: neu
 

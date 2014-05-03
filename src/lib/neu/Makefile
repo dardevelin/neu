@@ -1,18 +1,6 @@
-ifeq ($(PLATFORM), Darwin)
-  STD_LIB = -stdlib=libc++
-endif
+COMPILE += -I$(NEU_HOME)/lib/src -I$(LLVM_DIR)/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS
 
-ifdef NEU_RELEASE
-  export COMPILE = clang++ -O2 -fPIC -DNDEBUG -DNEU_FAST -std=c++11 $(STD_LIB)
-  export COMPILE_OBJC = clang++ -O2 -fPIC -DNDEBUG
-else
-  export COMPILE = clang++ -g -fPIC -std=c++11 $(STD_LIB)
-  export COMPILE_OBJC = clang++ -g -fPIC
-endif
-
-export LINK = clang++ -L$(LIB) -fPIC $(STD_LIB)
-
-COMPILE += -I$(NEU_HOME)/include -I$(NEU_HOME)/lib/src -I/usr/local/include -pthread -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$(LLVM_DIR)/include
+LINK += -L$(NEU_LIB)
 
 CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o
 
@@ -24,35 +12,35 @@ ALL_MODULES = $(CPP_MODULES) $(SUB_MODULES) $(META_MODULES)
 
 all: .depend libneu
 
+.depend: $(CPP_MODULES:.o=.cpp)
+	$(COMPILE) -MM $(CPP_MODULES:.o=.cpp) $(META_MODULES:.o=.cpp) -DMETA_GUARD > .depend
+
+-include .depend
+
 neu_m:
 	(cd nm; $(MAKE))
 
 neu_pl:
 	(cd npl; $(MAKE))
 
-.depend: $(CPP_MODULES:.o=.cpp)
-	$(COMPILE) -MM $(CPP_MODULES:.o=.cpp) $(META_MODULES:.o=.cpp) -DMETA_GUARD > .depend
-
--include .depend
-
 LLVM_LINK = -L$(LLVM_DIR)/lib -lLLVMAsmParser -lLLVMInstrumentation -lLLVMLinker -lLLVMBitReader -lLLVMDebugInfo -lLLVMJIT -lLLVMipo -lLLVMVectorize -lLLVMBitWriter -lLLVMTableGen -lLLVMX86Disassembler -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMX86AsmParser -lLLVMX86Desc -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCDisassembler -lLLVMMCParser -lLLVMInterpreter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipa -lLLVMAnalysis -lLLVMMCJIT -lLLVMRuntimeDyld -lLLVMExecutionEngine -lLLVMTarget -lLLVMMC -lLLVMObject -lLLVMCore -lLLVMSupport -lLLVMOption -lcurses
 
 libneu: $(CPP_MODULES) $(META_MODULES) neu_m neu_pl
 
 ifeq ($(PLATFORM), Darwin)
-	$(LINK) -single_module -dynamiclib -o $(LIB)/libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
-	(cd $(LIB); ln -f -s libneu.$(VERSION).dylib libneu.dylib)
-	(cd $(LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).dylib)
-	(cd $(LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).$(MINOR).dylib)
-	rm -f $(LIB)/libneu_static.a
-	ar rcs $(LIB)/libneu_static.a $(ALL_MODULES)
+	$(LINK) -single_module -dynamiclib -o $(NEU_LIB)/libneu.$(VERSION).dylib $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK) -install_name $(NEU_HOME)/lib/libneu.$(VERSION).dylib
+	(cd $(NEU_LIB); ln -f -s libneu.$(VERSION).dylib libneu.dylib)
+	(cd $(NEU_LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).dylib)
+	(cd $(NEU_LIB); ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).$(MINOR).dylib)
+	rm -f $(NEU_LIB)/libneu_static.a
+	ar rcs $(NEU_LIB)/libneu_static.a $(ALL_MODULES)
 else
-	$(LINK) -shared -Wl,-soname,libneu.so -o $(LIB)/libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK)
-	(cd $(LIB); ln -f -s libneu.so.$(VERSION) libneu.so)
-	(cd $(LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR))
-	(cd $(LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR).$(MINOR))
-	rm -f $(LIB)/libneu_static.a
-	ar rcs $(LIB)/libneu_static.a $(ALL_MODULES)
+	$(LINK) -shared -Wl,-soname,libneu.so -o $(NEU_LIB)/libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK)
+	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so)
+	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR))
+	(cd $(NEU_LIB); ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR).$(MINOR))
+	rm -f $(NEU_LIB)/libneu_static.a
+	ar rcs $(NEU_LIB)/libneu_static.a $(ALL_MODULES)
 endif
 
 $(CPP_MODULES): $(@.o=.cpp)
@@ -78,7 +66,7 @@ clean:
 	(cd npl; $(MAKE) clean)
 
 spotless: clean
-	rm -f $(LIB)/libneu.*
-	rm -f $(LIB)/libneu_static.a	
+	rm -f $(NEU_LIB)/libneu.*
+	rm -f $(NEU_LIB)/libneu_static.a	
 	(cd nm; $(MAKE) spotless)
 	(cd npl; $(MAKE) spotless)

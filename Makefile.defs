@@ -1,3 +1,14 @@
 # path to LLVM 3.4 install directory
 export LLVM_DIR = $(HOME)/llvm-3.4/build-release
 
+# C++ compiler
+export CXX = c++
+
+# C compiler
+export CC = cc
+
+# paths to additional include directories
+export INCLUDE_DIRS = -I/usr/local/include
+
+# optimization level for release build
+export OPT = -O2

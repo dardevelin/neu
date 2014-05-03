@@ -1,15 +1,17 @@
-PLATFORM = $(shell uname)
-
 TARGET = $(NEU_HOME)/bin/neu
 MODULES = main.o
 
-COMPILE = clang++ -g -std=c++11 -stdlib=libc++ -I$(NEU_HOME)/include -I/usr/local/include
-LINK = clang++ -stdlib=libc++ -L$(NEU_HOME)/lib -lneu -lneu_core -ledit
+LINK += -L$(NEU_LIB) -lneu -lneu_core -ledit
 
-all: $(TARGET)
+all: .depend $(TARGET)
 
-main.o: main.cpp
-	$(COMPILE) -c main.cpp
+.depend: $(MODULES:.o=.cpp)
+	$(COMPILE) -MM $(MODULES:.o=.cpp) > .depend
+
+-include .depend
+
+$(MODULES): $(@.o=.cpp)
+	$(COMPILE) -c $< -o $@
 
 $(TARGET): $(MODULES)
 	$(LINK) -o $(TARGET) $(MODULES)
