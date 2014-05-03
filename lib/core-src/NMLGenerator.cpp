@@ -382,6 +382,13 @@ namespace neu{
         case FKEY_Continue_0:
           ostr << indent << "continue;" << endl;
           break;
+        case FKEY_Def_2:
+          ostr << indent;
+          emitFunc(ostr, n[0]);
+          ostr << "{" << endl;
+          emitStatement(ostr, n[1], indent);
+          ostr << indent << "}" << endl;
+          break;
         case FKEY_If_2:
         case FKEY_If_3:
           emitIf(ostr, n, indent);
@@ -404,10 +411,37 @@ namespace neu{
           emitStatement(ostr, n[3], indent + "  ");
           ostr << indent << "}" << endl;
           break;
-        case FKEY_Class_1:
+        case FKEY_Class_1:{
+          const nvar& c = n[0];
+          
+          ostr << indent << "class " << c["name"].str() << "{" << endl;
+
+          nstr idt = indent;
+          idt += "  ";
+          
+          const nmap& m = c["ctors"];
+          for(auto& itr : m){
+            const nvar& ctor = itr.second;
+            ostr << idt;
+          
+            emitFunc(ostr, ctor[1]);
+            
+            ostr << " : ";
+            emitFunc(ostr, ctor[0]);
+            ostr << " {" << endl;
+            
+            emitStatement(ostr, ctor[2], idt);
+            ostr << idt << "}" << endl;
+          }
+          
+          ostr << endl;
+          
+          emitStatement(ostr, c["stmts"], idt);
+          ostr << indent << "}" << endl;
+          break;
+        }
         case FKEY_Switch_3:
-        default:
-        {
+        default:{
           ostr << indent;
           emitExpression(ostr, n, indent);
           ostr << ";" << endl;
@@ -533,7 +567,7 @@ namespace neu{
       ostr << ")";
     }
     
-    void emitGenericFunc(ostream& ostr,
+    void emitFunc(ostream& ostr,
                          const nvar& n){
 
       ostr << n.str() << "(";
@@ -563,7 +597,7 @@ namespace neu{
       
       switch(key){
         case FKEY_NO_KEY:
-          emitGenericFunc(ostr, n);
+          emitFunc(ostr, n);
         case FKEY_PushBack_2:
         case FKEY_TouchMultimap_1:
         case FKEY_TouchList_1:
@@ -660,11 +694,7 @@ namespace neu{
           ostr << "}";
           break;
         case FKEY_Call_1:
-          emitGenericFunc(ostr, n[0]);
-          break;
-        case FKEY_Def_2:
-          // ndm - implement
-          assert(false);
+          emitFunc(ostr, n[0]);
           break;
         case FKEY_Add_2:
           emitBinOp(ostr, n, " + ", prec);
