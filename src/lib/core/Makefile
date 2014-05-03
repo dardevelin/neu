@@ -17,7 +17,7 @@ all: .depend libneu_core
 neu_ml:
 	(cd nml; $(MAKE))
 
-libneu_core: $(CPP_MODULES) $(C_MODULES) neu_ml
+libneu_core: $(C_MODULES) $(CPP_MODULES) neu_ml
 
 ifeq ($(PLATFORM), Darwin)
 	$(LINK) -single_module -dynamiclib -o $(NEU_LIB)/libneu_core.$(VERSION).dylib $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz -install_name $(NEU_HOME)/lib/libneu_core.$(VERSION).dylib
