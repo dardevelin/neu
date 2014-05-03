@@ -12,3 +12,32 @@ export INCLUDE_DIRS = -I/usr/local/include
 
 # optimization level for release build
 export OPT = -O2
+
+# neu library path
+export NEU_LIB = $(NEU_HOME)/lib
+
+# system platform
+export PLATFORM = $(shell uname)
+
+# use libc++ if compiling on Mac
+ifeq ($(PLATFORM), Darwin)
+  STD_LIB = -stdlib=libc++
+endif
+
+# beginning of C++ compile command
+export COMPILE = $(CXX) -std=c++11 $(STD_LIB) -I$(NEU_HOME)/include $(INCLUDE_DIRS) -fPIC
+
+# beginning of C compile command
+export COMPILE_C = $(CC) -fPIC -I$(NEU_HOME)/include
+
+# optimization or debug flags
+ifdef NEU_RELEASE
+  COMPILE += $(OPT) -DNDEBUG
+  COMPILE_C += $(OPT) -DNDEBUG
+else
+  COMPILE += -g
+  COMPILE_C += -g
+endif
+
+# beginning of link command
+export LINK = $(CXX) $(STD_LIB)
