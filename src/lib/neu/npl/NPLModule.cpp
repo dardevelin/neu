@@ -517,16 +517,15 @@ namespace{
     }
     
     Value* error(const nstr& msg, const nvar& n){
-      size_t line = n.getLine();
-      nstr file = n.getFile();
-      
       *estr_ << "NPL compiler error: ";
       
-      if(line > 0){
-        *estr_ << file << ":" << line << ":";
+      nstr loc = n.getLocation();
+      
+      if(!loc.empty()){
+        *estr_ << loc << ": ";
       }
       
-      *estr_ << " " << msg << ": " << n.toStr() << endl;
+      *estr_ << msg << ": " << n.toStr() << endl;
       
       foundError_ = true;
       
@@ -643,38 +642,50 @@ namespace{
     }
     
     Value* completeVar(Value* h, const nvar& v){
-      // ndm - clean up
-      
-      nvec keys;
-      v.keys(keys);
-
-      if(keys.size() == 0 && v.empty()){
+      if(v.allEmpty()){
         return h;
       }
       
-      Value* vc = toVar(h);
+      Value* vv = toVar(h);
       
-      for(size_t i = 0; i < v.size(); ++i){
-        pushBack(vc, toVar(compile(v[i])));
+      size_t size = v.size();
+      
+      for(size_t i = 0; i < size; ++i){
+        Value* vi = compile(v[i]);
+        if(!vi){
+          return 0;
+        }
+
+        pushBack(vv, toVar(vi));
       }
       
-      for(const nvar& k : keys){
-        const nvar& vk = v[k];
+      const nmap& m = v;
+      
+      for(auto& itr : m){
+        const nvar& key = itr.first;
+        const nvar& val = itr.second;
         
         Value* kv;
 
-        if(vk.isSymbol()){
-          kv = getString(vk);
+        if(key.hasString()){
+          kv = getString(key);
         }
         else{
-          kv = compile(k);
+          kv = compile(key);
         }
         
-        Value* p = put(vc, kv);
-        store(compile(vk), p);
+        Value* p = put(vv, kv);
+
+        Value* vc = compile(val);
+        
+        if(!vc){
+          return 0;
+        }
+        
+        store(vc, p);
       }
       
-      return vc;
+      return vv;
     }
     
     // ndm - does this work right with vectors?
