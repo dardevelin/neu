@@ -12,9 +12,7 @@ class Cube{
       v[0] *= BOUNCE;
       v[1] *= -BOUNCE;
       v[2] *= BOUNCE;
-      av[0] *= BOUNCE;
-      av[1] *= BOUNCE;
-      av[2] *= BOUNCE;
+      av *= BOUNCE;
     }
   }
 

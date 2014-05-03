@@ -1,8 +1,9 @@
+include $(NEU_HOME)/Makefile.defs
+
 TARGET = waves
 OBJECTS = main.o
 
-COMPILE = clang++ -O2 -I/usr/local/include -I$(NEU_HOME)/include -std=c++11 -stdlib=libc++
-LINK = clang++ -L$(NEU_HOME)/lib -lneu_core -lneu -stdlib=libc++ -framework Foundation -framework Cocoa -framework OpenGL -framework GLUT
+LINK += -L$(NEU_LIB) -lneu_core -lneu -framework Foundation -framework Cocoa -framework OpenGL -framework GLUT
 
 all: .depend $(TARGET)
 

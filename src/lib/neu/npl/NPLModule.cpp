@@ -904,6 +904,7 @@ namespace{
     
     Value* convert(Value* from, Type* toType, bool trunc=true){
       Type* fromType = from->getType();
+      
       if(VectorType* fromVecType = dyn_cast<VectorType>(fromType)){
         if(VectorType* toVecType = dyn_cast<VectorType>(toType)){
           size_t fromN = fromVecType->getNumElements();
@@ -918,6 +919,22 @@ namespace{
         else{
           return 0;
         }
+      }
+      else if(VectorType* toVecType = dyn_cast<VectorType>(toType)){
+        Value* e = convertNum(from, elementType(toVecType), trunc);
+        if(!e){
+          return 0;
+        }
+
+        Value* vp = createAlloca(toVecType, "vec");
+        Value* v = createLoad(vp);
+        
+        size_t len = toVecType->getNumElements();
+        for(size_t i = 0; i < len; ++i){
+          v = builder_.CreateInsertElement(v, e, getInt32(i));
+        }
+        
+        return v;
       }
       
       return convertNum(from, toType, trunc);
