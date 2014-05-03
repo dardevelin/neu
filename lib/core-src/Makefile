@@ -1,12 +1,3 @@
-export MAJOR = 1
-export MINOR = 0
-export RELEASE = 0
-
-export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
-
-export PLATFORM = $(shell uname)
-export MACHINE = $(shell uname -m)
-
 export COMPILE_C = clang -O2 -fPIC -I$(NEU_HOME)/include
 
 ifeq ($(PLATFORM), Darwin)
@@ -50,15 +41,15 @@ ifeq ($(PLATFORM), Darwin)
 	(cd ..; ln -f -s libneu_core.$(VERSION).dylib libneu_core.dylib)
 	(cd ..; ln -f -s libneu_core.$(VERSION).dylib libneu_core.$(MAJOR).dylib)
 	(cd ..; ln -f -s libneu_core.$(VERSION).dylib libneu_core.$(MAJOR).$(MINOR).dylib)
-	rm -f ../libneu_core-static.a
-	ar rcs ../libneu_core-static.a $(ALL_MODULES)
+	rm -f ../libneu_core_static.a
+	ar rcs ../libneu_core_static.a $(ALL_MODULES)
 else
 	$(LINK) -shared -Wl,-soname,libneu_core.so -o ../libneu_core.so.$(VERSION) $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz
 	(cd ..; ln -f -s libneu_core.so.$(VERSION) libneu_core.so)
 	(cd ..; ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR))
 	(cd ..; ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR).$(MINOR))
-	rm -f ../libneu_core-static.a
-	ar rcs ../libneu_core-static.a $(ALL_MODULES)
+	rm -f ../libneu_core_static.a
+	ar rcs ../libneu_core_static.a $(ALL_MODULES)
 endif
 
 compress.o: compress.c $(NEU_HOME)/include/neu/compress.h
@@ -75,5 +66,5 @@ clean:
 
 spotless: clean
 	rm -f ../libneu_core.*
-	rm -f ../libneu_core-static.a
+	rm -f ../libneu_core_static.a
 	(cd nml; $(MAKE) spotless)

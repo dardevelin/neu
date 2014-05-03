@@ -1,12 +1,3 @@
-export MAJOR = 1
-export MINOR = 0
-export RELEASE = 0
-
-export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
-
-export PLATFORM = $(shell uname)
-export MACHINE = $(shell uname -m)
-
 ifeq ($(PLATFORM), Darwin)
   STD_LIB = -stdlib=libc++
 endif
@@ -53,15 +44,15 @@ ifeq ($(PLATFORM), Darwin)
 	(cd ..; ln -f -s libneu.$(VERSION).dylib libneu.dylib)
 	(cd ..; ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).dylib)
 	(cd ..; ln -f -s libneu.$(VERSION).dylib libneu.$(MAJOR).$(MINOR).dylib)
-	rm -f ../libneu-static.a
-	ar rcs ../libneu-static.a $(ALL_MODULES)
+	rm -f ../libneu_static.a
+	ar rcs ../libneu_static.a $(ALL_MODULES)
 else
 	$(LINK) -shared -Wl,-soname,libneu.so -o ../libneu.so.$(VERSION) $(ALL_MODULES) -L$(NEU_HOME)/lib -lneu_core $(LLVM_LINK)
 	(cd ..; ln -f -s libneu.so.$(VERSION) libneu.so)
 	(cd ..; ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR))
 	(cd ..; ln -f -s libneu.so.$(VERSION) libneu.so.$(MAJOR).$(MINOR))
-	rm -f ../libneu-static.a
-	ar rcs ../libneu-static.a $(ALL_MODULES)
+	rm -f ../libneu_static.a
+	ar rcs ../libneu_static.a $(ALL_MODULES)
 endif
 
 $(CPP_MODULES): $(@.o=.cpp)
@@ -88,6 +79,6 @@ clean:
 
 spotless: clean
 	rm -f ../libneu.*
-	rm -f ../libneu-static.a	
+	rm -f ../libneu_static.a	
 	(cd nm; $(MAKE) spotless)
 	(cd npl; $(MAKE) spotless)

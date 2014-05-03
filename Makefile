@@ -7,12 +7,6 @@ export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
 export PLATFORM = $(shell uname)
 export MACHINE = $(shell uname -m)
 
-ifeq ($(PLATFORM), Darwin)
-  export PLATFORM_NAME = Mac
-else
-  export PLATFORM_NAME = Linux64
-endif
-
 all: neu
 
 neu: libneu
