@@ -642,7 +642,10 @@ namespace{
     }
     
     Value* completeVar(Value* h, const nvar& v){
-      if(v.allEmpty()){
+      nvec keys;
+      v.keys(keys);
+      
+      if(v.empty() && keys.empty()){
         return h;
       }
       
@@ -661,9 +664,8 @@ namespace{
       
       const nmap& m = v;
       
-      for(auto& itr : m){
-        const nvar& key = itr.first;
-        const nvar& val = itr.second;
+      for(const nvar& key : keys){
+        const nvar& val = v[key];
         
         Value* kv;
 
@@ -688,7 +690,6 @@ namespace{
       return vv;
     }
     
-    // ndm - does this work right with vectors?
     Value* convertNum(Value* from, Type* toType, bool trunc=true){
       if(isVar(from)){
         if(toType->isIntegerTy()){
@@ -696,11 +697,10 @@ namespace{
           return convertNum(v, toType);
         }
         else if(toType->isFloatingPointTy()){
-          Value* v = globalCall("long nvar::toDouble(nvar*)", {from});
+          Value* v = globalCall("double nvar::toDouble(nvar*)", {from});
           return convertNum(v, toType);
         }
-        // ndm - what to do here?
-        
+
         return from;
       }
       
@@ -1963,9 +1963,24 @@ namespace{
       return builder_.CreateFCmpUGE(v[0], v[1], "fge.out");
     }
     
-    // ndm - this needs some clean up - and the places which call
-    // it should properly detect if it is a vector op
-    Value* vectorIndexOp(const nvar& n){
+    Value* vectorIndexVec(const nvar& i){
+      if(!i.isFunction("Idx", 2)){
+        return 0;
+      }
+      
+      Value* vp = getLValue(i[0]);
+      if(!vp){
+        return 0;
+      }
+      
+      if(elementType(vp)->isVectorTy()){
+        return vp;
+      }
+      
+      return 0;
+    }
+    
+    Value* vectorIndexOp(Value* vp, const nvar& n){
       const nvar& i = n[0];
       assert(i.isFunction("Idx", 2));
 
@@ -1981,7 +1996,6 @@ namespace{
         return 0;
       }
       
-      Value* vp = getLValue(i[0]);
       Value* v = createLoad(vp);
       assert(vectorLength(v) > 0);
 
@@ -2024,6 +2038,8 @@ namespace{
       
       v = builder_.CreateInsertElement(v, r, idx);
       createStore(v, vp);
+      
+      return vp;
     }
     
     Value* idx(Value* v1, Value* v2){
@@ -2614,8 +2630,9 @@ namespace{
           return getInt64(0);
         }
         case FKEY_Set_2:{
-          if(n[0].isFunction("Idx", 2)){
-            return vectorIndexOp(n);
+          Value* vp = vectorIndexVec(n[0]);
+          if(vp){
+            return vectorIndexOp(vp, n);
           }
           
           Value* l = getLValue(n[0]);
@@ -2635,8 +2652,9 @@ namespace{
           return l;
         }
         case FKEY_AddBy_2:{
-          if(n[0].isFunction("Idx", 2)){
-            return vectorIndexOp(n);
+          Value* vp = vectorIndexVec(n[0]);
+          if(vp){
+            return vectorIndexOp(vp, n);
           }
           
           Value* l = getLValue(n[0]);
@@ -2657,8 +2675,9 @@ namespace{
           return ret;
         }
         case FKEY_SubBy_2:{
-          if(n[0].isFunction("Idx", 2)){
-            return vectorIndexOp(n);
+          Value* vp = vectorIndexVec(n[0]);
+          if(vp){
+            return vectorIndexOp(vp, n);
           }
           
           Value* l = getLValue(n[0]);
@@ -2679,8 +2698,9 @@ namespace{
           return ret;
         }
         case FKEY_MulBy_2:{
-          if(n[0].isFunction("Idx", 2)){
-            return vectorIndexOp(n);
+          Value* vp = vectorIndexVec(n[0]);
+          if(vp){
+            return vectorIndexOp(vp, n);
           }
           
           Value* l = getLValue(n[0]);
@@ -2701,8 +2721,9 @@ namespace{
           return ret;
         }
         case FKEY_DivBy_2:{
-          if(n[0].isFunction("Idx", 2)){
-            return vectorIndexOp(n);
+          Value* vp = vectorIndexVec(n[0]);
+          if(vp){
+            return vectorIndexOp(vp, n);
           }
           
           Value* l = getLValue(n[0]);
@@ -2723,8 +2744,9 @@ namespace{
           return ret;
         }
         case FKEY_ModBy_2:{
-          if(n[0].isFunction("Idx", 2)){
-            return vectorIndexOp(n);
+          Value* vp = vectorIndexVec(n[0]);
+          if(vp){
+            return vectorIndexOp(vp, n);
           }
           
           Value* l = getLValue(n[0]);
