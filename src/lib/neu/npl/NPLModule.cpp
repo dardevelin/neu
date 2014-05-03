@@ -2272,7 +2272,7 @@ namespace{
       if(isVar(ptr)){
         Type* t = v->getType();
         
-        if(dyn_cast<IntegerType>(t)){
+        if(t->isIntegerTy()){
           Value* vl = convert(v, "long");
           globalCall("nvar* nvar::operator=(nvar*, long)", {ptr, vl});
         }
@@ -2314,7 +2314,7 @@ namespace{
     }
 
     Value* compile(const nvar& n){
-      cout << "compiling: " << n << endl;
+      //cout << "compiling: " << n << endl;
       
       if(n.isNumeric()){
         Value* v = getNumeric(n);
@@ -4406,8 +4406,7 @@ namespace{
         }
       }
       
-      // ndm - debug
-      module_.dump();
+      //module_.dump();
       
       return !foundError_;
     }
