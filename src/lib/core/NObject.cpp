@@ -519,7 +519,7 @@ namespace neu{
           f << nsym("p" + nvar(i));
         }
         
-        scope->setFunction(f, nfunc("Ret") << (nfunc("In") << ov << f));
+        scope->setFunction(f, nfunc("Ret") << (nfunc("Call") << ov << f));
       }
       
       return none;
@@ -1055,25 +1055,8 @@ namespace neu{
     nvar In(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       NObject* o = static_cast<NObject*>(p1.obj());
-      
-      const nvar& p2 = *v2;
-      nvar f(v2.str(), nvar::Func);
-      
-      size_t size = p2.size();
-      for(size_t i = 0; i < size; ++i){
-        const nvar& s = p2[i];
-        
-        if(s.isSymbol()){
-          nvar p;
-          getSymbol(getContext(), s, p);
-          f << p;
-        }
-        else{
-          f << s;
-        }
-      }
-      
-      return o->process(f);
+ 
+      return o->process(v2);
     }
     
     nvar New(const nvar& v){
