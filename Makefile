@@ -6,10 +6,13 @@ export RELEASE = 0
 
 export VERSION = $(MAJOR).$(MINOR).$(RELEASE)
 
-all: neu
+all: neu neu-test
 
 neu: libneu
 	(cd src/bin/neu; $(MAKE))
+
+neu-test: libneu_core
+	(cd src/bin/neu-test; $(MAKE))	
 
 neu-meta: libneu_core
 	(cd src/bin/neu-meta; $(MAKE))
