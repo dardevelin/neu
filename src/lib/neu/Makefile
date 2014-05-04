@@ -4,7 +4,7 @@ LINK += -L$(NEU_LIB)
 
 CPP_MODULES = NMObject.o NMGenerator.o NPQueue.o NNet.o NNModule.o
 
-META_MODULES = NConcept.o NCOntology.o
+META_MODULES = NConcept.o NCOntology.o NLib.o
 
 SUB_MODULES = nm/parse.tab.o nm/NMParser.o nm/parse.l.o npl/parse.tab.o npl/NPLParser.o npl/parse.l.o npl/NPLModule.o
 
@@ -54,6 +54,10 @@ NCOntology.o: $(@.o=.cpp)
 	neu-meta -class Method -no-factory NCOntology.cpp
 	neu-meta -class NCOntology -no-factory NCOntology.cpp
 	neu-meta -class NCCodeGen -no-factory NCOntology.cpp
+	$(COMPILE) -c $< -o $@
+
+NLib.o: $(@.o=.cpp)
+	neu-meta -class NLib NLib.cpp
 	$(COMPILE) -c $< -o $@
 
 clean:

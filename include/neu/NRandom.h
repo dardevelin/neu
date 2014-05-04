@@ -153,6 +153,30 @@ namespace neu{
       return ret; 
     }
     
+    void randomSequence(int64_t a, int64_t b, nvar& seq){
+      if(b < a){
+        NERROR("b < a");
+      }
+      
+      seq.touchVector();
+      nvec& v = seq;
+      v.reserve(b - a);
+      
+      for(int64_t i = a; i <= b; ++i){
+        size_t j = equilikely(0, v.size());
+        
+        auto itr = v.begin();
+        advance(itr, j);
+        v.insert(itr, i);
+      }
+    }
+
+    nvar randomSequence(int64_t a, int64_t b){
+      nvar seq;
+      randomSequence(a, b, seq);
+      return seq;
+    }
+    
     NFunc handle(const nvar& v, uint32_t flags=0);
     
   private:

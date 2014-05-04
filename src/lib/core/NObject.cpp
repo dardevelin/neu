@@ -1392,6 +1392,8 @@ namespace neu{
       if(process(v1)){
         return process(v2);
       }
+      
+      return none;
     }
     
     nvar If(const nvar& v1, const nvar& v2, const nvar& v3){
