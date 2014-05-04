@@ -822,7 +822,8 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
         }
         
         nstr key = &arg[1];
-
+        bool negate = false;
+        
         if(key.empty()){
           nstr text;
           
@@ -837,16 +838,27 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
           break;
         }
         else if(key[0] == '-'){
-          auto itr = _builtinOptMap.find(&arg[2]);
-          if(itr == _builtinOptMap.end()){
-            key[0] = '_';
+          if(key.beginsWith("-no-")){
+            key.replace(0, 4, "");
+            negate = true;
           }
           else{
-            lastOpt = itr->second;
+            key.replace(0, 1, "");
           }
+          
+          auto itr = _builtinOptMap.find(key);
+          if(itr == _builtinOptMap.end()){
+            NERROR("unknown builtin option: " + key);
+          }
+
+          lastOpt = itr->second;
         }
-        
-        if(!lastOpt){
+        else{
+          if(key.beginsWith("no-")){
+            key.replace(0, 3, "");
+            negate = true;
+          }
+          
           auto itr = _optMap.find(key);
           if(itr == _optMap.end()){
             NERROR("unknown option: " + key);
@@ -854,15 +866,17 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
           
           lastOpt = itr->second;
         }
-
+        
         const nvar& def = lastOpt->def;
         
         if(def.isBool()){
+          bool b = !negate;
+          
           if(lastOpt->multi){
-            args(lastOpt->key) << true;
+            args(lastOpt->key) << b;
           }
           else{
-            args(lastOpt->key) = true;
+            args(lastOpt->key) = b;
           }
         
           lastOpt = 0;

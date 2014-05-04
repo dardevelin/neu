@@ -1151,16 +1151,16 @@ int main(int argc, char** argv){
                 "Class name to generate metadata for. "
                 "Defaults to the name of the source file.");
   
-  NProgram::opt("no-handle", "", false,
+  NProgram::opt("handle", "", true,
                 "True to generate handler.");
 
-  NProgram::opt("no-factory", "", false,
+  NProgram::opt("factory", "", true,
                 "True to generate class.");
   
-  NProgram::opt("no-metadata", "", false,
+  NProgram::opt("metadata", "", true,
                 "True to generate class metadata.");
   
-  NProgram::opt("no-outer", "", false,
+  NProgram::opt("outer", "", true,
                 "True to generate outer.");
   
   NProgram::opt("include", "I", "",
@@ -1200,10 +1200,10 @@ int main(int argc, char** argv){
   MetaGenerator gen;
   
   gen.setResourceDir(args["resourceDir"]);
-  gen.enableHandle(!args["no-handle"]);
-  gen.enableClass(!args["no-factory"]);
-  gen.enableMetadata(!args["no-metadata"]);
-  gen.enableOuter(!args["no-outer"]);
+  gen.enableHandle(args["handle"]);
+  gen.enableClass(args["factory"]);
+  gen.enableMetadata(args["metadata"]);
+  gen.enableOuter(args["outer"]);
 
   const nvar& is = args["include"];
 
