@@ -870,13 +870,11 @@ void NProgram::parseArgs(int argc, char** argv, nvar& args){
         const nvar& def = lastOpt->def;
         
         if(def.isBool()){
-          bool b = !negate;
-          
           if(lastOpt->multi){
-            args(lastOpt->key) << b;
+            args(lastOpt->key) << !negate;
           }
           else{
-            args(lastOpt->key) = b;
+            args(lastOpt->key) = !negate;
           }
         
           lastOpt = 0;
