@@ -135,7 +135,9 @@ namespace neu{
     }
     
     bool connect(const nstr& host, int port){
-      assert(!socket_);
+      if(socket_){
+        NERROR("socket exists");
+      }
       
       socket_ = new NSocket;
       if(!socket_->connect(host, port)){

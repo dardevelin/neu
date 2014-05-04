@@ -3464,14 +3464,12 @@ namespace neu{
       return false;
     }
     
-    // assumes that this has already been dereferenced and is a function
     void setFunc(NFunc fp) const{
       assert(t_ == Function);
       
       h_.f->fp = fp;
     }
     
-    // assumes that this has already been dereferenced and is a function
     NFunc func() const{
       assert(t_ == Function);
       

@@ -955,8 +955,6 @@ namespace neu{
     }
     
     nvar Def(const nvar& v1, const nvar& v2){
-      assert(v1.isFunction());
-      
       ThreadContext* context = getContext();
       
       NScope* scope = context->topScope();
@@ -966,8 +964,6 @@ namespace neu{
     }
     
     nvar Def(const nvar& v1, const nvar& v2, const nvar& v3){
-      assert(v2.isFunction());
-      
       nvar p1 = process(v1);
       
       NScope* scope;

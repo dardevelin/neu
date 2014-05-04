@@ -53,9 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
 
-#define NCHECK(cond, msg) assert(cond && __PRETTY_FUNCTION__ && msg);
 #define NERROR(msg) throw NError(nstr(__PRETTY_FUNCTION__) + ": " + msg)
-#define NVERROR(msg, var) throw NError(nstr(__PRETTY_FUNCTION__) + ": " + msg, var)
 
 #include <exception>
 #include <ostream>
