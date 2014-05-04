@@ -176,12 +176,14 @@ public:
     codeGen_->generate();
   }
   
-  void onSigInt(){
-    std::cout << "shutting down..." << std::endl;
-    if(codeGen_){
-      codeGen_->shutdown();
+  void handleSignal(int signal, bool fatal){
+    if(fatal){
+      std::cout << "shutting down..." << std::endl;
+      if(codeGen_){
+        codeGen_->shutdown();
+      }
+      NProgram::exit(0);
     }
-    NProgram::exit(0);
   }
 
   bool run(){
