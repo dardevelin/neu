@@ -37,10 +37,6 @@ clean:
 	(cd src/lib/neu; $(MAKE) clean)
 	(cd app/concepts/src/lib; $(MAKE) clean)
 
-fast:
-	$(MAKE) clean
-	$(MAKE) -j $(BUILD_THREADS) NEU_RELEASE=1 NEU_FAST=1
-
 release:
 	$(MAKE) clean
 	$(MAKE) -j $(BUILD_THREADS) NEU_RELEASE=1

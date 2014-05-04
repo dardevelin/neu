@@ -1269,22 +1269,18 @@ size_t nvar::numKeys(const nvar& key){
 void nvar::insert(size_t pos, const nvar& x){
   switch(t_){
     case Vector:{
-#ifndef NEU_FAST
       if(pos > h_.v->size()){
         NERROR("invalid position");
       }
-#endif
       auto itr = h_.v->begin();
       advance(itr, pos);
       h_.v->insert(itr, x);
       break;
     }
     case List:{
-#ifndef NEU_FAST
       if(pos > h_.l->size()){
         NERROR("invalid position");
       }
-#endif
       auto itr = h_.l->begin();
       advance(itr, pos);
       h_.l->insert(itr, x);
@@ -16662,40 +16658,32 @@ nvar& nvar::operator[](const nvar& key){
       switch(t_){
         case Vector:{
           size_t k = key.asLong();
-#ifndef NEU_FAST
           if(k >= h_.v->size()){
             NERROR("index out of range: " + key);
           }
-#endif
           return (*h_.v)[k];
         }
         case List:{
           size_t k = key.asLong();
-#ifndef NEU_FAST
           if(k >= h_.l->size()){
             NERROR("index out of range: " + key);
           }
-#endif
           return (*h_.l)[k];
         }
         case Function:{
           size_t k = key.asLong();
-#ifndef NEU_FAST
           if(k >= h_.f->v.size()){
             NERROR("index out of range: "  + key);
           }
-#endif
           return h_.f->v[k];
         }
         case HeadSequence:
           return (*h_.hs->s)[key];
         case Map:{
           auto itr = h_.m->find(key);
-#ifndef NEU_FAST
           if(itr == h_.m->end()){
             NERROR("invalid key: " + key);
           }
-#endif
           return itr->second;
         }
         case HeadMap:
@@ -16720,21 +16708,17 @@ nvar& nvar::operator[](const nvar& key){
         case Function:
           if(h_.f->m){
             auto itr = h_.f->m->find(key);
-#ifndef NEU_FAST
             if(itr == h_.f->m->end()){
               NERROR("invalid key: " + key);
             }
-#endif
             return itr->second;
           }
           NERROR("function does not hold a map");
         case Map:{
           auto itr = h_.m->find(key);
-#ifndef NEU_FAST
           if(itr == h_.m->end()){
             NERROR("invalid key: " + key);
           }
-#endif
           return itr->second;
           break;
         }
@@ -16757,35 +16741,27 @@ nvar& nvar::operator[](const nvar& key){
 nvar& nvar::operator[](int k){
   switch(t_){
     case Vector:
-#ifndef NEU_FAST
       if(k >= h_.v->size()){
         NERROR("index out of range: " + nstr::toStr(k));
       }
-#endif
       return (*h_.v)[k];
     case List:
-#ifndef NEU_FAST
       if(k >= h_.l->size()){
         NERROR("index out of range: " + nstr::toStr(k));
       }
-#endif
       return (*h_.l)[k];
     case Function:
-#ifndef NEU_FAST
       if(k >= h_.f->v.size()){
         NERROR("index out of range: " + nstr::toStr(k));
       }
-#endif
       return h_.f->v[k];
     case HeadSequence:
       return (*h_.hs->s)[k];
     case Map:{
       auto itr = h_.m->find(k);
-#ifndef NEU_FAST
       if(itr == h_.m->end()){
         NERROR("invalid key: " + nstr::toStr(k));
       }
-#endif
       return itr->second;
     }
     case HeadMap:
@@ -16807,21 +16783,17 @@ nvar& nvar::operator[](const char* key){
   switch(t_){
     case Map:{
       auto itr = h_.m->find(key);
-#ifndef NEU_FAST
       if(itr == h_.m->end()){
         NERROR("invalid key: " + nstr::toStr(key));
       }
-#endif
       return itr->second;
     }
     case Function:
       if(h_.f->m){
         auto itr = h_.f->m->find(key);
-#ifndef NEU_FAST
         if(itr == h_.f->m->end()){
           NERROR("invalid key: " + nstr::toStr(key));
         }
-#endif
         return itr->second;
       }
       NERROR("function does not hold a map");
@@ -16845,21 +16817,17 @@ nvar& nvar::get(const nvar& key){
     case Function:
       if(h_.f->m){
         auto itr = h_.f->m->find(key);
-#ifndef NEU_FAST
         if(itr == h_.f->m->end()){
           NERROR("invalid key: " + key);
         }
-#endif
         return itr->second;
       }
       NERROR("function does not hold a map");
     case Map:{
       auto itr = h_.m->find(key);
-#ifndef NEU_FAST
       if(itr == h_.m->end()){
         NERROR("invalid key: " + key);
       }
-#endif
       return itr->second;
       break;
     }

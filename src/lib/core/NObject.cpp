@@ -798,21 +798,9 @@ namespace neu{
       ThreadContext* context = getContext();
       NScope* currentScope = context->topScope();
       
-#ifndef NEU_FAST
-      if(!v.isSymbol()){
-        return Throw(v, "Var[0] is not a symbol");
-      }
-#endif
-      
       nvar r = new nvar;
       
-#ifndef NEU_FAST
-      if(!currentScope->setNewSymbol(v, r)){
-        Throw(v, "Symbol Var[0] exists in scope");
-      }
-#else
       currentScope->setSymbol(v, r);
-#endif
       
       return r;
     }
@@ -821,23 +809,11 @@ namespace neu{
       ThreadContext* context = getContext();
       NScope* currentScope = context->topScope();
       
-#ifndef NEU_FAST
-      if(!v1.isSymbol()){
-        return Throw(v1, "Var[0] is not a symbol");
-      }
-#endif
-      
       nvar p1 = process(v2);
       
       nvar r = new nvar(p1);
       
-#ifndef NEU_FAST
-      if(!currentScope->setNewSymbol(v1, r)){
-        Throw(v1, "Symbol Var[0] exists in scope");
-      }
-#else
       currentScope->setSymbol(v1, r);
-#endif
       
       return r;
     }
@@ -845,12 +821,6 @@ namespace neu{
     nvar Var(const nvar& v1, const nvar& v2, const nvar& v3){
       ThreadContext* context = getContext();
       NScope* currentScope = context->topScope();
-      
-#ifndef NEU_FAST
-      if(!v1.isSymbol()){
-        return Throw(v1, "Var[0] is not a symbol");
-      }
-#endif
       
       nvar p1 = process(v2);
       
@@ -865,13 +835,7 @@ namespace neu{
         r = new nvar(move(p1));
       }
       
-#ifndef NEU_FAST
-      if(!currentScope->setNewSymbol(v1, r)){
-        Throw(v1, "Symbol Var[0] exists in scope");
-      }
-#else
       currentScope->setSymbol(v1, r);
-#endif
       
       return r;
     }
@@ -884,12 +848,6 @@ namespace neu{
     }
     
     nvar VarSet(const nvar& v1, const nvar& v2){
-#ifndef NEU_FAST
-      if(!v1.isSymbol()){
-        return Throw(v1, "VarSet[0] is not a symbol");
-      }
-#endif
-      
       nvar p2 = process(v2);
       
       ThreadContext* context = getContext();

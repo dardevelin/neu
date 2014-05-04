@@ -101,34 +101,7 @@ namespace neu{
         symbolMap_[s] = v;
       }
     }
-    
-    bool setNewSymbol(const nstr& s, const nvar& v){
-      if(shared_){
-        shared_->symbolMutex_.writeLock();
         
-        auto itr = symbolMap_.find(s);
-        if(itr != symbolMap_.end()){
-          shared_->symbolMutex_.unlock();
-          return false;
-        }
-        
-        symbolMap_[s] = v;
-        
-        shared_->symbolMutex_.unlock();
-        
-        return true;
-      }
-      
-      auto itr = symbolMap_.find(s);
-      if(itr != symbolMap_.end()){
-        return false;
-      }
-      
-      symbolMap_[s] = v;
-      
-      return true;
-    }
-    
     bool getSymbol(const nstr& s, nvar& v){
       if(shared_){
         shared_->symbolMutex_.readLock();

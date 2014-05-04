@@ -13,6 +13,9 @@ export INCLUDE_DIRS = -I/usr/local/include
 # optimization level for release build
 export OPT = -O2
 
+# build threads
+export BUILD_THREADS = 8
+
 # neu library path
 export NEU_LIB = $(NEU_HOME)/lib
 
