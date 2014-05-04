@@ -432,7 +432,6 @@ namespace neu{
             for(size_t i = 0; i < size; ++i){
               const nvar& si = s[i];
               const nvar& pi = vd[i];
-              
               scope.setSymbolFast(si, pi);
             }
             
@@ -483,6 +482,46 @@ namespace neu{
       msg += process(v2).str();
       
       NERROR(msg);
+      
+      return none;
+    }
+
+    nvar Import(const nvar& v){
+      const nstr& className = v;
+      
+      NObjectBase* ob = NClass::create(nfunc(className));
+      if(!ob){
+        return Throw(v, "Import[0] failed[1]");
+      }
+      
+      NObject* o = dynamic_cast<NObject*>(ob);
+      if(!o){
+        return Throw(v, "Import[0] failed[2]");
+      }
+      
+      NClass* c = NClass::getClass(className);
+      assert(c);
+      
+      ThreadContext* context = getContext();
+      NScope* scope = context->topScope();
+
+      nvar ov(o, nvar::SharedObject);
+      
+      const nvar& md = c->metadata();
+      const nmap& m = md[className]["methods"];
+      
+      for(auto& itr : m){
+        const nvar& k = itr.first;
+        nvar f = nfunc(k[0]);
+        size_t size = k[1];
+
+        for(size_t i = 0; i < size; ++i){
+          f << nsym("p" + nvar(i));
+        }
+        
+        nvar d = nfunc("Ret") << (nfunc("In") << ov << f);
+        scope->setFunction(f, d);
+      }
       
       return none;
     }
@@ -1017,9 +1056,27 @@ namespace neu{
     nvar In(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       
+      const nvar& p2 = *v2;
+      
       NObject* o = static_cast<NObject*>(p1.obj());
       
-      return o->process(v2);
+      nvar f(v2.str(), nvar::Func);
+      
+      size_t size = p2.size();
+      for(size_t i = 0; i < size; ++i){
+        const nvar& s = p2[i];
+        
+        if(s.isSymbol()){
+          nvar p;
+          getSymbol(getContext(), s, p);
+          f << p;
+        }
+        else{
+          f << s;
+        }
+      }
+      
+      return o->process(f);
     }
     
     nvar New(const nvar& v){
@@ -1854,6 +1911,11 @@ namespace neu{
 } // end namespace neu
 
 FuncMap::FuncMap(){
+  add("Import", 1,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Import(v[0]);
+      });
+  
   add("Reset", 0,
       [](void* o, const nvar& v) -> nvar{
         return NObject_::obj(o)->Reset();

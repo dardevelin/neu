@@ -1015,7 +1015,9 @@ public:
         
       if(md->isUserProvided() &&
          md->getAccess() == AS_public &&
-         !md->isOverloadedOperator()){
+         !md->isOverloadedOperator() &&
+         !isa<CXXConstructorDecl>(md) &&
+         !isa<CXXDestructorDecl>(md)){
           
         nstr methodName = md->getNameAsString();
 

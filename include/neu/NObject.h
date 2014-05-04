@@ -99,6 +99,8 @@ namespace neu{
     
     NScope* objectScope();
     
+    nvar Import(const nvar& v);
+    
     nvar Reset();
     
     nvar Throw(const nvar& v1, const nvar& v2);

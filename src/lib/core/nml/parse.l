@@ -139,6 +139,7 @@ KW_SWITCH switch
 KW_CASE case
 KW_DEFAULT default
 KW_CLASS class
+KW_IMPORT import
 
 %%
 
@@ -296,6 +297,11 @@ KW_CLASS class
 {KW_CLASS} {
   PS->advance(yytext, "keyword");
   return KW_CLASS;
+}
+
+{KW_IMPORT} {
+  PS->advance(yytext, "keyword");
+  return KW_IMPORT;
 }
 
 {INTEGER} {

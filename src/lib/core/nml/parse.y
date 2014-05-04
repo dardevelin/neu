@@ -67,7 +67,7 @@ using namespace neu;
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT KW_CLASS
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT KW_CLASS KW_IMPORT
 
 %type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels class_defs ctor strings
 
@@ -441,6 +441,9 @@ stmt: expr end {
 }
 | KW_CLASS IDENTIFIER '{' class_defs '}' {
   PS->createClass($$, $2, $4);
+}
+| KW_IMPORT IDENTIFIER {
+  $$ = PS->func("Import") << PS->sym($2);
 }
 ;
 
