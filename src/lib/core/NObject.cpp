@@ -489,7 +489,7 @@ namespace neu{
     nvar Import(const nvar& v){
       const nstr& className = v;
       
-      NObjectBase* ob = NClass::create(nfunc(className));
+      NObjectBase* ob = NClass::create(nvar(className, nvar::Func));
       if(!ob){
         return Throw(v, "Import[0] failed[1]");
       }
@@ -498,20 +498,20 @@ namespace neu{
       if(!o){
         return Throw(v, "Import[0] failed[2]");
       }
+
+      nvar ov(o, nvar::SharedObject);
       
       NClass* c = NClass::getClass(className);
       assert(c);
       
       ThreadContext* context = getContext();
       NScope* scope = context->topScope();
-
-      nvar ov(o, nvar::SharedObject);
       
-      const nvar& md = c->metadata();
-      const nmap& m = md[className]["methods"];
+      const nmap& m = c->metadata()[className]["methods"];
       
       for(auto& itr : m){
         const nvar& k = itr.first;
+
         nvar f = nfunc(k[0]);
         size_t size = k[1];
 
@@ -519,8 +519,7 @@ namespace neu{
           f << nsym("p" + nvar(i));
         }
         
-        nvar d = nfunc("Ret") << (nfunc("In") << ov << f);
-        scope->setFunction(f, d);
+        scope->setFunction(f, nfunc("Ret") << (nfunc("In") << ov << f));
       }
       
       return none;
@@ -1055,11 +1054,9 @@ namespace neu{
     
     nvar In(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
-      
-      const nvar& p2 = *v2;
-      
       NObject* o = static_cast<NObject*>(p1.obj());
       
+      const nvar& p2 = *v2;
       nvar f(v2.str(), nvar::Func);
       
       size_t size = p2.size();
