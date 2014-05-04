@@ -190,23 +190,30 @@ namespace neu{
   
   class NProgram_{
   public:
-    NProgram_(NProgram* program, const nvar& args)
-    : o_(program){
-
-      init();
-      _args = args;
-      
-      setBuiltins();
-      setDefaults();
+    NProgram_(NProgram* o, const nvar& args)
+    : o_(o){
+      init(args);
     }
     
-    NProgram_(NProgram* program, int& argc, char** argv, const nvar& args)
-    : o_(program){
-
+    NProgram_(NProgram* o, int& argc, char** argv, const nvar& args)
+    : o_(o){
+      init(argc, argv, args);
+    }
+    
+    NProgram_(NProgram* o)
+    : o_(o){
+      
+    }
+    
+    ~NProgram_(){
+      
+    }
+    
+    void init(int& argc, char** argv, const nvar& args){
       NProgram::argc = argc;
       NProgram::argv = argv;
-
-      init();
+      
+      init_();
       NProgram::parseArgs(argc, argv, _args);
       merge(_args, args);
       
@@ -232,8 +239,12 @@ namespace neu{
       setDefaults();
     }
     
-    ~NProgram_(){
+    void init(const nvar& args){
+      init_();
+      _args = args;
       
+      setBuiltins();
+      setDefaults();
     }
     
     void merge(nvar& args, const nvar& readArgs){
@@ -444,7 +455,7 @@ namespace neu{
       }
     }
     
-    void init(){
+    void init_(){
       if(_program){
         NERROR("NProgram exists");
       }
@@ -480,16 +491,28 @@ namespace neu{
   
 } // end namespace neu
 
-NProgram::NProgram(const nvar& args){
-  x_ = new NProgram_(this, args);
-}
-
 NProgram::NProgram(int& argc, char** argv, const nvar& args){
   x_ = new NProgram_(this, argc, argv, args);
 }
 
+NProgram::NProgram(const nvar& args){
+  x_ = new NProgram_(this, args);
+}
+
+NProgram::NProgram(){
+  x_ = new NProgram_(this);
+}
+
 NProgram::~NProgram(){
   delete x_;
+}
+
+void NProgram::init(int& argc, char** argv, const nvar& args){
+  x_->init(argc, argv, args);
+}
+
+void NProgram::init(const nvar& args){
+  x_->init(args);
 }
 
 void NProgram::exit(int status){

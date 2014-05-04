@@ -62,9 +62,15 @@ namespace neu{
   public:
     NProgram(int& argc, char** argv, const nvar& args=undef);
     
-    NProgram(const nvar& args=undef);
+    NProgram(const nvar& args);
+    
+    NProgram();
     
     virtual ~NProgram();
+
+    void init(int& argc, char** argv, const nvar& args=undef);
+    
+    void init(const nvar& args);
     
     static void opt(const nstr& name,
                     const nstr& alias="",
