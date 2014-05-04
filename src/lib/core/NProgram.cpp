@@ -64,6 +64,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/global.h>
 #include <neu/NMutex.h>
 #include <neu/NMLParser.h>
+#include <neu/NBasicMutex.h>
 
 #include <sys/resource.h>
 #include <signal.h>
@@ -81,134 +82,75 @@ using namespace neu;
 
 namespace{
   
-  static NMutex _exitMutex;
+  NBasicMutex _exitMutex;
+  NBasicMutex _handleMutex;
   
-  static void signal_handler(int signo){
+  static void _handleSignal(int s){
+    signal(s, _handleSignal);
     
-    signal(signo, signal_handler);
-    
-    switch(signo){
+    switch(s){
       case SIGHUP:
-      {
-        _program->onSigHup();
-        break;
-      }
       case SIGINT:
-      {
-        _program->onSigInt();
-        break;
-      }
       case SIGQUIT:
-      {
-        _program->onSigQuit();
-        break;
-      }
       case SIGILL:
-      {
-        _program->onSigIll();
-        break;
-      }
       case SIGTRAP:
-      {
-        _program->onSigTrap();
-        break;
-      }
       case SIGABRT:
-      {
-        _program->onSigAbrt();
-        break;
-      }
       case SIGFPE:
-      {
-        _program->onSigFpe();
-        break;
-      }
       case SIGBUS:
-      {
-        _program->onSigBus();
-        break;
-      }
       case SIGSEGV:
-      {
-        _program->onSigSegv();
-        break;
-      }
       case SIGSYS:
-      {
-        _program->onSigSys();
-        break;
-      }
       case SIGPIPE:
-      {
-        _program->onSigPipe();
-        break;
-      }
       case SIGALRM:
-      {
-        _program->onSigAlrm();
-        break;
-      }
       case SIGTERM:
-      {
-        _program->onSigTerm();
-        break;
-      }
-      case SIGURG:
-      {
-        _program->onSigUrg();
-        break;
-      }
       case SIGCONT:
-      {
-        _program->onSigCont();
-        break;
-      }
-      case SIGCHLD:
-      {
-        _program->onSigChld();
-        break;
-      }
-      case SIGIO:
-      {
-        _program->onSigIo();
-        break;
-      }
       case SIGXCPU:
-      {
-        _program->onSigXCPU();
-        break;
-      }
       case SIGXFSZ:
-      {
-        _program->onSigXFSz();
-        break;
-      }
       case SIGVTALRM:
-      {
-        _program->onSigVtAlrm();
-        break;
-      }
-      case SIGPROF:
-      {
-        _program->onSigProf();
-        break;
-      }
       case SIGWINCH:
-      {
-        _program->onSigWInch();
-        break;
-      }
       case SIGUSR1:
-      {
-        _program->onSigUsr1();
-        break;
-      }
       case SIGUSR2:
-      {
-        _program->onSigUsr2();
+        if(_handleMutex.tryLock()){
+          _program->handleSignal(s, true);
+          _handleMutex.unlock();
+        }
         break;
-      }
+      case SIGURG:
+      case SIGCHLD:
+      case SIGIO:
+      case SIGPROF:
+        if(_handleMutex.tryLock()){
+          _program->handleSignal(s, false);
+          _handleMutex.unlock();
+        }
+        break;
     }
+  }
+  
+  void _resetSignalHandlers(){
+    signal(SIGHUP, _handleSignal);
+    signal(SIGINT, _handleSignal);
+    signal(SIGQUIT, _handleSignal);
+    signal(SIGILL, _handleSignal);
+    signal(SIGTRAP, _handleSignal);
+    signal(SIGABRT, _handleSignal);
+    signal(SIGFPE, _handleSignal);
+    signal(SIGBUS, _handleSignal);
+    signal(SIGSEGV, _handleSignal);
+    signal(SIGSYS, _handleSignal);
+    signal(SIGPIPE, _handleSignal);
+    signal(SIGALRM, _handleSignal);
+    signal(SIGTERM, _handleSignal);
+    signal(SIGURG, _handleSignal);
+    signal(SIGCONT, _handleSignal);
+    signal(SIGCHLD, _handleSignal);
+    signal(SIGIO, _handleSignal);
+    signal(SIGXCPU, _handleSignal);
+    signal(SIGXFSZ, _handleSignal);
+    signal(SIGVTALRM, _handleSignal);
+    signal(SIGPROF, _handleSignal);
+    signal(SIGWINCH, _handleSignal);
+    signal(SIGUSR1, _handleSignal);
+    signal(SIGUSR2, _handleSignal);
   }
   
   enum BuiltinKey{
@@ -401,10 +343,6 @@ namespace neu{
       }
     }
     
-    void onExit(){
-      
-    }
-
     void builtinOpt(BuiltinKey key,
                     const nstr& name,
                     const nstr& alias,
@@ -513,7 +451,7 @@ namespace neu{
       
       _program = o_;
       
-      NProgram::resetSignalHandlers();
+      _resetSignalHandlers();
       
 #ifndef META_NO_PRECISE
       size_t precision = 256;
@@ -552,173 +490,6 @@ NProgram::NProgram(int& argc, char** argv, const nvar& args){
 
 NProgram::~NProgram(){
   delete x_;
-}
-
-void NProgram::onExit(){
-  return x_->onExit();
-}
-
-void NProgram::onFatalSignal(){
-  NProgram::exit(1);
-}
-
-void NProgram::onSigHup(){
-  cerr << "NProgram received SIGHUP" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigInt(){
-  cerr << "NProgram received SIGINT" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigQuit(){
-  cerr << "NProgram received SIGQUIT" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigIll(){
-  cerr << "NProgram received SIGILL" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigTrap(){
-  cerr << "NProgram received SIGTRAP" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigAbrt(){
-  cerr << "NProgram received SIGABRT" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigFpe(){
-  cerr << "NProgram received SIGFPE" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigBus(){
-  cerr << "NProgram received SIGBUS" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigSegv(){
-  cerr << "NProgram received SIGSEGV" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigSys(){
-  cerr << "NProgram received SIGSYS" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigPipe(){
-  cerr << "NProgram received SIGPIPE" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigAlrm(){
-  cerr << "NProgram received SIGALRM" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigTerm(){
-  cerr << "NProgram received SIGTERM" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigUrg(){
-  cerr << "NProgram received SIGURG" << endl;
-}
-
-void NProgram::onSigCont(){
-  cerr << "NProgram received SIGCONT" << endl;
-}
-
-void NProgram::onSigChld(){
-  
-}
-
-void NProgram::onSigIo(){
-  cerr << "NProgram received SIGIO" << endl;
-}
-
-void NProgram::onSigXCPU(){
-  cerr << "NProgram received SIGXCPU" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigXFSz(){
-  cerr << "NProgram received SIGXFSZ" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigVtAlrm(){
-  cerr << "NProgram received SIGVTALRM" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigProf(){
-  
-}
-
-void NProgram::onSigWInch(){
-  cerr << "NProgram received SIGWINCH" << endl;
-}
-
-void NProgram::onSigUsr1(){
-  cerr << "NProgram received SIGUSR1" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::onSigUsr2(){
-  cerr << "NProgram received SIGUSR2" << endl;
-  
-  onFatalSignal();
-}
-
-void NProgram::resetSignalHandlers(){
-  signal(SIGHUP, signal_handler);
-  signal(SIGINT, signal_handler);
-  signal(SIGQUIT, signal_handler);
-  signal(SIGILL, signal_handler);
-  signal(SIGTRAP, signal_handler);
-  signal(SIGABRT, signal_handler);
-  signal(SIGFPE, signal_handler);
-  signal(SIGBUS, signal_handler);
-  signal(SIGSEGV, signal_handler);
-  signal(SIGSYS, signal_handler);
-  signal(SIGPIPE, signal_handler);
-  signal(SIGALRM, signal_handler);
-  signal(SIGTERM, signal_handler);
-  signal(SIGURG, signal_handler);
-  signal(SIGCONT, signal_handler);
-  signal(SIGCHLD, signal_handler);
-  signal(SIGIO, signal_handler);
-  signal(SIGXCPU, signal_handler);
-  signal(SIGXFSZ, signal_handler);
-  signal(SIGVTALRM, signal_handler);
-  signal(SIGPROF, signal_handler);
-  signal(SIGWINCH, signal_handler);
-  signal(SIGUSR1, signal_handler);
-  signal(SIGUSR2, signal_handler);
 }
 
 void NProgram::exit(int status){
@@ -973,6 +744,61 @@ nstr NProgram::usage(const nstr& msg){
   }
   
   return ostr.str();
+}
+
+nstr NProgram::signalName(int signal){
+  switch(signal){
+    case SIGHUP:
+      return "SIGHUP";
+    case SIGINT:
+      return "SIGINT";
+    case SIGQUIT:
+      return "SIGQUIT";
+    case SIGILL:
+      return "SIGILL";
+    case SIGTRAP:
+      return "SIGTRAP";
+    case SIGABRT:
+      return "SIGABRT";
+    case SIGFPE:
+      return "SIGFPE";
+    case SIGBUS:
+      return "SIGBUS";
+    case SIGSEGV:
+      return "SIGSEGV";
+    case SIGSYS:
+      return "SIGSYS";
+    case SIGPIPE:
+      return "SIGPIPE";
+    case SIGALRM:
+      return "SIGALRM";
+    case SIGTERM:
+      return "SIGTERM";
+    case SIGCONT:
+      return "SIGCONT";
+    case SIGXCPU:
+      return "SIGXCPU";
+    case SIGXFSZ:
+      return "SIGXFSZ";
+    case SIGVTALRM:
+      return "SIGVTALRM";
+    case SIGWINCH:
+      return "SIGWINCH";
+    case SIGUSR1:
+      return "SIGUSR1";
+    case SIGUSR2:
+      return "SIGUSR2";
+    case SIGURG:
+      return "SIGURG";
+    case SIGCHLD:
+      return "SIGCHLD";
+    case SIGIO:
+      return "SIGIO";
+    case SIGPROF:
+      return "SIGPROF";
+    default:
+      NERROR("invalid signal: " + nvar(signal));
+  }
 }
 
 int NProgram::argc = 0;

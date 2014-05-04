@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/nvar.h>
 
 #include <ostream>
+#include <signal.h>
 
 namespace neu{
   
@@ -65,82 +66,64 @@ namespace neu{
     
     virtual ~NProgram();
     
-    virtual void onExit();
-    
-    static void exit(int status);
-    
-    static NProgram* instance();
-    
-    virtual void onFatalSignal();
-    
-    virtual void onSigHup();
-    
-    virtual void onSigInt();
-    
-    virtual void onSigQuit();
-    
-    virtual void onSigIll();
-    
-    virtual void onSigTrap();
-    
-    virtual void onSigAbrt();
-    
-    virtual void onSigFpe();
-    
-    virtual void onSigBus();
-    
-    virtual void onSigSegv();
-    
-    virtual void onSigSys();
-    
-    virtual void onSigPipe();
-    
-    virtual void onSigAlrm();
-    
-    virtual void onSigTerm();
-    
-    virtual void onSigUrg();
-    
-    virtual void onSigCont();
-    
-    virtual void onSigChld();
-    
-    virtual void onSigIo();
-    
-    virtual void onSigXCPU();
-    
-    virtual void onSigXFSz();
-    
-    virtual void onSigVtAlrm();
-    
-    virtual void onSigProf();
-    
-    virtual void onSigWInch();
-    
-    virtual void onSigUsr1();
-    
-    virtual void onSigUsr2();
-    
-    static void resetSignalHandlers();
-    
     static void opt(const nstr& name,
                     const nstr& alias="",
                     const nvar& def=none,
                     const nstr& description="",
                     bool required=false,
                     bool multi=false);
-
+    
     static void parseArgs(int argc, char** argv, nvar& args);
     
     static const nvar& args();
     
     static nstr usage(const nstr& msg);
     
-    static int argc;
+    virtual void onExit(){}
     
+    static void exit(int status);
+    
+    static NProgram* instance();
+    
+    static const int SIG_HUP = SIGHUP;
+    static const int SIG_INT = SIGINT;
+    static const int SIG_QUIT = SIGQUIT;
+    static const int SIG_ILL = SIGILL;
+    static const int SIG_TRAP = SIGTRAP;
+    static const int SIG_ABRT = SIGABRT;
+    static const int SIG_FPE = SIGFPE;
+    static const int SIG_BUS = SIGBUS;
+    static const int SIG_SEGV = SIGSEGV;
+    static const int SIG_SYS = SIGSYS;
+    static const int SIG_PIPE = SIGPIPE;
+    static const int SIG_ALRM = SIGALRM;
+    static const int SIG_TERM = SIGTERM;
+    static const int SIG_URG = SIGURG;
+    static const int SIG_CONT = SIGCONT;
+    static const int SIG_CHLD = SIGCHLD;
+    static const int SIG_IO = SIGIO;
+    static const int SIG_XCPU = SIGXCPU;
+    static const int SIG_XFSZ = SIGXFSZ;
+    static const int SIG_VTALRM = SIGVTALRM;
+    static const int SIG_PROF = SIGPROF;
+    static const int SIG_WINCH = SIGWINCH;
+    static const int SIG_USR1 = SIGUSR1;
+    static const int SIG_USR2 = SIGUSR2;
+    
+    virtual void handleSignal(int signal, bool fatal){
+      if(fatal){
+        std::cerr << "NProgram received: " << signalName(signal) << std::endl;
+        NProgram::exit(1);
+      }
+    }
+    
+    static nstr signalName(int signal);
+    
+    static int argc;
     static char** argv;
 
     NProgram& operator=(const NProgram&) = delete;
+    
     NProgram(const NProgram&) = delete;
 
   private:

@@ -89,17 +89,6 @@ namespace{
   
 } // end namespace
 
-namespace neu{
-  
-  static struct termios stored_settings;
-  
-  void sigint_handler(int sig_num){
-    tcsetattr(0, TCSANOW, &stored_settings);
-    NProgram::instance()->onSigInt();
-  }
-  
-} // end namespace neu
-
 nvar NSys::sysInfo(){
   nvar info;
   

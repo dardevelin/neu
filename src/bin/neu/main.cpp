@@ -69,9 +69,11 @@ public:
     
   }
   
-  void onSigInt(){
-    cout << endl;
-    NProgram::exit(0);
+  void handleSignal(int signal, bool fatal){
+    if(fatal){
+      cout << endl;
+      NProgram::exit(0);
+    }
   }
 };
 
