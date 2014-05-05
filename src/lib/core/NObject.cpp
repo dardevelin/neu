@@ -296,6 +296,10 @@ namespace neu{
       if(threadData_){
         delete threadData_;
       }
+      
+      if(broker_){
+        broker_->release(o_);
+      }
     }
     
     static NObject_* obj(void* o){

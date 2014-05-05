@@ -215,9 +215,12 @@ namespace neu{
       serverMutex_.readLock();
       auto itr = distributedObjectMap_.find(objectName);
       assert(itr != distributedObjectMap_.end());
+      distributedObjectMap_.erase(itr);
       serverMutex_.unlock();
+      
       DistributedObject* o = itr->second;
       o->revoke();
+      delete o;
     }
     
     NObject* obtain(const nstr& host,
