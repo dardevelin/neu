@@ -331,6 +331,7 @@ public:
   }
   
   bool generate(ostream& ostr, const nstr& filePath, const nstr& className){
+    ostr_ = &ostr;
     className_ = className;
     fullClassName_ = className_.find("::") != nstr::npos;
 
@@ -344,7 +345,7 @@ public:
       ostr << "#include <neu/NClass.h>" << endl;
     }
 
-    ostr_ = &ostr;
+    ostr << endl;
 
     Database db(resourceDir_, includes_);
 
@@ -464,6 +465,7 @@ public:
         }
       }
     }
+
     return false;
   }
     
@@ -1145,7 +1147,10 @@ void printUsage(){
 }
 
 int main(int argc, char** argv){
-  NProgram::opt("class", "c", "",
+  NProgram::opt("help", "h", false,
+                "Display usage.");
+  
+  NProgram::opt("class", "", "",
                 "Class name to generate metadata for. "
                 "Defaults to the name of the source file.");
   
@@ -1171,8 +1176,11 @@ int main(int argc, char** argv){
 
   const nvar& args = program.args();
 
-  //cout << "args is: " << args << endl;
-
+  if(args["help"]){
+    printUsage();
+    program.exit(0);
+  }
+  
   if(args.size() != 1){
     printUsage();
     program.exit(1);
@@ -1213,13 +1221,13 @@ int main(int argc, char** argv){
     return 1;
   }
 
-  ofstream out2(metaPath.c_str());
-  if(out2.fail()){
+  ofstream finalOut(metaPath.c_str());
+  if(finalOut.fail()){
     cerr << "failed to open output file: " << metaPath << endl;
     program.exit(1);
   }
-  out2 << ostr.str();
-  out2.close();
+  finalOut << ostr.str();
+  finalOut.close();
   
   return 0;
 }
