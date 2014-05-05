@@ -18718,8 +18718,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
               break;
             default:
               buf[pos++] = PackInt8;
-              memcpy(buf + pos, &j, 1);
-              ++pos;
+              buf[pos++] = j;
               break;
           }
           break;
@@ -18778,9 +18777,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       
       if(len <= 255){
         buf[pos++] = Symbol;
-        uint8_t plen = len;
-        memcpy(buf + pos, &plen, 1);
-        ++pos;
+        buf[pos++] = len;
       }
       else{
         buf[pos++] = PackLongSymbol;
@@ -18804,21 +18801,19 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       
       if(len <= 255){
         buf[pos++] = PackShortString;
-        uint8_t plen = len;
-        memcpy(buf + pos, &plen, 1);
-        ++pos;
+        buf[pos++] = len;
       }
       else if(len <= 65535){
         buf[pos++] = String;
         uint16_t plen = len;
         memcpy(buf + pos, &plen, 2);
-        ++pos;
+        pos += 2;
       }
       else{
         Type t = PackLongString;
         buf[pos++] = t;
         memcpy(buf + pos, &len, 4);
-        ++pos;
+        pos += 4;
       }
       
       if(size - pos < len){
@@ -18833,9 +18828,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
     case Binary:{
       const nstr& sbuf = *h_.s;
       uint32_t len = sbuf.length();
-      
-      Type t = Binary;
-      buf[pos++] = t;
+      buf[pos++] = Binary;
       
       memcpy(buf + pos, &len, 4);
       pos += 4;
@@ -18861,9 +18854,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       uint32_t len = v.size();
       if(len <= 255){
         buf[pos++] = PackShortVector;
-        uint8_t plen = len;
-        memcpy(buf + pos, &plen, 1);
-        ++pos;
+        buf[pos++] = len;
       }
       else if(len <= 65535){
         buf[pos++] = Vector;
@@ -18889,9 +18880,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       uint32_t len = l.size();
       if(len <= 255){
         buf[pos++] = PackShortList;
-        uint8_t plen = len;
-        memcpy(buf + pos, &plen, 1);
-        ++pos;
+        buf[pos++] = len;
       }
       else if(len <= 65535){
         buf[pos++] = List;
@@ -18922,10 +18911,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       if(len <= 255 && n <= 255 && m <= 255){
         isShort = true;
         buf[pos++] = Function;
-        uint8_t plen = len;
-        uint8_t pn = n;
-        memcpy(buf + pos, &plen, 1);
-        ++pos;
+        buf[pos++] = len;
         
         if(size - pos < len){
           size += len + _packBlockSize;
@@ -18934,14 +18920,13 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
         
         sbuf.copy(buf + pos, len, 0);
         pos += len;
-        memcpy(buf + pos, &pn, 1);
-        ++pos;
+        buf[pos++] = n;
       }
       else{
         isShort = false;
         buf[pos++] = PackLongFunction;
         memcpy(buf + pos, &len, 4);
-        ++pos;
+        pos += 4;
         
         if(size - pos < len){
           size += len + _packBlockSize;
@@ -18960,19 +18945,16 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       
       if(isShort){
         if(m > 0){
-          uint8_t mlen = m;
-          memcpy(buf + pos, &mlen, 1);
-          ++pos;
+          buf[pos++] = m;
+
           for(auto& itr : *h_.f->m){
             buf = itr.first.pack_(buf, size, pos);
             buf = itr.second.pack_(buf, size, pos);
           }
         }
         else{
-          uint8_t mlen = 0;
-          memcpy(buf + pos, &mlen, 1);
-          ++pos;
-        } 
+          buf[pos++] = 0;
+        }
       }  
       else if(m > 0){
         uint32_t mlen = m;
@@ -19111,6 +19093,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       t_ = None;
       break;
     case Undefined:
+      t_ = Undefined;
       break;
     case False:
       t_ = False;
@@ -19169,7 +19152,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       break;
     }
     case PackInt16:{
-      uint16_t i;
+      int16_t i;
       memcpy(&i, buf + pos, 2);
       pos += 2;
       t_ = Integer;
@@ -19185,7 +19168,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
       break;
     }
     case Integer:{
-      uint64_t i;
+      int64_t i;
       memcpy(&i, buf + pos, 8);
       pos += 8;
       t_ = Integer;
@@ -19379,8 +19362,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
         v[i].unpack_(buf, pos);
       }
       
-      uint8_t mlen;
-      memcpy(&mlen, buf + pos, 1);
+      uint8_t mlen = *(uint8_t*)(buf + pos);
       ++pos;
       
       if(mlen > 0){
@@ -19397,7 +19379,7 @@ void nvar::unpack_(char* buf, uint32_t& pos){
           m->emplace(move(k), move(v));
         }      
       }
-      
+
       break;
     }
     case PackLongFunction:{

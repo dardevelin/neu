@@ -166,6 +166,10 @@ namespace neu{
       for(auto& itr : symbolMap_){
         std::cout << itr.first << ": " << itr.second << std::endl;
       }
+      
+      for(auto& itr : functionMap_){
+        std::cout << itr.second.first << ": " << itr.second.second << std::endl;
+      }
     }
     
   private:
