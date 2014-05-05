@@ -104,13 +104,14 @@ namespace{
     SKEY_E
   };
   
-  typedef NMap<nstr, SymbolKey> SymbolMap;
+
   
+
   typedef NMap<pair<nstr, int>, FunctionKey> FunctionMap;
-  
-  static FunctionMap _functionMap;
-  
-  static SymbolMap _symbolMap;
+  FunctionMap _functionMap;
+
+  typedef NMap<nstr, SymbolKey> SymbolMap;
+  SymbolMap _symbolMap;
   
   void _initFunctionMap(){
     _functionMap[{"Times", -1}] = FKEY_Times_n;
@@ -292,6 +293,9 @@ void NMParser_::translate(nvar& n){
     case FKEY_ArcTan_1:
       n.str() = "Atan";
       return;
+    case FKEY_D_2:
+      n.str() = "Derivative";
+      return;
     case FKEY_List_n:{
       size_t size = n.size();
       nvar v;
@@ -303,9 +307,6 @@ void NMParser_::translate(nvar& n){
       n = move(v);
       return;
     }
-    case FKEY_D_2:
-      n.str() = "Derivative";
-      return;
   }
   
   error(n, "unrecognized function: " + n);

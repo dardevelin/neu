@@ -61,6 +61,7 @@ using namespace std;
 using namespace neu;
 
 namespace{
+  
   static NRegex _numericRegex("^[ \t]*(([0-9]+\\.[0-9]+)|(\\.[0-9]+)|"
                               "([0-9]+))([Ee][\\+\\-]?[0-9]+)?[ \t]*$");
   

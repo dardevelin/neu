@@ -149,8 +149,7 @@ namespace neu{
     
     class Queue{
     public:
-      Queue()
-      : sem_(0){
+      Queue(){
         
       }
       

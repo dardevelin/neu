@@ -125,7 +125,7 @@ namespace neu{
     }
     
     nvar parse(const nstr& code, nvar* tags){
-      out_ = nfunc("Block");
+      out_ = func("Block");
       
       tags_ = tags;
       line_ = 1;
@@ -154,7 +154,7 @@ namespace neu{
     }
     
     nvar parseFile(const nstr& path, nvar* tags){
-      out_ = nfunc("Block");
+      out_ = func("Block");
       
       tags_ = tags;
       line_ = 1;
@@ -184,26 +184,41 @@ namespace neu{
       return out_.size() == 1 ? out_[0] : out_;
     }
     
-    void emit(const nvar& n){
-      out_ << n;
+    void emit(nvar& n){
+      out_ << move(n);
     }
     
-    nvar error(const nvar& n, const nstr& message, bool warn=false){
+    nvar error(const nvar& n, const nstr& message){
       status_ = 1;
       
-      cout << "error: " << message << endl;
-      return nsym("Error");
+      ostream& estr = *estr_;
+      
+      estr << "NMParser error: " << n.getLocation() << ": " << message << endl;
+
+      return sym("Error");
     }
     
     void error(const nstr& type){
-      error(none, "NM parser error");
+      status_ = 1;
+      *estr_ << "NMParser error: " << getLocation() << ": " << type << endl;
+    }
+    
+    nstr getLocation(){
+      nstr loc;
+      
+      if(!file_.empty()){
+        loc += file_ + ":";
+      }
+      
+      loc += nvar(line_);
+      
+      return loc;
     }
     
     nvar func(const nstr& f){
       nvar v = nfunc(f);
       v.setLine(line_);
       v("__token") = token_;
-      
       if(!file_.empty()){
         v.setFile(file_);
       }
@@ -215,7 +230,6 @@ namespace neu{
       nvar v = nfunc(f);
       v.setLine(line_);
       v("__token") = token_;
-      
       if(!file_.empty()){
         v.setFile(file_);
       }
@@ -231,7 +245,6 @@ namespace neu{
       nvar v = nsym(s);
       v.setLine(line_);
       v("__token") = token_;
-      
       if(!file_.empty()){
         v.setFile(file_);
       }
@@ -247,7 +260,6 @@ namespace neu{
       nvar v = nsym(s);
       v.setLine(line_);
       v("__token") = token_;
-      
       if(!file_.empty()){
         v.setFile(file_);
       }

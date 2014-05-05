@@ -234,7 +234,7 @@ namespace neu{
       }
     }
     
-    nvar error(const nvar& n, const nstr& message, bool warn=false){
+    nvar error(const nvar& n, const nstr& message){
       status_ = 1;
       
       ostream& estr = *estr_;
