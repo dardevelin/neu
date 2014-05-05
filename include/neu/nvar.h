@@ -1012,6 +1012,26 @@ namespace neu{
       }
     }
     
+    nvar toPtr(){
+      switch(t_){
+        case Reference:
+        case Pointer:
+          return *this;
+        default:
+          return nvar(this, Ptr);
+      }
+    }
+    
+    nvar toRef(){
+      switch(t_){
+        case Reference:
+        case Pointer:
+          return *this;
+        default:
+          return new nvar(*this);
+      }
+    }
+    
     nstr& str(){
       switch(t_){
         case Symbol:

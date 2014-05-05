@@ -881,43 +881,33 @@ namespace neu{
       nvar p1 = process(v1);
       nvar p2 = process(v2);
       
-      nvar& v = *p1.get(p2);
-      
-      return nvar(&v, nvar::Ptr);
+      return p1.get(p2).toPtr();
     }
     
     nvar Idx(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       nvar p2 = process(v2);
       
-      nvar& v = *p1[p2];
-      
-      return nvar(&v, nvar::Ptr);
+      return p1[p2].toPtr();
     }
     
     nvar Dot(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       
-      nvar& v = *p1[v2];
-      
-      return nvar(&v, nvar::Ptr);
+      return p1[v2].toPtr();
     }
     
     nvar Put(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       nvar p2 = process(v2);
       
-      nvar& v = *p1(p2);
-      
-      return nvar(&v, nvar::Ptr);
+      return p1(p2).toPtr();
     }
     
     nvar DotPut(const nvar& v1, const nvar& v2){
       nvar p1 = process(v1);
       
-      nvar& v = *p1(v2);
-      
-      return nvar(&v, nvar::Ptr);
+      return p1(v2).toPtr();
     }
     
     nvar Cs(const nvar& v){
@@ -1210,7 +1200,7 @@ namespace neu{
       
       p1.pushBack(p2);
       
-      return nvar(&(*p1), nvar::Ptr);
+      return p1.toPtr();
     }
     
     nvar TouchMultimap(const nvar& v1){
