@@ -1,3 +1,4 @@
 [
- math: false
+ math: false,
+ history: 100
 ];

@@ -52,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/NCommand.h>
 #include <neu/NProgram.h>
+#include <neu/NSys.h>
 
 using namespace std;
 using namespace neu;
@@ -60,8 +61,6 @@ int main(int argc, char** argv){
   NProgram::opt("help", "h", false, "Display usage");
 
   NProgram::opt("testPath", "", "", "Test path", true);
-
-  NProgram::opt("tests", "", none, "Tests to run", true, true);
 
   NProgram program(argc, argv);
 
@@ -73,12 +72,16 @@ int main(int argc, char** argv){
   }
 
   const nstr& testPath = args["testPath"];
-  const nvec& tests = args["tests"];
+  nvec tests;
+  if(!NSys::dirFiles(testPath, tests)){
+    cerr << "invalid test path: " << testPath << endl;
+  }
 
   for(const nstr& t : tests){
     cout << "--------- running: " << t << endl;
     nstr p = testPath + "/" + t;
-    nstr c = "cd " + p + "; make > /dev/null; diff expect.in test.out";
+    nstr c = "cd " + p + "; make spotless > /dev/null; "
+      "make > /dev/null; diff expect.in test.out";
     NCommand cmd(c);
     cmd.await();
   }

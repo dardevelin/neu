@@ -92,7 +92,7 @@ public:
   bool readLine(nstr& line){
     char* l = readline(first_ ? ">>> " : "");
     first_ = false;
-    
+
     if(!l){
       done_ = true;
       return false;
@@ -123,6 +123,10 @@ int main(int argc, char** argv){
 
   Program::opt("math", "m", false, "Use Mathematica");  
 
+  Program::opt("show", "s", false, "Show N input/output");  
+
+  Program::opt("history", "", 100, "Number of lines to keep in history"); 
+
   Program program(argc, argv);
 
   nvar args = program.args();
@@ -131,65 +135,71 @@ int main(int argc, char** argv){
     cout << program.usage("neu [OPTION]... [NML FILE]...");
     program.exit(0);
   }
-  
+
+  bool show = args["show"];
+
   NObject* o = args["math"] ? new NMObject : new NObject;
 
   Parser parser;
   NMLGenerator generator;
 
-  if(!args.empty()){
-    for(size_t i = 0; i < args.size(); ++i){
-      nvar n = parser.parseFile(args[i]);
-      
-      cout << "n is: " << n << endl;
-      
-      if(!n.some()){
-        NProgram::exit(1);
-      }
-      
-      nvar r = o->process(n);
+  if(args.empty()){
+    stifle_history(args["history"]);
 
-      cout << "r is: " << r << endl;
-    }   
+    for(;;){
+      parser.reset();
+      nvar n = parser.parse();
 
-    NProgram::exit(0);
-  }
-
-  stifle_history(100);
-
-  for(;;){
-    parser.reset();
-    nvar v = parser.parse();
-
-    if(parser.done()){
-      cout << endl;
-      NProgram::exit(0);
-    }
-
-    if(v == none){
-      continue;
-    }
-
-    cout << "<<< " << v << endl;
-
-    try{
-      nvar r = o->process(v);
-
-      cout << "r is: " << r << endl;
-     
-      if(r.some()){
-        generator.generate(cout, r);
+      if(parser.done()){
         cout << endl;
+        NProgram::exit(0);
       }
-    }
-    catch(NError& e){
-      cerr << e << endl;
-    }
+
+      if(n == none){
+        continue;
+      }
+
+      if(show){
+        cout << "<< " << n << endl;
+      }
+
+      try{
+        nvar r = o->process(n);
+
+        if(show){
+          cout << ">> " << r << endl;
+        }
+
+        if(r != none){
+          generator.generate(cout, r);
+          cout << endl;
+        }
+      }
+      catch(NError& e){
+        cerr << e << endl;
+      }
+    }    
   }
+
+  for(size_t i = 0; i < args.size(); ++i){
+    nvar n = parser.parseFile(args[i]);
+
+    if(n == none){
+      NProgram::exit(1);
+    }
+    
+    if(show){
+      cout << "<< " << n << endl;
+    }
+    
+    nvar r = o->process(n);
+
+    if(show){
+      cout << ">> " << r << endl;
+    }
+  }   
   
-  cout << endl;
-
   NProgram::exit(0);
-
+  
   return 0;
 }
