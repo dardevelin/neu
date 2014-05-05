@@ -83,6 +83,7 @@ namespace neu{
     }
     
     NBasicRecMutex(const NBasicRecMutex&);
+    
     NBasicRecMutex& operator=(const NBasicRecMutex&);
     
   private:

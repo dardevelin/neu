@@ -51,11 +51,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_N_ERROR_H
 #define NEU_N_ERROR_H
 
+#include <exception>
+
 #include <cassert>
 
-#define NERROR(msg) throw NError(nstr(__PRETTY_FUNCTION__) + ": " + msg)
+#define NMESSAGE(msg) nstr(__PRETTY_FUNCTION__) + ": " + msg
+#define NERROR(msg) throw NError(NMESSAGE(msg))
 
-#include <exception>
 #include <ostream>
 
 namespace neu{
