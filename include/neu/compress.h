@@ -52,22 +52,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NEU_COMPRESS_H
 
 #ifdef __cplusplus
-extern "C" {
+#define EXTERN_C extern "C"
+#else
+#define EXTERN_C
 #endif
-  
-  int zlib_compress_(const char* in,
-                     char* out,
-                     unsigned int inSize,
-                     unsigned int outSize);
-  
-  char* zlib_decompress_(const char* in,
-                         unsigned int inSize,
-                         char* out,
-                         unsigned int* outSize,
-                         int resize);
-  
-#ifdef __cplusplus
-}
-#endif
+
+EXTERN_C
+int zlib_compress_(const char* in,
+                   char* out,
+                   unsigned int inSize,
+                   unsigned int outSize);
+
+EXTERN_C
+char* zlib_decompress_(const char* in,
+                       unsigned int inSize,
+                       char* out,
+                       unsigned int* outSize,
+                       int resize);
 
 #endif // NEU_COMPRESS_H
