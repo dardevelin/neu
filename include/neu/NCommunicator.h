@@ -100,11 +100,11 @@ namespace neu{
     
     bool receive(nvar& msg, double timeout);
     
+    nvar& session();
+    
     NCommunicator(const NCommunicator&) = delete;
     
     NCommunicator& operator=(const NCommunicator&) = delete;
-    
-    nvar& session();
     
   private:
     class NCommunicator_* x_;

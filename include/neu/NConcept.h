@@ -63,7 +63,6 @@ public:
 
   struct PrototypeFlag{};
   
-  // ndm - should be const
   static PrototypeFlag* Prototype;
   
   NConcept(const NConcept& c);

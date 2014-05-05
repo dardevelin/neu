@@ -74,6 +74,7 @@ namespace neu{
     void setMetadata(bool flag);
     
     NPLParser& operator=(const NPLParser&) = delete;
+    
     NPLParser(const NPLParser&) = delete;
     
   private:
