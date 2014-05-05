@@ -60,7 +60,7 @@ namespace neu{
   class NVSemaphore{
   public:
     
-    NVSemaphore(int count=1)
+    NVSemaphore(int count=0)
       : count_(count),
         maxCount_(0){
 

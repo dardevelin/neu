@@ -97,9 +97,7 @@ namespace neu{
     : o_(o),
     task_(task),
     socket_(0),
-    sendSem_(0),
     sendProc_(0),
-    receiveSem_(0),
     receiveProc_(0),
     encoder_(0){
       

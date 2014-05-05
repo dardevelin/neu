@@ -206,8 +206,6 @@ private:
     Thread_(FuncVec_& funcVec, Queue& queue, int& chunk)
       : funcVec_(funcVec),
         queue_(queue),
-        beginSem_(0),
-        finishSem_(0),
         exit_(false),
         chunk_(chunk){
       

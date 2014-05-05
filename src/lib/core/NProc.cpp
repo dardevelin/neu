@@ -67,7 +67,6 @@ namespace neu{
     NProc_(NProc* o, NProcTask* task)
     : o_(o),
     task_(task),
-    finishSem_(0),
     queueCount_(0),
     terminated_(false){
       
@@ -76,7 +75,6 @@ namespace neu{
     NProc_(NProc* o)
     : o_(o),
     task_(0),
-    finishSem_(0),
     queueCount_(0),
     terminated_(false){
       

@@ -1281,8 +1281,7 @@ private:
 class Solutions{
 public:
   Solutions(size_t maxSize)
-  : readySem_(0),
-    maxSize_(maxSize),
+  : maxSize_(maxSize),
     totalFitness_(0),
     totalTemps_(0),
     totalSize_(0),

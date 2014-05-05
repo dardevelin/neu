@@ -254,8 +254,6 @@ private:
     Thread_(NeuronVec_& neuronVec, Queue& queue, int& chunk)
       : neuronVec_(neuronVec),
         queue_(queue),
-        beginSem_(0),
-        finishSem_(0),
         exit_(false),
         chunk_(chunk){
       
