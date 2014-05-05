@@ -126,10 +126,13 @@ namespace neu{
     
     void init(){
       connected_ = true;
+      
       sendProc_ = new SendProc(this);
       sendProc_->setTask(task_);
+      
       receiveProc_ = new ReceiveProc(this);
       receiveProc_->setTask(task_);
+      
       sendProc_->queue();
       receiveProc_->queue();
     }
@@ -181,7 +184,7 @@ namespace neu{
       return connected_;
     }
     
-    void send(const nvar& msg){
+    void send(nvar& msg){
       sendMutex_.lock();
       sendQueue_.emplace_back(move(msg));
       sendMutex_.unlock();
@@ -257,6 +260,7 @@ namespace neu{
     typedef deque<nvar> Queue_;
     
     NCommunicator* o_;
+    NCommunicator::Encoder* encoder_;
     NProcTask* task_;
     NSocket* socket_;
     Queue_ sendQueue_;
@@ -269,7 +273,6 @@ namespace neu{
     ReceiveProc* receiveProc_;
     atomic_bool connected_;
     nvar session_;
-    NCommunicator::Encoder* encoder_;
   };
   
 } // end namespace neu
@@ -433,7 +436,7 @@ bool NCommunicator::isConnected() const{
   return x_->isConnected();
 }
 
-void NCommunicator::send(const nvar& msg){
+void NCommunicator::send(nvar& msg){
   x_->send(msg);
 }
 

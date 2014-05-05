@@ -235,8 +235,9 @@ namespace neu{
         delete client;
         return 0;
       }
-      
-      client->send(auth);
+
+      nvar a = auth;
+      client->send(a);
       nvar authResp;
       if(!client->receive(authResp) || !authResp){
         delete client;

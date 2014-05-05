@@ -82,7 +82,8 @@ namespace{
         delete comm;
       }
       
-      comm->send(true);
+      nvar resp = true;
+      comm->send(resp);
     }
     
   private:

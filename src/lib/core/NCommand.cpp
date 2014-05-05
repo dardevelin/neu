@@ -105,7 +105,7 @@ namespace neu{
         pipe(op);
       }
       
-      if(!(mode_ & NCommand::Persistent)){
+      if(!isPersistent()){
         _resourceManager->add(o_);
       }
       
@@ -173,7 +173,7 @@ namespace neu{
     }
     
     ~NCommand_(){
-      if(!(mode_ & NCommand::Persistent)){
+      if(!isPersistent()){
         _resourceManager->remove(o_);
         close(true);
       }

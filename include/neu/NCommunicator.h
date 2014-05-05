@@ -94,7 +94,7 @@ namespace neu{
     
     bool isConnected() const;
     
-    void send(const nvar& msg);
+    void send(nvar& msg);
     
     bool receive(nvar& msg);
     
