@@ -171,12 +171,13 @@ namespace neu{
 
 NClass::NClass(const nstr& fullName){
   x_ = new NClass_(this, fullName);
-  
+
   NWriteGuard guard(_mutex);
   
   if(!_global){
     _global = new Global;
   }
+  
   _global->registerClass(this);
 }
 
@@ -208,14 +209,12 @@ nvec NClass::getClasses(){
   nvec ret;
   
   NReadGuard guard(_mutex);
-  
   _global->getClasses(ret);
   return ret;
 }
 
 NClass* NClass::getClass(const nstr& name){
   NReadGuard guard(_mutex);
-  
   return _global->getClass(name);
 }
 
