@@ -93,23 +93,63 @@ namespace{
   static const nvar::Type Pack8 =             246;
   static const nvar::Type Pack9 =             245;
   static const nvar::Type Pack10 =            244;
-  static const nvar::Type PackInt8 =          243;
-  static const nvar::Type PackInt16 =         242;
-  static const nvar::Type PackInt32 =         241;
-  static const nvar::Type PackFloat32 =       240;
-  static const nvar::Type PackShortString =   239;
-  static const nvar::Type PackLongString =    238;
-  static const nvar::Type PackLongSymbol =    237;
-  static const nvar::Type PackSmallVector =   236;
-  static const nvar::Type PackShortVector =   235;
-  static const nvar::Type PackLongVector =    234;
-  static const nvar::Type PackShortList =     233;
-  static const nvar::Type PackLongList =      232;
-  static const nvar::Type PackLongFunction =  231;
-  static const nvar::Type PackShortMap =      230;
-  static const nvar::Type PackLongMap =       229;
-  static const nvar::Type PackShortMultimap = 228;
-  static const nvar::Type PackLongMultimap =  227;
+  static const nvar::Type Pack11 =            243;
+  static const nvar::Type Pack12 =            242;
+  static const nvar::Type Pack13 =            241;
+  static const nvar::Type Pack14 =            240;
+  static const nvar::Type Pack15 =            239;
+  static const nvar::Type Pack16 =            238;
+  static const nvar::Type Pack17 =            237;
+  static const nvar::Type Pack18 =            236;
+  static const nvar::Type Pack19 =            235;
+  static const nvar::Type Pack20 =            234;
+  static const nvar::Type Pack21 =            233;
+  static const nvar::Type Pack22 =            232;
+  static const nvar::Type Pack23 =            231;
+  static const nvar::Type Pack24 =            230;
+  static const nvar::Type Pack25 =            229;
+  static const nvar::Type Pack26 =            228;
+  static const nvar::Type Pack27 =            227;
+  static const nvar::Type Pack28 =            226;
+  static const nvar::Type Pack29 =            225;
+  static const nvar::Type Pack30 =            224;
+  static const nvar::Type Pack31 =            223;
+  static const nvar::Type Pack32 =            222;
+  static const nvar::Type Pack33 =            221;
+  static const nvar::Type Pack34 =            220;
+  static const nvar::Type Pack35 =            219;
+  static const nvar::Type Pack36 =            218;
+  static const nvar::Type Pack37 =            217;
+  static const nvar::Type Pack38 =            216;
+  static const nvar::Type Pack39 =            215;
+  static const nvar::Type Pack40 =            214;
+  static const nvar::Type Pack41 =            213;
+  static const nvar::Type Pack42 =            212;
+  static const nvar::Type Pack43 =            211;
+  static const nvar::Type Pack44 =            210;
+  static const nvar::Type Pack45 =            209;
+  static const nvar::Type Pack46 =            208;
+  static const nvar::Type Pack47 =            207;
+  static const nvar::Type Pack48 =            206;
+  static const nvar::Type Pack49 =            205;
+  static const nvar::Type Pack50 =            204;
+  static const nvar::Type PackInt8 =          203;
+  static const nvar::Type PackInt16 =         202;
+  static const nvar::Type PackInt32 =         201;
+  static const nvar::Type PackFloat32 =       200;
+  static const nvar::Type PackShortString =   199;
+  static const nvar::Type PackLongString =    198;
+  static const nvar::Type PackLongSymbol =    197;
+  static const nvar::Type PackSmallVector =   196;
+  static const nvar::Type PackShortVector =   195;
+  static const nvar::Type PackLongVector =    194;
+  static const nvar::Type PackShortList =     193;
+  static const nvar::Type PackLongList =      192;
+  static const nvar::Type PackLongFunction =  191;
+  static const nvar::Type PackShortMap =      190;
+  static const nvar::Type PackLongMap =       189;
+  static const nvar::Type PackShortMultimap = 188;
+  static const nvar::Type PackLongMultimap =  187;
 
   void uniteList(nlist& l, nlist& l2, bool outer){
     l.unique();
@@ -18716,6 +18756,126 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
             case 10:
               buf[pos++] = Pack10;
               break;
+            case 11:
+              buf[pos++] = Pack11;
+              break;
+            case 12:
+              buf[pos++] = Pack12;
+              break;
+            case 13:
+              buf[pos++] = Pack13;
+              break;
+            case 14:
+              buf[pos++] = Pack14;
+              break;
+            case 15:
+              buf[pos++] = Pack15;
+              break;
+            case 16:
+              buf[pos++] = Pack16;
+              break;
+            case 17:
+              buf[pos++] = Pack17;
+              break;
+            case 18:
+              buf[pos++] = Pack18;
+              break;
+            case 19:
+              buf[pos++] = Pack19;
+              break;
+            case 20:
+              buf[pos++] = Pack20;
+              break;
+            case 21:
+              buf[pos++] = Pack21;
+              break;
+            case 22:
+              buf[pos++] = Pack22;
+              break;
+            case 23:
+              buf[pos++] = Pack23;
+              break;
+            case 24:
+              buf[pos++] = Pack24;
+              break;
+            case 25:
+              buf[pos++] = Pack25;
+              break;
+            case 26:
+              buf[pos++] = Pack26;
+              break;
+            case 27:
+              buf[pos++] = Pack27;
+              break;
+            case 28:
+              buf[pos++] = Pack28;
+              break;
+            case 29:
+              buf[pos++] = Pack29;
+              break;
+            case 30:
+              buf[pos++] = Pack30;
+              break;
+            case 31:
+              buf[pos++] = Pack31;
+              break;
+            case 32:
+              buf[pos++] = Pack32;
+              break;
+            case 33:
+              buf[pos++] = Pack33;
+              break;
+            case 34:
+              buf[pos++] = Pack34;
+              break;
+            case 35:
+              buf[pos++] = Pack35;
+              break;
+            case 36:
+              buf[pos++] = Pack36;
+              break;
+            case 37:
+              buf[pos++] = Pack37;
+              break;
+            case 38:
+              buf[pos++] = Pack38;
+              break;
+            case 39:
+              buf[pos++] = Pack39;
+              break;
+            case 40:
+              buf[pos++] = Pack40;
+              break;
+            case 41:
+              buf[pos++] = Pack41;
+              break;
+            case 42:
+              buf[pos++] = Pack42;
+              break;
+            case 43:
+              buf[pos++] = Pack43;
+              break;
+            case 44:
+              buf[pos++] = Pack44;
+              break;
+            case 45:
+              buf[pos++] = Pack45;
+              break;
+            case 46:
+              buf[pos++] = Pack46;
+              break;
+            case 47:
+              buf[pos++] = Pack47;
+              break;
+            case 48:
+              buf[pos++] = Pack48;
+              break;
+            case 49:
+              buf[pos++] = Pack49;
+              break;
+            case 50:
+              buf[pos++] = Pack50;
+              break;
             default:
               buf[pos++] = PackInt8;
               buf[pos++] = j;
@@ -19140,6 +19300,166 @@ void nvar::unpack_(char* buf, uint32_t& pos){
     case Pack10:
       t_ = Integer;
       h_.i = 10;
+      break;
+    case Pack11:
+      t_ = Integer;
+      h_.i = 11;
+      break;
+    case Pack12:
+      t_ = Integer;
+      h_.i = 12;
+      break;
+    case Pack13:
+      t_ = Integer;
+      h_.i = 13;
+      break;
+    case Pack14:
+      t_ = Integer;
+      h_.i = 14;
+      break;
+    case Pack15:
+      t_ = Integer;
+      h_.i = 15;
+      break;
+    case Pack16:
+      t_ = Integer;
+      h_.i = 16;
+      break;
+    case Pack17:
+      t_ = Integer;
+      h_.i = 17;
+      break;
+    case Pack18:
+      t_ = Integer;
+      h_.i = 18;
+      break;
+    case Pack19:
+      t_ = Integer;
+      h_.i = 19;
+      break;
+    case Pack20:
+      t_ = Integer;
+      h_.i = 20;
+      break;
+    case Pack21:
+      t_ = Integer;
+      h_.i = 21;
+      break;
+    case Pack22:
+      t_ = Integer;
+      h_.i = 22;
+      break;
+    case Pack23:
+      t_ = Integer;
+      h_.i = 23;
+      break;
+    case Pack24:
+      t_ = Integer;
+      h_.i = 24;
+      break;
+    case Pack25:
+      t_ = Integer;
+      h_.i = 25;
+      break;
+    case Pack26:
+      t_ = Integer;
+      h_.i = 26;
+      break;
+    case Pack27:
+      t_ = Integer;
+      h_.i = 27;
+      break;
+    case Pack28:
+      t_ = Integer;
+      h_.i = 28;
+      break;
+    case Pack29:
+      t_ = Integer;
+      h_.i = 29;
+      break;
+    case Pack30:
+      t_ = Integer;
+      h_.i = 30;
+      break;
+    case Pack31:
+      t_ = Integer;
+      h_.i = 31;
+      break;
+    case Pack32:
+      t_ = Integer;
+      h_.i = 32;
+      break;
+    case Pack33:
+      t_ = Integer;
+      h_.i = 33;
+      break;
+    case Pack34:
+      t_ = Integer;
+      h_.i = 34;
+      break;
+    case Pack35:
+      t_ = Integer;
+      h_.i = 35;
+      break;
+    case Pack36:
+      t_ = Integer;
+      h_.i = 36;
+      break;
+    case Pack37:
+      t_ = Integer;
+      h_.i = 37;
+      break;
+    case Pack38:
+      t_ = Integer;
+      h_.i = 38;
+      break;
+    case Pack39:
+      t_ = Integer;
+      h_.i = 39;
+      break;
+    case Pack40:
+      t_ = Integer;
+      h_.i = 40;
+      break;
+    case Pack41:
+      t_ = Integer;
+      h_.i = 41;
+      break;
+    case Pack42:
+      t_ = Integer;
+      h_.i = 42;
+      break;
+    case Pack43:
+      t_ = Integer;
+      h_.i = 43;
+      break;
+    case Pack44:
+      t_ = Integer;
+      h_.i = 44;
+      break;
+    case Pack45:
+      t_ = Integer;
+      h_.i = 45;
+      break;
+    case Pack46:
+      t_ = Integer;
+      h_.i = 46;
+      break;
+    case Pack47:
+      t_ = Integer;
+      h_.i = 47;
+      break;
+    case Pack48:
+      t_ = Integer;
+      h_.i = 48;
+      break;
+    case Pack49:
+      t_ = Integer;
+      h_.i = 49;
+      break;
+    case Pack50:
+      t_ = Integer;
+      h_.i = 50;
       break;
     case PackInt8:{
       t_ = Integer;
