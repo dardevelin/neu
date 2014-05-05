@@ -859,7 +859,7 @@ namespace neu{
         s.set(p2);
       }
       else{
-        s = new nvar(p2);
+        s = new nvar(*p2);
         NScope* currentScope = context->topScope();
         
         currentScope->setSymbol(v1, s);

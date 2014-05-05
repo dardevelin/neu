@@ -1,0 +1,31 @@
+extern int squareMe(int a);
+
+class Cell{
+  int run(int x){
+    return bar(x);
+  }
+  
+  int bar(int y){
+    int x;
+    
+    switch(y){
+    case 9:
+    case 0:
+      x = 1;
+    case 1:
+      x = 2;
+    case 3:
+      x = 3;
+    case 7:
+      x = 8;
+    default:
+      x = 10;
+    }
+    
+    return x;
+  }
+
+  double b;
+  double a;
+  double c;
+}

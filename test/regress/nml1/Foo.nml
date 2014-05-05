@@ -1,0 +1,16 @@
+class Foo{
+
+  Foo(a, b){
+    v = a + b; 
+  }
+
+  get(){
+    return v;
+  }
+
+  v = undef;
+}
+
+x = new Foo(9, 5);
+a = x.get();
+Print("a is %v", a);

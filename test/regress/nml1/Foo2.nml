@@ -1,0 +1,12 @@
+i = 0;
+sum = 0;
+
+while(i < 10){
+  sum += 20;
+  ++i;
+  if(i > 5){
+    break;
+  }
+}
+
+Print("sum is %v", sum);

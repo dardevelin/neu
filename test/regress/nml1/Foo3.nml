@@ -1,0 +1,11 @@
+x = 2;
+y = undef;
+
+switch(x){
+ case 1:
+   y = 100;
+ case 2:
+   y = 200;
+}
+
+Print("y is %v", y);

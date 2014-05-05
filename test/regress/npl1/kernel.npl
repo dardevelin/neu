@@ -1,0 +1,7 @@
+class Cell{
+  void run(int y){
+    x = [1,2,3,y, "a":67, "b":89];
+  }
+
+  nvar x;
+}
