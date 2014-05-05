@@ -64,53 +64,57 @@ namespace{
       
       add("timeSeed", 0,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->timeSeed();
+            return obj(o)->timeSeed();
           });
       
       add("uniform", 0,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->uniform();
+            return obj(o)->uniform();
           });
       
       add("uniform", 2,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->uniform(v[0], v[1]);
+            return obj(o)->uniform(v[0], v[1]);
           });
       
       add("equilikely", 2,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->equilikely(v[0], v[1]);
+            return obj(o)->equilikely(v[0], v[1]);
           });
       
       add("exponential", 1,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->exponential(v[0]);
+            return obj(o)->exponential(v[0]);
           });
       
       add("normal", 2,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->normal(v[0], v[1]);
+            return obj(o)->normal(v[0], v[1]);
           });
       
       add("bernoulli", 1,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->bernoulli(v[0]);
+            return obj(o)->bernoulli(v[0]);
           });
       
       add("binomial", 2,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->binomial(v[0], v[1]);
+            return obj(o)->binomial(v[0], v[1]);
           });
       
       add("poisson", 1,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->poisson(v[0]);
+            return obj(o)->poisson(v[0]);
           });
       
       add("expSelect", 2,
           [](void* o, const nvar& v) -> nvar{
-            return static_cast<NRandom*>(o)->expSelect(v[0], v[1]);
+            return obj(o)->expSelect(v[0], v[1]);
           });
+    }
+    
+    static NRandom* obj(void* o){
+      return static_cast<NRandom*>(o);
     }
   };
   
