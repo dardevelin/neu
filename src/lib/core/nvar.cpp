@@ -18984,9 +18984,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       uint32_t len = h_.m->size();
       if(len <= 255){
         buf[pos++] = PackShortMap;
-        uint8_t plen = len;
-        memcpy(buf + pos, &plen, 1);
-        ++pos;
+        buf[pos++] = len;
       }
       else if(len <= 65535){
         buf[pos++] = Map;
@@ -19010,9 +19008,7 @@ char* nvar::pack_(char* buf, uint32_t& size, uint32_t& pos) const{
       uint32_t len = h_.mm->size();
       if(len <= 255){
         buf[pos++] = PackShortMultimap;
-        uint8_t plen = len;
-        memcpy(buf + pos, &plen, 1);
-        ++pos;
+        buf[pos++] = len;
       }
       else if(len <= 65535){
         buf[pos++] = Multimap;
