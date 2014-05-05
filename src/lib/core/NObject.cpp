@@ -152,7 +152,6 @@ namespace{
 } // end namespace
 
 const uint32_t NObject::classId = NObjectBase::getClassId();
-
 const uint32_t NScope::classId = NObjectBase::getClassId();
 
 namespace neu{
@@ -474,7 +473,7 @@ namespace neu{
       
       return v;
     }
-    
+
     nvar Throw(const nvar& v1, const nvar& v2){
       nstr msg = v1.toStr() + ": ";
       
@@ -813,9 +812,7 @@ namespace neu{
       ThreadContext* context = getContext();
       NScope* currentScope = context->topScope();
       
-      nvar p1 = process(v2);
-      
-      nvar r = new nvar(p1);
+      nvar r = new nvar(process(v2));
       
       currentScope->setSymbol(v1, r);
       
