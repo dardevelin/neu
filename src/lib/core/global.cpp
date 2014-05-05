@@ -63,10 +63,6 @@ namespace neu{
   uint32_t _packBlockSize = 8192;
   nstr _tempPath;
   NProgram* _program = 0;
-  NRWMutex _argsMutex;
-  nvar _args;
-  nvar _argMap;
-  nvar _configArgMap;
   double _timeout = 1.0;
   nstr _name;
   nstr _home;
