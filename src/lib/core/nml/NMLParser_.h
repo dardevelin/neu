@@ -70,7 +70,7 @@ namespace neu{
     NMLParser_(NMLParser* o)
     : o_(o),
     estr_(&cerr),
-    metadata_(false){
+    metadata_(true){
       
     }
     
@@ -132,7 +132,7 @@ namespace neu{
     }
     
     nvar parse(nvar* tags){
-      out_ = nfunc("Block");
+      out_ = func("Block");
       
       interactive_ = true;
       openTokens_ = 0;
@@ -150,7 +150,6 @@ namespace neu{
         nml_set_in(file, scanner_);
         nml_parse(this, scanner_);
       }
-      
       fclose(file);
       
       nml_lex_destroy(scanner_);
@@ -163,7 +162,7 @@ namespace neu{
     }
     
     nvar parse(const nstr& code, nvar* tags){
-      out_ = nfunc("Block");
+      out_ = func("Block");
       
       interactive_ = false;
       openTokens_ = 0;
@@ -194,7 +193,7 @@ namespace neu{
     }
     
     nvar parseFile(const nstr& path, nvar* tags){
-      out_ = nfunc("Block");
+      out_ = func("Block");
       
       interactive_ = false;
       openTokens_ = 0;
@@ -208,7 +207,6 @@ namespace neu{
       nml_set_extra(this, scanner_);
       
       FILE* file = fopen(path.c_str(), "r");
-      
       if(!file){
         NERROR("failed to open: " + path);
       }
@@ -230,9 +228,9 @@ namespace neu{
       estr_ = &estr;
     }
     
-    void emit(const nvar& n){
+    void emit(nvar& n){
       if(n.some()){
-        out_ << n;
+        out_ << move(n);
       }
     }
     
@@ -243,15 +241,13 @@ namespace neu{
       
       estr << "NMLParser error: ";
       
-      nstr loc = n.getLocation();
-      
-      if(!loc.empty()){
-        estr << loc << ": ";
+      if(metadata_){
+        estr << n.getLocation() << ": ";
       }
 
       estr << message << endl;
       
-      return nsym("Error");
+      return sym("Error");
     }
     
     void error(const nstr& type){
@@ -273,10 +269,13 @@ namespace neu{
     
     nvar func(const nstr& f){
       nvar v = nfunc(f);
-      v.setLine(line_);
+
+      if(metadata_){
+        v.setLine(line_);
       
-      if(!file_.empty()){
-        v.setFile(file_);
+        if(!file_.empty()){
+          v.setFile(file_);
+        }
       }
       
       return v;
@@ -284,10 +283,12 @@ namespace neu{
     
     nvar func(const char* f){
       nvar v = nfunc(f);
-      v.setLine(line_);
-      
-      if(!file_.empty()){
-        v.setFile(file_);
+
+      if(metadata_){
+        v.setLine(line_);
+        if(!file_.empty()){
+          v.setFile(file_);
+        }
       }
       
       return v;
@@ -299,10 +300,12 @@ namespace neu{
     
     nvar sym(const nstr& s){
       nvar v = nsym(s);
-      v.setLine(line_);
-      
-      if(!file_.empty()){
-        v.setFile(file_);
+
+      if(metadata_){
+        v.setLine(line_);
+        if(!file_.empty()){
+          v.setFile(file_);
+        }
       }
       
       return v;
@@ -314,10 +317,12 @@ namespace neu{
     
     nvar sym(const char* s){
       nvar v = nsym(s);
-      v.setLine(line_);
       
-      if(!file_.empty()){
-        v.setFile(file_);
+      if(metadata_){
+        v.setLine(line_);
+        if(!file_.empty()){
+          v.setFile(file_);
+        }
       }
       
       return v;
@@ -452,6 +457,9 @@ namespace neu{
     }
     
     void closeToken(){
+      if(openTokens_ == 0){
+        NERROR("too many closing tokens");
+      }
       --openTokens_;
     }
     

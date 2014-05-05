@@ -72,7 +72,6 @@ namespace{
       nameMap_("continue") = true;
       nameMap_("new") = true;
       nameMap_("create") = true;
-      nameMap_("delete") = true;
       nameMap_("this") = true;
       nameMap_("try") = true;
       nameMap_("catch") = true;

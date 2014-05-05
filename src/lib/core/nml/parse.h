@@ -53,8 +53,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <neu/nvar.h>
 
-#define YY_EXTRA_TYPE   neu::NMLParser_*
-#define YYSTYPE         NMLType
+#define YY_EXTRA_TYPE neu::NMLParser_*
+#define YYSTYPE NMLType
 
 struct NMLType{
   neu::nvar v;

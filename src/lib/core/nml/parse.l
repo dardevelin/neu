@@ -399,21 +399,16 @@ KW_IMPORT import
 [ \t] { PS->advance(1); }
 
 <<EOF>> {
-  if(PS->interactive()){
-    if(PS->hasOpenTokens()){
-      FILE* file = PS->readLine();
-      if(file){
-        yyin = file;
-      }
-      else{
-        yyterminate();
-      }
-    }
-    else{
-      yyterminate();
+  bool terminate = true;
+  if(PS->interactive() && PS->hasOpenTokens()){
+    FILE* file = PS->readLine();
+    if(file){
+      yyin = file;
+      terminate = false;
     }
   }
-  else{
+  
+  if(terminate){
     yyterminate();
   }
 }

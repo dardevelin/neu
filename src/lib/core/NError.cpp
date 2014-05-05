@@ -95,11 +95,10 @@ namespace neu{
     const char* what() const{
       stringstream ostr;
       ostr << "### NError: ";
-      if(var_.hasKey("fileName")){
-        ostr << var_["fileName"].str() << ":";
-        if(var_.hasKey("lineNumber")){
-          ostr << var_["lineNumber"] << ": ";
-        }
+      
+      nstr loc = var_.getLocation();
+      if(!loc.empty()){
+        ostr << loc << ": ";
       }
       
       ostr << msg_;
