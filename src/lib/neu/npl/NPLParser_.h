@@ -69,17 +69,12 @@ namespace neu{
     
     NPLParser_(NPLParser* o)
     : o_(o),
-    estr_(&cerr),
-    metadata_(false){
+    estr_(&cerr){
       
     }
     
     ~NPLParser_(){
       
-    }
-    
-    void setMetadata(bool flag){
-      metadata_ = flag;
     }
     
     void advance(const char* text, const nstr& tag=""){
@@ -141,7 +136,6 @@ namespace neu{
       fwrite(code.c_str(), 1, code.length(), file);
       rewind(file);
       npl_set_in(file, scanner_);
-      
       npl_parse(this, scanner_);
       fclose(file);
             
@@ -272,23 +266,37 @@ namespace neu{
       estr_ = &estr;
     }
     
-    void emit(const nvar& n){
+    void emit(nvar& n){
       if(n.some()){
-        out_ << n;
+        out_ << move(n);
       }
     }
     
-    nvar error(const nvar& n, const nstr& message, bool warn=false){
+    nvar error(const nvar& n, const nstr& msg, bool warn=false){
       status_ = 1;
       
-      (*estr_) << "NPLParser: " << file_ << ":" << line_ << ": " <<
-      message << endl;
+      ostream& estr = *estr_;
       
-      return nsym("Error");
+      estr << "NPLParser error: " << n.getLocation() << ": " << msg << endl;
+      
+      return sym("Error");
     }
     
     void error(const nstr& type){
-      error(none, type);
+      status_ = 1;
+      *estr_ << "NPLParser error: " << getLocation() << ": " << type << endl;
+    }
+    
+    nstr getLocation(){
+      nstr loc;
+      
+      if(!file_.empty()){
+        loc += file_ + ":";
+      }
+      
+      loc += nvar(line_);
+      
+      return loc;
     }
     
     nvar func(const nstr& f){
@@ -439,7 +447,6 @@ namespace neu{
     nvar* tags_;
     void* scanner_;
     nvar out_;
-    bool metadata_;
     nvar defineMap_;
   };
   

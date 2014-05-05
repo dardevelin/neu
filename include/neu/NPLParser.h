@@ -71,8 +71,6 @@ namespace neu{
     
     static bool isReservedName(const nstr& name);
     
-    void setMetadata(bool flag);
-    
     NPLParser& operator=(const NPLParser&) = delete;
     
     NPLParser(const NPLParser&) = delete;

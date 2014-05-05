@@ -213,10 +213,6 @@ void NPLParser::setErrorStream(ostream& estr){
   x_->setErrorStream(estr);
 }
 
-void NPLParser::setMetadata(bool flag){
-  x_->setMetadata(flag);
-}
-
 nvar NPLParser::parseType(const nstr& t){
   nstr tn = t;
   
