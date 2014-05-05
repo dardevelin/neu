@@ -1210,7 +1210,7 @@ namespace neu{
       
       p1.pushBack(p2);
       
-      return none;
+      return nvar(&(*p1), nvar::Ptr);
     }
     
     nvar TouchMultimap(const nvar& v1){

@@ -123,6 +123,7 @@ MOD_BY "%="
 AND "&&"
 OR "||"
 PUSH "<<"
+VAR "=:"
 KW_TRUE true
 KW_FALSE false
 KW_NONE none
@@ -217,6 +218,16 @@ KW_IMPORT import
 {OR} {
   PS->advance(yytext, "operator");
   return OR;
+}
+
+{PUSH} {
+  PS->advance(yytext, "operator");
+  return PUSH;
+}
+
+{VAR} {
+  PS->advance(yytext, "operator");
+  return VAR;
 }
 
 {KW_TRUE} {

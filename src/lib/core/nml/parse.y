@@ -67,12 +67,12 @@ using namespace neu;
 %parse-param {void* scanner}
 %lex-param {yyscan_t* scanner}
 
-%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT KW_CLASS KW_IMPORT
+%token<v> IDENTIFIER STRING_LITERAL EQ NE GE LE INC ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY AND OR VAR PUSH KW_TRUE KW_FALSE KW_NONE KW_UNDEF KW_NEW KW_IF KW_ELSE ENDL DOUBLE INTEGER REAL KW_FOR KW_WHILE KW_RETURN KW_BREAK KW_CONTINUE KW_SWITCH KW_CASE KW_DEFAULT KW_CLASS KW_IMPORT
 
 %type<v> stmt expr expr_num expr_map exprs multi_exprs expr_list multi_expr_list get gets func block stmts args if_stmt case_stmts case_stmt case_label case_labels class_defs ctor strings
 
 %left ','
-%right '=' ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
+%right '=' VAR ADD_BY SUB_BY MUL_BY DIV_BY MOD_BY
 %right '?' ':'
 %right OR
 %right AND
@@ -199,6 +199,12 @@ expr: expr_num {
     }
     $$ = PS->func("Set") << move($1) << move($3);
   }
+}
+| expr VAR expr {
+  $$ = PS->func("Var") << move($1) << move($3);
+}
+| expr PUSH expr {
+  $$ = PS->func("PushBack") << move($1) << move($3);
 }
 | expr '<' expr {
   $$ = PS->func("LT") << move($1) << move($3);
