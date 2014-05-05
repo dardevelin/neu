@@ -85,6 +85,7 @@ namespace neu{
     }
     
     NWriteGuard(const NWriteGuard&) = delete;
+    
     NWriteGuard& operator=(const NWriteGuard&) = delete;
     
   private:

@@ -68,9 +68,9 @@ namespace neu{
     
     virtual NFunc handle(const nvar& v, uint32_t flags=0);
     
-    friend class NMObject_;
-    
     static void setMathKernelPath(const nstr& path);
+    
+    friend class NMObject_;
     
   private:
     class NMObject_* x_;

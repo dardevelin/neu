@@ -68,6 +68,7 @@ namespace neu{
     static nstr toStr(const nvar& v);
     
     NMLGenerator& operator=(const NMLGenerator&) = delete;
+    
     NMLGenerator(const NMLGenerator&) = delete;
   private:
     class NMLGenerator_* x_;

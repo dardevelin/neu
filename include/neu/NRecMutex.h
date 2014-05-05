@@ -86,8 +86,9 @@ namespace neu{
       return mutex_;
     }
     
-    NRecMutex(const NRecMutex&);
-    NRecMutex& operator=(const NRecMutex&);
+    NRecMutex(const NRecMutex&) = delete;
+    
+    NRecMutex& operator=(const NRecMutex&) = delete;
     
   private:
     std::recursive_timed_mutex mutex_;

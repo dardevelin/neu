@@ -107,6 +107,7 @@ namespace neu{
     static id mainThreadId;
     
     NThread& operator=(const NThread&) = delete;
+    
     NThread(const NThread&) = delete;
     
   private:

@@ -66,6 +66,7 @@ namespace neu{
     nvar parseFile(const nstr& path, nvar* tags=0);
     
     NMParser& operator=(const NMParser&) = delete;
+    
     NMParser(const NMParser&) = delete;
     
   private:

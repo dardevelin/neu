@@ -245,80 +245,80 @@ namespace neu{
   
   namespace npl{
     
-    typedef NPLVector<uint8_t,2> uchar2;
-    typedef NPLVector<uint8_t,3> uchar3;
-    typedef NPLVector<uint8_t,4> uchar4;
-    typedef NPLVector<uint8_t,8> uchar8;
-    typedef NPLVector<uint8_t,9> uchar9;
-    typedef NPLVector<uint8_t,16> uchar16;
+    typedef NPLVector<uint8_t, 2> uchar2;
+    typedef NPLVector<uint8_t, 3> uchar3;
+    typedef NPLVector<uint8_t, 4> uchar4;
+    typedef NPLVector<uint8_t, 8> uchar8;
+    typedef NPLVector<uint8_t, 9> uchar9;
+    typedef NPLVector<uint8_t, 16> uchar16;
     
-    typedef NPLVector<int8_t,2> char2;
-    typedef NPLVector<int8_t,3> char3;
-    typedef NPLVector<int8_t,4> char4;
-    typedef NPLVector<int8_t,8> char8;
-    typedef NPLVector<int8_t,9> char9;
-    typedef NPLVector<int8_t,16> char16;
+    typedef NPLVector<int8_t, 2> char2;
+    typedef NPLVector<int8_t, 3> char3;
+    typedef NPLVector<int8_t, 4> char4;
+    typedef NPLVector<int8_t, 8> char8;
+    typedef NPLVector<int8_t, 9> char9;
+    typedef NPLVector<int8_t, 16> char16;
     
-    typedef NPLVector<uint16_t,2> ushort2;
-    typedef NPLVector<uint16_t,3> ushort3;
-    typedef NPLVector<uint16_t,4> ushort4;
-    typedef NPLVector<uint16_t,8> ushort8;
-    typedef NPLVector<uint16_t,9> ushort9;
-    typedef NPLVector<uint16_t,16> ushort16;
+    typedef NPLVector<uint16_t, 2> ushort2;
+    typedef NPLVector<uint16_t, 3> ushort3;
+    typedef NPLVector<uint16_t, 4> ushort4;
+    typedef NPLVector<uint16_t, 8> ushort8;
+    typedef NPLVector<uint16_t, 9> ushort9;
+    typedef NPLVector<uint16_t, 16> ushort16;
     
-    typedef NPLVector<int16_t,2> short2;
-    typedef NPLVector<int16_t,3> short3;
-    typedef NPLVector<int16_t,4> short4;
-    typedef NPLVector<int16_t,8> short8;
-    typedef NPLVector<int16_t,9> short9;
-    typedef NPLVector<int16_t,16> short16;
+    typedef NPLVector<int16_t, 2> short2;
+    typedef NPLVector<int16_t, 3> short3;
+    typedef NPLVector<int16_t, 4> short4;
+    typedef NPLVector<int16_t, 8> short8;
+    typedef NPLVector<int16_t, 9> short9;
+    typedef NPLVector<int16_t, 16> short16;
     
-    typedef NPLVector<uint32_t,2> uint2;
-    typedef NPLVector<uint32_t,3> uint3;
-    typedef NPLVector<uint32_t,4> uint4;
-    typedef NPLVector<uint32_t,8> uint8;
-    typedef NPLVector<uint32_t,9> uint9;
-    typedef NPLVector<uint32_t,16> uint16;
+    typedef NPLVector<uint32_t, 2> uint2;
+    typedef NPLVector<uint32_t, 3> uint3;
+    typedef NPLVector<uint32_t, 4> uint4;
+    typedef NPLVector<uint32_t, 8> uint8;
+    typedef NPLVector<uint32_t, 9> uint9;
+    typedef NPLVector<uint32_t, 16> uint16;
     
-    typedef NPLVector<int32_t,2> int2;
-    typedef NPLVector<int32_t,3> int3;
-    typedef NPLVector<int32_t,4> int4;
-    typedef NPLVector<int32_t,8> int8;
-    typedef NPLVector<int32_t,9> int9;
-    typedef NPLVector<int32_t,16> int16;
+    typedef NPLVector<int32_t, 2> int2;
+    typedef NPLVector<int32_t, 3> int3;
+    typedef NPLVector<int32_t, 4> int4;
+    typedef NPLVector<int32_t, 8> int8;
+    typedef NPLVector<int32_t, 9> int9;
+    typedef NPLVector<int32_t, 16> int16;
     
-    typedef NPLVector<uint64_t,2> ulong2;
-    typedef NPLVector<uint64_t,3> ulong3;
-    typedef NPLVector<uint64_t,4> ulong4;
-    typedef NPLVector<uint64_t,8> ulong8;
-    typedef NPLVector<uint64_t,9> ulong9;
-    typedef NPLVector<uint64_t,16> ulong16;
+    typedef NPLVector<uint64_t, 2> ulong2;
+    typedef NPLVector<uint64_t, 3> ulong3;
+    typedef NPLVector<uint64_t, 4> ulong4;
+    typedef NPLVector<uint64_t, 8> ulong8;
+    typedef NPLVector<uint64_t, 9> ulong9;
+    typedef NPLVector<uint64_t, 16> ulong16;
     
-    typedef NPLVector<int64_t,2> long2;
-    typedef NPLVector<int64_t,3> long3;
-    typedef NPLVector<int64_t,4> long4;
-    typedef NPLVector<int64_t,8> long8;
-    typedef NPLVector<int64_t,9> long9;
-    typedef NPLVector<int64_t,16> long16;
+    typedef NPLVector<int64_t, 2> long2;
+    typedef NPLVector<int64_t, 3> long3;
+    typedef NPLVector<int64_t, 4> long4;
+    typedef NPLVector<int64_t, 8> long8;
+    typedef NPLVector<int64_t, 9> long9;
+    typedef NPLVector<int64_t, 16> long16;
     
-    typedef NPLVector<float,2> float2;
-    typedef NPLVector<float,3> float3;
-    typedef NPLVector<float,4> float4;
-    typedef NPLVector<float,8> float8;
-    typedef NPLVector<float,9> float9;
-    typedef NPLVector<float,16> float16;
+    typedef NPLVector<float, 2> float2;
+    typedef NPLVector<float, 3> float3;
+    typedef NPLVector<float, 4> float4;
+    typedef NPLVector<float, 8> float8;
+    typedef NPLVector<float, 9> float9;
+    typedef NPLVector<float, 16> float16;
     
-    typedef NPLVector<double,2> double2;
-    typedef NPLVector<double,3> double3;
-    typedef NPLVector<double,4> double4;
-    typedef NPLVector<double,8> double8;
-    typedef NPLVector<double,9> double9;
-    typedef NPLVector<double,16> double16;
+    typedef NPLVector<double, 2> double2;
+    typedef NPLVector<double, 3> double3;
+    typedef NPLVector<double, 4> double4;
+    typedef NPLVector<double, 8> double8;
+    typedef NPLVector<double, 9> double9;
+    typedef NPLVector<double, 16> double16;
     
     template<typename T, size_t N>
-    NPLVector<T,N> crossProduct(const NPLVector<T,N>& u,
-                                const NPLVector<T,N>& v){
-      NPLVector<T,N> r;
+    NPLVector<T, N> crossProduct(const NPLVector<T, N>& u,
+                                 const NPLVector<T, N>& v){
+      NPLVector<T, N> r;
       
       r[0] = u[1]*v[2] - u[2]*v[1];
       r[1] = u[2]*v[0] - u[0]*v[2];
@@ -328,8 +328,8 @@ namespace neu{
     }
     
     template<typename T, size_t N>
-    T dotProduct(const NPLVector<T,N>& u,
-                 const NPLVector<T,N>& v){
+    T dotProduct(const NPLVector<T, N>& u,
+                 const NPLVector<T, N>& v){
       T r = 0;
       
       for(size_t i = 0; i < N; ++i){
@@ -340,8 +340,8 @@ namespace neu{
     }
     
     template<typename T, size_t N>
-    T distance(const NPLVector<T,N>& u,
-               const NPLVector<T,N>& v){
+    T distance(const NPLVector<T, N>& u,
+               const NPLVector<T, N>& v){
       T d = 0;
       for(size_t i = 0; i < N; ++i){
         T di = u[i] - v[i];

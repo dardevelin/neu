@@ -86,8 +86,9 @@ namespace neu{
       return mutex_;
     }
     
-    NMutex(const NMutex&);
-    NMutex& operator=(const NMutex&);
+    NMutex(const NMutex&) = delete;
+    
+    NMutex& operator=(const NMutex&) = delete;
     
   private:
     std::timed_mutex mutex_;

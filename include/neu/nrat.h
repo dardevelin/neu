@@ -331,8 +331,7 @@ namespace neu{
       int64_t d = denominator();
       
       if(_improper || abs(n) < d){
-        // Div precedence from NGenerator
-        int p = 7;
+        int p = 7; // NObject::precedence("Div")
         if(p > prec){
           ostr << "(";
         }
@@ -343,8 +342,7 @@ namespace neu{
       }
       else{
         int64_t i = n/d;
-        // Add precedence from NGenerator
-        int p = 9;
+        int p = 8; // NObject::precedence("Add")
         if(i < 0){
           ostr << "-(";
         }

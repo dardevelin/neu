@@ -88,6 +88,7 @@ namespace neu{
     }
     
     NRWMutex(const NRWMutex&) = delete;
+    
     NRWMutex& operator=(const NRWMutex&) = delete;
     
   private:

@@ -75,7 +75,9 @@ namespace neu{
     static Type type(const nvar& v);
     
     NMGenerator& operator=(const NMGenerator&) = delete;
+    
     NMGenerator(const NMGenerator&) = delete;
+  
   private:
     class NMGenerator_* x_;
   };

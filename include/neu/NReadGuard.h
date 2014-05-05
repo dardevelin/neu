@@ -85,6 +85,7 @@ namespace neu{
     }
     
     NReadGuard(const NReadGuard&) = delete;
+    
     NReadGuard& operator=(const NReadGuard&) = delete;
     
   private:

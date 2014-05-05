@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace neu{
   
   class NCommand;
+  
   class NSocket;
   
   class NResourceManager{
