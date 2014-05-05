@@ -195,9 +195,7 @@ public:
     enableMetadata_(true),
     enableOuter_(true){
     
-    if(!_program){
-      NERROR("NProgram has not been initialized");
-    }
+    NProgram::require();
       
     includes_.push_back(_home + "/include");
 

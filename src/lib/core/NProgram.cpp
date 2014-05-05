@@ -824,5 +824,11 @@ nstr NProgram::signalName(int signal){
   }
 }
 
+void NProgram::require(){
+  if(!_program){
+    NERROR("NProgram has not been initialized");
+  }
+}
+
 int NProgram::argc = 0;
 char** NProgram::argv = 0;

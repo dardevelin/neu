@@ -78,6 +78,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/global.h>
 #include <neu/NProgram.h>
 #include <neu/NThread.h>
+#include <neu/NProgram.h>
 
 using namespace std;
 using namespace neu;
@@ -221,9 +222,7 @@ nstr NSys::tempPath(){
 }
 
 nstr NSys::tempFilePath(const nstr& extension){
-  if(!_program){
-    NERROR("NProgram has not been initialized");
-  }
+  NProgram::require();
   
   nstr p = _tempPath;
   

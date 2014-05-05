@@ -63,6 +63,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NBasicMutex.h>
 #include <neu/NSys.h>
 #include <neu/global.h>
+#include <neu/NProgram.h>
 
 using namespace std;
 using namespace neu;
@@ -151,9 +152,7 @@ namespace neu{
       _mutex.lock();
       if(!_initialized){
 
-        if(!_program){
-          NERROR("NProgram has not been initialized");
-        }
+        NProgram::require();
         
         nstr p = _home + "/bin/MathKernel";
         
