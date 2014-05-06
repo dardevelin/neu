@@ -53,6 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
+#include <cstring>
 
 #include <neu/global.h>
 #include <neu/compress.h>
