@@ -72,6 +72,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace neu{
   
+#ifdef __APPLE__
+  typedef long long n_long;
+#else
+  typedef int64_t n_long;
+#endif
+  
   class nvar;
   class NObject;
   
@@ -1772,7 +1778,7 @@ namespace neu{
       return operator<<(nvar(x));
     }
     
-    nvar& operator<<(long long x){
+    nvar& operator<<(n_long x){
       return operator<<(nvar(x));
     }
     
@@ -2881,7 +2887,7 @@ namespace neu{
       return *this = int64_t(x);
     }
     
-    nvar& operator=(long long x);
+    nvar& operator=(n_long x);
     
     nvar& operator=(bool x);
     
@@ -2911,7 +2917,7 @@ namespace neu{
       return *this += int64_t(x);
     }
     
-    nvar& operator+=(long long x);
+    nvar& operator+=(n_long x);
     
     nvar& operator+=(double x);
     
@@ -2925,7 +2931,7 @@ namespace neu{
       return *this + int64_t(x);
     }
     
-    nvar operator+(long long x) const;
+    nvar operator+(n_long x) const;
     
     nvar operator+(double x) const;
     
@@ -2949,7 +2955,7 @@ namespace neu{
       return *this -= int64_t(x);
     }
     
-    nvar& operator-=(long long x);
+    nvar& operator-=(n_long x);
     
     nvar& operator-=(double x);
     
@@ -2973,7 +2979,7 @@ namespace neu{
       return *this - int64_t(x);
     }
     
-    nvar operator-(long long x) const;
+    nvar operator-(n_long x) const;
     
     nvar operator-(double x) const;
     
@@ -2987,7 +2993,7 @@ namespace neu{
       return *this *= int64_t(x);
     }
     
-    nvar& operator*=(long long x);
+    nvar& operator*=(n_long x);
     
     nvar& operator*=(double x);
     
@@ -3001,7 +3007,7 @@ namespace neu{
       return *this * int64_t(x);
     }
     
-    nvar operator*(long long x) const;
+    nvar operator*(n_long x) const;
     
     nvar operator*(double x) const;
     
@@ -3015,7 +3021,7 @@ namespace neu{
       return *this /= int64_t(x);
     }
     
-    nvar& operator/=(long long x);
+    nvar& operator/=(n_long x);
     
     nvar& operator/=(double x);
     
@@ -3029,7 +3035,7 @@ namespace neu{
       return *this / int64_t(x);
     }
     
-    nvar operator/(long long x) const;
+    nvar operator/(n_long x) const;
     
     nvar operator/(double x) const;
     
@@ -3043,7 +3049,7 @@ namespace neu{
       return *this %= int64_t(x);
     }
     
-    nvar& operator%=(long long x);
+    nvar& operator%=(n_long x);
     
     nvar& operator%=(double x);
     
@@ -3057,7 +3063,7 @@ namespace neu{
       return *this % int64_t(x);
     }
     
-    nvar operator%(long long x) const;
+    nvar operator%(n_long x) const;
     
     nvar operator%(double x) const;
     
@@ -3077,7 +3083,7 @@ namespace neu{
       return *this < int64_t(x);
     }
     
-    nvar operator<(long long x) const;
+    nvar operator<(n_long x) const;
     
     nvar operator<(double x) const;
     
@@ -3091,7 +3097,7 @@ namespace neu{
       return *this <= int64_t(x);
     }
     
-    nvar operator<=(long long x) const;
+    nvar operator<=(n_long x) const;
     
     nvar operator<=(double x) const;
     
@@ -3105,7 +3111,7 @@ namespace neu{
       return *this > int64_t(x);
     }
     
-    nvar operator>(long long x) const;
+    nvar operator>(n_long x) const;
     
     nvar operator>(double x) const;
     
@@ -3119,7 +3125,7 @@ namespace neu{
       return *this >= int64_t(x);
     }
     
-    nvar operator>=(long long x) const;
+    nvar operator>=(n_long x) const;
     
     nvar operator>=(double x) const;
     
@@ -3133,7 +3139,7 @@ namespace neu{
       return *this == int64_t(x);
     }
     
-    nvar operator==(long long x) const;
+    nvar operator==(n_long x) const;
     
     nvar operator==(double x) const;
     
@@ -3152,7 +3158,7 @@ namespace neu{
       return *this != int64_t(x);
     }
     
-    nvar operator!=(long long x) const;
+    nvar operator!=(n_long x) const;
     
     nvar operator!=(double x) const;
     
@@ -3833,7 +3839,7 @@ namespace neu{
     return v2 > v1;
   }
   
-  inline nvar operator<(long long v1, const nvar& v2){
+  inline nvar operator<(n_long v1, const nvar& v2){
     return v2 > v1;
   }
 
@@ -3849,7 +3855,7 @@ namespace neu{
     return v2 >= v1;
   }
   
-  inline nvar operator<=(long long v1, const nvar& v2){
+  inline nvar operator<=(n_long v1, const nvar& v2){
     return v2 >= v1;
   }
   
@@ -3865,7 +3871,7 @@ namespace neu{
     return v2 < v1;
   }
   
-  inline nvar operator>(long long v1, const nvar& v2){
+  inline nvar operator>(n_long v1, const nvar& v2){
     return v2 < v1;
   }
   
@@ -3881,7 +3887,7 @@ namespace neu{
     return v2 <= v1;
   }
   
-  inline nvar operator>=(long long v1, const nvar& v2){
+  inline nvar operator>=(n_long v1, const nvar& v2){
     return v2 <= v1;
   }
   
@@ -3897,7 +3903,7 @@ namespace neu{
     return v2 == v1;
   }
   
-  inline nvar operator==(long long v1, const nvar& v2){
+  inline nvar operator==(n_long v1, const nvar& v2){
     return v2 == v1;
   }
   
@@ -3913,7 +3919,7 @@ namespace neu{
     return v2 != v1;
   }
   
-  inline nvar operator!=(long long v1, const nvar& v2){
+  inline nvar operator!=(n_long v1, const nvar& v2){
     return v2 != v1;
   }
   
@@ -3929,7 +3935,7 @@ namespace neu{
     return v2 + v1;
   }
   
-  inline nvar operator+(long long v1, const nvar& v2){
+  inline nvar operator+(n_long v1, const nvar& v2){
     return v2 + v1;
   }
   
@@ -3945,7 +3951,7 @@ namespace neu{
     return -v2 + v1;
   }
   
-  inline nvar operator-(long long v1, const nvar& v2){
+  inline nvar operator-(n_long v1, const nvar& v2){
     return -v2 + v1;
   }
   
@@ -3961,7 +3967,7 @@ namespace neu{
     return v2 * v1;
   }
   
-  inline nvar operator*(long long v1, const nvar& v2){
+  inline nvar operator*(n_long v1, const nvar& v2){
     return v2 * v1;
   }
   
@@ -3977,7 +3983,7 @@ namespace neu{
     return nvar(v1) / v2;
   }
   
-  inline nvar operator/(long long v1, const nvar& v2){
+  inline nvar operator/(n_long v1, const nvar& v2){
     return nvar(v1) / v2;
   }
   
@@ -3993,7 +3999,7 @@ namespace neu{
     return nvar(v1) % v2;
   }
   
-  inline nvar operator%(long long v1, const nvar& v2){
+  inline nvar operator%(n_long v1, const nvar& v2){
     return nvar(v1) % v2;
   }
   
