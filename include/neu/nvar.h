@@ -1773,6 +1773,10 @@ namespace neu{
     nvar& operator<<(int x){
       return operator<<(nvar(x));
     }
+
+    nvar& operator<<(unsigned int x){
+      return operator<<(nvar(x));
+    }
     
     nvar& operator<<(double x){
       return operator<<(nvar(x));
@@ -2878,7 +2882,11 @@ namespace neu{
     nvar& operator=(int x){
       return *this = int64_t(x);
     }
-
+    
+    nvar& operator=(unsigned int x){
+      return *this = int64_t(x);
+    }
+    
     nvar& operator=(unsigned long x){
       return *this = int64_t(x);
     }
@@ -2912,6 +2920,10 @@ namespace neu{
     nvar& operator+=(int x){
       return *this += int64_t(x);
     }
+
+    nvar& operator+=(unsigned int x){
+      return *this += int64_t(x);
+    }
     
     nvar& operator+=(unsigned long x){
       return *this += int64_t(x);
@@ -2924,6 +2936,10 @@ namespace neu{
     nvar operator+(const nvar& x) const;
 
     nvar operator+(int x) const{
+      return *this + int64_t(x);
+    }
+
+    nvar operator+(unsigned int x) const{
       return *this + int64_t(x);
     }
     
@@ -2950,6 +2966,10 @@ namespace neu{
     nvar& operator-=(int x){
       return *this -= int64_t(x);
     }
+
+    nvar& operator-=(unsigned int x){
+      return *this -= int64_t(x);
+    }
     
     nvar& operator-=(unsigned long x){
       return *this -= int64_t(x);
@@ -2974,6 +2994,10 @@ namespace neu{
     nvar operator-(int x) const{
       return *this - int64_t(x);
     }
+
+    nvar operator-(unsigned int x) const{
+      return *this - int64_t(x);
+    }
     
     nvar operator-(unsigned long x) const{
       return *this - int64_t(x);
@@ -2986,6 +3010,10 @@ namespace neu{
     nvar& operator*=(const nvar& x);
     
     nvar& operator*=(int x){
+      return *this *= int64_t(x);
+    }
+    
+    nvar& operator*=(unsigned int x){
       return *this *= int64_t(x);
     }
     
@@ -3003,6 +3031,10 @@ namespace neu{
       return *this * int64_t(x);
     }
     
+    nvar operator*(unsigned int x) const{
+      return *this * int64_t(x);
+    }
+    
     nvar operator*(unsigned long x) const{
       return *this * int64_t(x);
     }
@@ -3014,6 +3046,10 @@ namespace neu{
     nvar& operator/=(const nvar& x);
     
     nvar& operator/=(int x){
+      return *this /= int64_t(x);
+    }
+
+    nvar& operator/=(unsigned int x){
       return *this /= int64_t(x);
     }
     
@@ -3028,6 +3064,10 @@ namespace neu{
     nvar operator/(const nvar& x) const;
     
     nvar operator/(int x) const{
+      return *this / int64_t(x);
+    }
+
+    nvar operator/(unsigned int x) const{
       return *this / int64_t(x);
     }
     
@@ -3045,6 +3085,10 @@ namespace neu{
       return *this %= int64_t(x);
     }
     
+    nvar& operator%=(unsigned int x){
+      return *this %= int64_t(x);
+    }
+    
     nvar& operator%=(unsigned long x){
       return *this %= int64_t(x);
     }
@@ -3056,6 +3100,10 @@ namespace neu{
     nvar operator%(const nvar& x) const;
     
     nvar operator%(int x) const{
+      return *this % int64_t(x);
+    }
+
+    nvar operator%(unsigned int x) const{
       return *this % int64_t(x);
     }
     
@@ -3078,6 +3126,10 @@ namespace neu{
     nvar operator<(int x) const{
       return *this < int64_t(x);
     }
+
+    nvar operator<(unsigned int x) const{
+      return *this < int64_t(x);
+    }
     
     nvar operator<(unsigned long x) const{
       return *this < int64_t(x);
@@ -3090,6 +3142,10 @@ namespace neu{
     nvar operator<=(const nvar& x) const;
     
     nvar operator<=(int x) const{
+      return *this <= int64_t(x);
+    }
+    
+    nvar operator<=(unsigned int x) const{
       return *this <= int64_t(x);
     }
     
@@ -3107,6 +3163,10 @@ namespace neu{
       return *this > int64_t(x);
     }
     
+    nvar operator>(unsigned int x) const{
+      return *this > int64_t(x);
+    }
+    
     nvar operator>(unsigned long x) const{
       return *this > int64_t(x);
     }
@@ -3121,6 +3181,10 @@ namespace neu{
       return *this >= int64_t(x);
     }
     
+    nvar operator>=(unsigned int x) const{
+      return *this >= int64_t(x);
+    }
+    
     nvar operator>=(unsigned long x) const{
       return *this >= int64_t(x);
     }
@@ -3132,6 +3196,10 @@ namespace neu{
     nvar operator==(const nvar& x) const;
 
     nvar operator==(int x) const{
+      return *this == int64_t(x);
+    }
+    
+    nvar operator==(unsigned int x) const{
       return *this == int64_t(x);
     }
     
@@ -3151,6 +3219,10 @@ namespace neu{
     nvar operator!=(const nvar& x) const;
 
     nvar operator!=(int x) const{
+      return *this != int64_t(x);
+    }
+    
+    nvar operator!=(unsigned int x) const{
       return *this != int64_t(x);
     }
     
