@@ -72,7 +72,13 @@ namespace neu{
     : o_(o){
       
       try{
-        regex_ = new regex(pattern.c_str());
+#ifdef __APPLE__
+	regex_ = new regex(pattern.c_str());
+#else
+	nstr normPattern = pattern;
+	normPattern.findReplace("[^]", ".");
+	regex_ = new regex(normPattern.c_str());
+#endif
       }
       catch(std::exception& e){
         NERROR("invalid pattern: " + pattern);

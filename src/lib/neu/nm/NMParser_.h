@@ -52,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NEU_NM_PARSER__H
 
 #include <unistd.h>
+#include <cstring>
 
 #include <neu/NMParser.h>
 #include <neu/NSys.h>

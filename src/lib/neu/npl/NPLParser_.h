@@ -52,6 +52,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NEU_NPL_PARSER__H
 
 #include <unistd.h>
+#include <cstring>
 
 #include <neu/NPLParser.h>
 #include <neu/NSys.h>
