@@ -71,13 +71,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NError.h>
 
 namespace neu{
-
-#ifdef __APPLE__
-  typedef long long nlonglong;
-#else
-  typedef int64_t nlonglong;
-#endif
-
   class nvar;
   class NObject;
   
@@ -1782,7 +1775,7 @@ namespace neu{
       return operator<<(nvar(x));
     }
     
-    nvar& operator<<(nlonglong x){
+    nvar& operator<<(int64_t x){
       return operator<<(nvar(x));
     }
     
@@ -2891,11 +2884,11 @@ namespace neu{
       return *this = int64_t(x);
     }
     
-    nvar& operator=(unsigned long long x){
+    nvar& operator=(uint64_t x){
       return *this = int64_t(x);
     }
     
-    nvar& operator=(nlonglong x);
+    nvar& operator=(int64_t x);
     
     nvar& operator=(bool x);
     
@@ -2929,7 +2922,7 @@ namespace neu{
       return *this += int64_t(x);
     }
     
-    nvar& operator+=(nlonglong x);
+    nvar& operator+=(int64_t x);
     
     nvar& operator+=(double x);
     
@@ -2947,7 +2940,7 @@ namespace neu{
       return *this + int64_t(x);
     }
     
-    nvar operator+(nlonglong x) const;
+    nvar operator+(int64_t x) const;
     
     nvar operator+(double x) const;
     
@@ -2975,7 +2968,7 @@ namespace neu{
       return *this -= int64_t(x);
     }
     
-    nvar& operator-=(nlonglong x);
+    nvar& operator-=(int64_t x);
     
     nvar& operator-=(double x);
     
@@ -3003,7 +2996,7 @@ namespace neu{
       return *this - int64_t(x);
     }
     
-    nvar operator-(nlonglong x) const;
+    nvar operator-(int64_t x) const;
     
     nvar operator-(double x) const;
     
@@ -3021,7 +3014,7 @@ namespace neu{
       return *this *= int64_t(x);
     }
     
-    nvar& operator*=(nlonglong x);
+    nvar& operator*=(int64_t x);
     
     nvar& operator*=(double x);
     
@@ -3039,7 +3032,7 @@ namespace neu{
       return *this * int64_t(x);
     }
     
-    nvar operator*(nlonglong x) const;
+    nvar operator*(int64_t x) const;
     
     nvar operator*(double x) const;
     
@@ -3057,7 +3050,7 @@ namespace neu{
       return *this /= int64_t(x);
     }
     
-    nvar& operator/=(nlonglong x);
+    nvar& operator/=(int64_t x);
     
     nvar& operator/=(double x);
     
@@ -3075,7 +3068,7 @@ namespace neu{
       return *this / int64_t(x);
     }
     
-    nvar operator/(nlonglong x) const;
+    nvar operator/(int64_t x) const;
     
     nvar operator/(double x) const;
     
@@ -3093,7 +3086,7 @@ namespace neu{
       return *this %= int64_t(x);
     }
     
-    nvar& operator%=(nlonglong x);
+    nvar& operator%=(int64_t x);
     
     nvar& operator%=(double x);
     
@@ -3111,7 +3104,7 @@ namespace neu{
       return *this % int64_t(x);
     }
     
-    nvar operator%(nlonglong x) const;
+    nvar operator%(int64_t x) const;
     
     nvar operator%(double x) const;
     
@@ -3135,7 +3128,7 @@ namespace neu{
       return *this < int64_t(x);
     }
     
-    nvar operator<(nlonglong x) const;
+    nvar operator<(int64_t x) const;
     
     nvar operator<(double x) const;
     
@@ -3153,7 +3146,7 @@ namespace neu{
       return *this <= int64_t(x);
     }
     
-    nvar operator<=(nlonglong x) const;
+    nvar operator<=(int64_t x) const;
     
     nvar operator<=(double x) const;
     
@@ -3171,7 +3164,7 @@ namespace neu{
       return *this > int64_t(x);
     }
     
-    nvar operator>(nlonglong x) const;
+    nvar operator>(int64_t x) const;
     
     nvar operator>(double x) const;
     
@@ -3189,7 +3182,7 @@ namespace neu{
       return *this >= int64_t(x);
     }
     
-    nvar operator>=(nlonglong x) const;
+    nvar operator>=(int64_t x) const;
     
     nvar operator>=(double x) const;
     
@@ -3207,7 +3200,7 @@ namespace neu{
       return *this == int64_t(x);
     }
     
-    nvar operator==(nlonglong x) const;
+    nvar operator==(int64_t x) const;
     
     nvar operator==(double x) const;
     
@@ -3230,7 +3223,7 @@ namespace neu{
       return *this != int64_t(x);
     }
     
-    nvar operator!=(nlonglong x) const;
+    nvar operator!=(int64_t x) const;
     
     nvar operator!=(double x) const;
     
@@ -3911,7 +3904,7 @@ namespace neu{
     return v2 > v1;
   }
   
-  inline nvar operator<(nlonglong v1, const nvar& v2){
+  inline nvar operator<(int64_t v1, const nvar& v2){
     return v2 > v1;
   }
 
@@ -3927,7 +3920,7 @@ namespace neu{
     return v2 >= v1;
   }
   
-  inline nvar operator<=(nlonglong v1, const nvar& v2){
+  inline nvar operator<=(int64_t v1, const nvar& v2){
     return v2 >= v1;
   }
   
@@ -3943,7 +3936,7 @@ namespace neu{
     return v2 < v1;
   }
   
-  inline nvar operator>(nlonglong v1, const nvar& v2){
+  inline nvar operator>(int64_t v1, const nvar& v2){
     return v2 < v1;
   }
   
@@ -3959,7 +3952,7 @@ namespace neu{
     return v2 <= v1;
   }
   
-  inline nvar operator>=(nlonglong v1, const nvar& v2){
+  inline nvar operator>=(int64_t v1, const nvar& v2){
     return v2 <= v1;
   }
   
@@ -3975,7 +3968,7 @@ namespace neu{
     return v2 == v1;
   }
   
-  inline nvar operator==(nlonglong v1, const nvar& v2){
+  inline nvar operator==(int64_t v1, const nvar& v2){
     return v2 == v1;
   }
   
@@ -3991,7 +3984,7 @@ namespace neu{
     return v2 != v1;
   }
   
-  inline nvar operator!=(nlonglong v1, const nvar& v2){
+  inline nvar operator!=(int64_t v1, const nvar& v2){
     return v2 != v1;
   }
   
@@ -4007,7 +4000,7 @@ namespace neu{
     return v2 + v1;
   }
   
-  inline nvar operator+(nlonglong v1, const nvar& v2){
+  inline nvar operator+(int64_t v1, const nvar& v2){
     return v2 + v1;
   }
   
@@ -4023,7 +4016,7 @@ namespace neu{
     return -v2 + v1;
   }
   
-  inline nvar operator-(nlonglong v1, const nvar& v2){
+  inline nvar operator-(int64_t v1, const nvar& v2){
     return -v2 + v1;
   }
   
@@ -4039,7 +4032,7 @@ namespace neu{
     return v2 * v1;
   }
   
-  inline nvar operator*(nlonglong v1, const nvar& v2){
+  inline nvar operator*(int64_t v1, const nvar& v2){
     return v2 * v1;
   }
   
@@ -4055,7 +4048,7 @@ namespace neu{
     return nvar(v1) / v2;
   }
   
-  inline nvar operator/(nlonglong v1, const nvar& v2){
+  inline nvar operator/(int64_t v1, const nvar& v2){
     return nvar(v1) / v2;
   }
   
@@ -4071,7 +4064,7 @@ namespace neu{
     return nvar(v1) % v2;
   }
   
-  inline nvar operator%(nlonglong v1, const nvar& v2){
+  inline nvar operator%(int64_t v1, const nvar& v2){
     return nvar(v1) % v2;
   }
   
