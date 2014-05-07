@@ -1779,9 +1779,13 @@ namespace neu{
       return operator<<(nvar(x));
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar& operator<<(unsigned long x){
       return operator<<(nvar(x));
     }
+
+#endif
     
     void pushFront(const nvar& x);
     
@@ -2880,9 +2884,13 @@ namespace neu{
       return *this = int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar& operator=(unsigned long x){
       return *this = int64_t(x);
     }
+    
+#endif
     
     nvar& operator=(uint64_t x){
       return *this = int64_t(x);
@@ -2918,9 +2926,13 @@ namespace neu{
       return *this += int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+
     nvar& operator+=(unsigned long x){
       return *this += int64_t(x);
     }
+    
+#endif
     
     nvar& operator+=(int64_t x);
     
@@ -2936,9 +2948,13 @@ namespace neu{
       return *this + int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator+(unsigned long x) const{
       return *this + int64_t(x);
     }
+    
+#endif
     
     nvar operator+(int64_t x) const;
     
@@ -2963,10 +2979,14 @@ namespace neu{
     nvar& operator-=(unsigned int x){
       return *this -= int64_t(x);
     }
+
+#if defined (__i386__) || defined (__APPLE__)
     
     nvar& operator-=(unsigned long x){
       return *this -= int64_t(x);
     }
+    
+#endif
     
     nvar& operator-=(int64_t x);
     
@@ -2991,10 +3011,14 @@ namespace neu{
     nvar operator-(unsigned int x) const{
       return *this - int64_t(x);
     }
+   
+#if defined (__i386__) || defined (__APPLE__)
     
     nvar operator-(unsigned long x) const{
       return *this - int64_t(x);
     }
+
+#endif
     
     nvar operator-(int64_t x) const;
     
@@ -3010,9 +3034,13 @@ namespace neu{
       return *this *= int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar& operator*=(unsigned long x){
       return *this *= int64_t(x);
     }
+    
+#endif
     
     nvar& operator*=(int64_t x);
     
@@ -3028,9 +3056,13 @@ namespace neu{
       return *this * int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator*(unsigned long x) const{
       return *this * int64_t(x);
     }
+
+#endif
     
     nvar operator*(int64_t x) const;
     
@@ -3046,9 +3078,13 @@ namespace neu{
       return *this /= int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar& operator/=(unsigned long x){
       return *this /= int64_t(x);
     }
+
+#endif
     
     nvar& operator/=(int64_t x);
     
@@ -3064,9 +3100,13 @@ namespace neu{
       return *this / int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator/(unsigned long x) const{
       return *this / int64_t(x);
     }
+    
+#endif
     
     nvar operator/(int64_t x) const;
     
@@ -3082,9 +3122,13 @@ namespace neu{
       return *this %= int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar& operator%=(unsigned long x){
       return *this %= int64_t(x);
     }
+    
+#endif
     
     nvar& operator%=(int64_t x);
     
@@ -3100,9 +3144,13 @@ namespace neu{
       return *this % int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator%(unsigned long x) const{
       return *this % int64_t(x);
     }
+    
+#endif
     
     nvar operator%(int64_t x) const;
     
@@ -3124,9 +3172,13 @@ namespace neu{
       return *this < int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator<(unsigned long x) const{
       return *this < int64_t(x);
     }
+    
+#endif
     
     nvar operator<(int64_t x) const;
     
@@ -3142,9 +3194,13 @@ namespace neu{
       return *this <= int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator<=(unsigned long x) const{
       return *this <= int64_t(x);
     }
+    
+#endif
     
     nvar operator<=(int64_t x) const;
     
@@ -3160,9 +3216,13 @@ namespace neu{
       return *this > int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator>(unsigned long x) const{
       return *this > int64_t(x);
     }
+    
+#endif
     
     nvar operator>(int64_t x) const;
     
@@ -3178,9 +3238,13 @@ namespace neu{
       return *this >= int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator>=(unsigned long x) const{
       return *this >= int64_t(x);
     }
+    
+#endif
     
     nvar operator>=(int64_t x) const;
     
@@ -3196,9 +3260,13 @@ namespace neu{
       return *this == int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator==(unsigned long x) const{
       return *this == int64_t(x);
     }
+    
+#endif
     
     nvar operator==(int64_t x) const;
     
@@ -3219,9 +3287,13 @@ namespace neu{
       return *this != int64_t(x);
     }
     
+#if defined (__i386__) || defined (__APPLE__)
+    
     nvar operator!=(unsigned long x) const{
       return *this != int64_t(x);
     }
+    
+#endif
     
     nvar operator!=(int64_t x) const;
     
@@ -3907,10 +3979,6 @@ namespace neu{
   inline nvar operator<(int64_t v1, const nvar& v2){
     return v2 > v1;
   }
-
-  inline nvar operator<(unsigned long v1, const nvar& v2){
-    return v2 > v1;
-  }
   
   inline nvar operator<=(double v1, const nvar& v2){
     return v2 >= v1;
@@ -3921,10 +3989,6 @@ namespace neu{
   }
   
   inline nvar operator<=(int64_t v1, const nvar& v2){
-    return v2 >= v1;
-  }
-  
-  inline nvar operator<=(unsigned long v1, const nvar& v2){
     return v2 >= v1;
   }
   
@@ -3940,10 +4004,6 @@ namespace neu{
     return v2 < v1;
   }
   
-  inline nvar operator>(unsigned long v1, const nvar& v2){
-    return v2 < v1;
-  }
-  
   inline nvar operator>=(double v1, const nvar& v2){
     return v2 <= v1;
   }
@@ -3953,10 +4013,6 @@ namespace neu{
   }
   
   inline nvar operator>=(int64_t v1, const nvar& v2){
-    return v2 <= v1;
-  }
-  
-  inline nvar operator>=(unsigned long v1, const nvar& v2){
     return v2 <= v1;
   }
   
@@ -3972,10 +4028,6 @@ namespace neu{
     return v2 == v1;
   }
   
-  inline nvar operator==(unsigned long v1, const nvar& v2){
-    return v2 == v1;
-  }
-  
   inline nvar operator!=(double v1, const nvar& v2){
     return v2 != v1;
   }
@@ -3985,10 +4037,6 @@ namespace neu{
   }
   
   inline nvar operator!=(int64_t v1, const nvar& v2){
-    return v2 != v1;
-  }
-  
-  inline nvar operator!=(unsigned long v1, const nvar& v2){
     return v2 != v1;
   }
   
@@ -4004,10 +4052,6 @@ namespace neu{
     return v2 + v1;
   }
   
-  inline nvar operator+(unsigned long v1, const nvar& v2){
-    return v2 + v1;
-  }
-  
   inline nvar operator-(double v1, const nvar& v2){
     return -v2 + v1;
   }
@@ -4017,10 +4061,6 @@ namespace neu{
   }
   
   inline nvar operator-(int64_t v1, const nvar& v2){
-    return -v2 + v1;
-  }
-  
-  inline nvar operator-(unsigned long v1, const nvar& v2){
     return -v2 + v1;
   }
   
@@ -4036,10 +4076,6 @@ namespace neu{
     return v2 * v1;
   }
   
-  inline nvar operator*(unsigned long v1, const nvar& v2){
-    return v2 * v1;
-  }
-  
   inline nvar operator/(double v1, const nvar& v2){
     return nvar(v1) / v2;
   }
@@ -4051,11 +4087,7 @@ namespace neu{
   inline nvar operator/(int64_t v1, const nvar& v2){
     return nvar(v1) / v2;
   }
-  
-  inline nvar operator/(unsigned long v1, const nvar& v2){
-    return nvar(v1) / v2;
-  }
-  
+
   inline nvar operator%(double v1, const nvar& v2){
     return nvar(v1) % v2;
   }
@@ -4068,10 +4100,6 @@ namespace neu{
     return nvar(v1) % v2;
   }
   
-  inline nvar operator%(unsigned long v1, const nvar& v2){
-    return nvar(v1) % v2;
-  }
-  
   inline nstr operator+(const char* s, const nvar& v){
     return s + v.toStr();
   }
@@ -4079,6 +4107,54 @@ namespace neu{
   inline nstr& operator+=(nstr& s, const nvar& v){
     return s += v.toStr();
   }
+  
+#if defined (__i386__) || defined (__APPLE__)
+  
+  inline nvar operator<(unsigned long v1, const nvar& v2){
+    return v2 > v1;
+  }
+  
+  inline nvar operator<=(unsigned long v1, const nvar& v2){
+    return v2 >= v1;
+  }
+  
+  inline nvar operator>(unsigned long v1, const nvar& v2){
+    return v2 < v1;
+  }
+  
+  inline nvar operator>=(unsigned long v1, const nvar& v2){
+    return v2 <= v1;
+  }
+  
+  inline nvar operator==(unsigned long v1, const nvar& v2){
+    return v2 == v1;
+  }
+  
+  inline nvar operator!=(unsigned long v1, const nvar& v2){
+    return v2 != v1;
+  }
+  
+  inline nvar operator+(unsigned long v1, const nvar& v2){
+    return v2 + v1;
+  }
+  
+  inline nvar operator-(unsigned long v1, const nvar& v2){
+    return -v2 + v1;
+  }
+  
+  inline nvar operator*(unsigned long v1, const nvar& v2){
+    return v2 * v1;
+  }
+  
+  inline nvar operator/(unsigned long v1, const nvar& v2){
+    return nvar(v1) / v2;
+  }
+  
+  inline nvar operator%(unsigned long v1, const nvar& v2){
+    return nvar(v1) % v2;
+  }
+  
+#endif
   
 } // end namespace neu
 
