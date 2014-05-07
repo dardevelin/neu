@@ -27,7 +27,7 @@ ifeq ($(PLATFORM), Darwin)
 	rm -f $(NEU_LIB)/libneu_core_static.a
 	ar rcs $(NEU_LIB)/libneu_core_static.a $(ALL_MODULES)
 else
-	$(LINK) -shared -Wl,-soname,libneu_core.so -o $(NEU_LIB)/libneu_core.so.$(VERSION) $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz
+	$(LINK) -shared -Wl,-soname,libneu_core.so -o $(NEU_LIB)/libneu_core.so.$(VERSION) $(ALL_MODULES) -L/usr/local/lib -lgmp -lmpfr -lz -lboost_regex
 	(cd $(NEU_LIB); ln -f -s libneu_core.so.$(VERSION) libneu_core.so)
 	(cd $(NEU_LIB); ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR))
 	(cd $(NEU_LIB); ln -f -s libneu_core.so.$(VERSION) libneu_core.so.$(MAJOR).$(MINOR))
