@@ -4788,7 +4788,11 @@ namespace{
                    "_ZN3neu4nvaraSERKS0_");
     
     createFunction("void nvar::operator+(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvarplEx");
+#else
+                   "_ZNK3neu4nvarplEl");
+#endif
     
     createFunction("void nvar::operator+(nvar*, nvar*, double)",
                    "_ZNK3neu4nvarplEd");
@@ -4797,7 +4801,11 @@ namespace{
                    "_ZNK3neu4nvarplERKS0_");
     
     createFunction("void nvar::operator-(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvarmiEx");
+#else
+                   "_ZNK3neu4nvarmiEl");
+#endif
     
     createFunction("void nvar::operator-(nvar*, nvar*, double)",
                    "_ZNK3neu4nvarmiEd");
@@ -4806,7 +4814,11 @@ namespace{
                    "_ZNK3neu4nvarmiERKS0_");
     
     createFunction("void nvar::operator*(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvarplEx");
+#else
+                   "_ZNK3neu4nvarplEl");
+#endif
     
     createFunction("void nvar::operator*(nvar*, nvar*, double)",
                    "_ZNK3neu4nvarplEd");
@@ -4815,7 +4827,11 @@ namespace{
                    "_ZNK3neu4nvarpl");
     
     createFunction("void nvar::operator/(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvardvEx");
+#else
+                   "_ZNK3neu4nvardvEl");
+#endif
     
     createFunction("void nvar::operator/(nvar*, nvar*, double)",
                    "_ZNK3neu4nvardvEd");
@@ -4824,7 +4840,11 @@ namespace{
                    "_ZNK3neu4nvardvERKS0_");
     
     createFunction("void nvar::operator%(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvarrmEx");
+#else
+                  "_ZNK3neu4nvarrmEl");
+#endif
     
     createFunction("void nvar::operator%(nvar*, nvar*, double)",
                    "_ZNK3neu4nvarrmEd");
@@ -4833,7 +4853,11 @@ namespace{
                    "_ZNK3neu4nvarrmERKS0_");
     
     createFunction("nvar* nvar::operator+=(nvar*, long)",
+#ifdef __APPLE__
                    "_ZN3neu4nvarpLEx");
+#else
+                   "_ZN3neu4nvarpLEl");
+#endif
     
     createFunction("nvar* nvar::operator+=(nvar*, double)",
                    "_ZN3neu4nvarpLEd");
@@ -4842,7 +4866,11 @@ namespace{
                    "_ZN3neu4nvarpLERKS0_");
     
     createFunction("nvar* nvar::operator-=(nvar*, long)",
+#ifdef __APPLE__
                    "_ZN3neu4nvarmIEx");
+#else
+                   "_ZN3neu4nvarmIEl");
+#endif
     
     createFunction("nvar* nvar::operator-=(nvar*, double)",
                    "_ZN3neu4nvarmIEd");
@@ -4851,7 +4879,11 @@ namespace{
                    "_ZN3neu4nvarmIERKS0_");
     
     createFunction("nvar* nvar::operator*=(nvar*, long)",
+#ifdef __APPLE__
                    "_ZN3neu4nvarmLEx");
+#else
+                   "_ZN3neu4nvarmLEl");
+#endif
     
     createFunction("nvar* nvar::operator*=(nvar*, double)",
                    "_ZN3neu4nvarmLEd");
@@ -4860,7 +4892,11 @@ namespace{
                    "_ZN3neu4nvarmLERKS0_");
     
     createFunction("nvar* nvar::operator/=(nvar*, long)",
+#ifdef __APPLE__
                    "_ZN3neu4nvardVEx");
+#else
+                   "_ZN3neu4nvardVEl");
+#endif
     
     createFunction("nvar* nvar::operator/=(nvar*, double)",
                    "_ZN3neu4nvardVEd");
@@ -4869,7 +4905,11 @@ namespace{
                    "_ZN3neu4nvardVERKS0_");
     
     createFunction("nvar* nvar::operator%=(nvar*, long)",
+#ifdef __APPLE__
                    "_ZN3neu4nvarrMEx");
+#else
+                   "_ZN3neu4nvarrMEl");
+#endif
     
     createFunction("nvar* nvar::operator%=(nvar*, double)",
                    "_ZN3neu4nvarrMEd");
@@ -4890,7 +4930,11 @@ namespace{
                    "_ZNK3neu4nvarooERKS0_");
     
     createFunction("void nvar::operator==(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvareqEx");
+#else
+                   "_ZNK3neu4nvareqEl");
+#endif
     
     createFunction("void nvar::operator==(nvar*, nvar*, double)",
                    "_ZNK3neu4nvareqEd");
@@ -4899,7 +4943,11 @@ namespace{
                    "_ZNK3neu4nvareqERKS0_");
 
     createFunction("void nvar::operator!=(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvarneEx");
+#else
+                   "_ZNK3neu4nvarneExl");
+#endif
     
     createFunction("void nvar::operator!=(nvar*, nvar*, double)",
                    "_ZNK3neu4nvarneEd");
@@ -4908,7 +4956,11 @@ namespace{
                    "_ZNK3neu4nvarneERKS0_");
     
     createFunction("void nvar::operator<(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvarltEx");
+#else
+                   "_ZNK3neu4nvarltEl");
+#endif
     
     createFunction("void nvar::operator<(nvar*, nvar*, double)",
                    "_ZNK3neu4nvarltEd");
@@ -4917,7 +4969,11 @@ namespace{
                    "_ZNK3neu4nvarltERKS0_");
     
     createFunction("void nvar::operator<=(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvarleEx");
+#else
+                   "_ZNK3neu4nvarleEl");
+#endif
     
     createFunction("void nvar::operator<=(nvar*, nvar*, double)",
                    "_ZNK3neu4nvarleEd");
@@ -4926,7 +4982,11 @@ namespace{
                    "_ZNK3neu4nvarleERKS0_");
     
     createFunction("void nvar::operator>(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvargtEx");
+#else
+                   "_ZNK3neu4nvargtEl");
+#endif
     
     createFunction("void nvar::operator>(nvar*, nvar*, double)",
                    "_ZNK3neu4nvargtEd");
@@ -4935,7 +4995,11 @@ namespace{
                    "_ZNK3neu4nvargtERKS0_");
     
     createFunction("void nvar::operator>=(nvar*, nvar*, long)",
+#ifdef __APPLE__
                    "_ZNK3neu4nvargeEx");
+#else
+                   "_ZNK3neu4nvargeEl");
+#endif
     
     createFunction("void nvar::operator>=(nvar*, nvar*, double)",
                    "_ZNK3neu4nvargeEd");
