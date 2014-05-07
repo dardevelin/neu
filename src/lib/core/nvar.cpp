@@ -1443,7 +1443,7 @@ size_t nvar::numKeys() const{
   }
 }
 
-nvar& nvar::operator=(int64_t x){
+nvar& nvar::operator=(nlonglong x){
   switch(t_){
     case None:
     case Undefined:
@@ -5433,7 +5433,7 @@ nvar nvar::operator-() const{
   NERROR("invalid operand");
 }
 
-nvar& nvar::operator+=(int64_t x){
+nvar& nvar::operator+=(nlonglong x){
   switch(t_){
     case None:
     case Undefined:
@@ -6044,7 +6044,7 @@ nvar& nvar::operator+=(const nvar& x){
   }
 }
 
-nvar nvar::operator+(int64_t x) const{
+nvar nvar::operator+(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -6587,7 +6587,7 @@ nvar nvar::operator+(const nvar& x) const{
   }
 }
 
-nvar& nvar::operator-=(int64_t x){
+nvar& nvar::operator-=(nlonglong x){
   switch(t_){
     case None:
     case Undefined:
@@ -7184,7 +7184,7 @@ nvar& nvar::operator-=(const nvar& x){
   }
 }
 
-nvar nvar::operator-(int64_t x) const{
+nvar nvar::operator-(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -7704,7 +7704,7 @@ nvar nvar::operator-(const nvar& x) const{
   }
 }
 
-nvar& nvar::operator*=(int64_t x){
+nvar& nvar::operator*=(nlonglong x){
   switch(t_){
     case None:
     case Undefined:
@@ -8729,7 +8729,7 @@ nvar nvar::operator*(const nvar& x) const{
   }
 }
 
-nvar nvar::operator*(int64_t x) const{
+nvar nvar::operator*(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -8825,7 +8825,7 @@ nvar nvar::operator*(double x) const{
   }
 }
 
-nvar& nvar::operator/=(int64_t x){
+nvar& nvar::operator/=(nlonglong x){
   switch(t_){
     case None:
     case Undefined:
@@ -9383,7 +9383,7 @@ nvar& nvar::operator/=(const nvar& x){
 }
 
 
-nvar nvar::operator/(int64_t x) const{
+nvar nvar::operator/(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -9911,7 +9911,7 @@ nvar nvar::operator/(const nvar& x) const{
   }
 }
 
-nvar& nvar::operator%=(int64_t x){
+nvar& nvar::operator%=(nlonglong x){
   switch(t_){
     case None:
     case Undefined:
@@ -10500,7 +10500,7 @@ nvar& nvar::operator%=(const nvar& x){
   }
 }
 
-nvar nvar::operator%(int64_t x) const{
+nvar nvar::operator%(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -12495,7 +12495,7 @@ bool nvar::equal(const nvar& x) const{
   }
 }
 
-nvar nvar::operator<(int64_t x) const{
+nvar nvar::operator<(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -13098,7 +13098,7 @@ nvar nvar::operator<(const nvar& x) const{
   }
 }
 
-nvar nvar::operator<=(int64_t x) const{
+nvar nvar::operator<=(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -13698,7 +13698,7 @@ nvar nvar::operator<=(const nvar& x) const{
   }
 }
 
-nvar nvar::operator>(int64_t x) const{
+nvar nvar::operator>(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -14298,7 +14298,7 @@ nvar nvar::operator>(const nvar& x) const{
   }
 }
 
-nvar nvar::operator>=(int64_t x) const{
+nvar nvar::operator>=(nlonglong x) const{
   switch(t_){
     case None:
     case Undefined:
@@ -14901,7 +14901,7 @@ nvar nvar::operator>=(const nvar& x) const{
   }
 }
 
-nvar nvar::operator==(int64_t x) const{
+nvar nvar::operator==(nlonglong x) const{
   switch(t_){
     case Integer:
       return h_.i == x;
@@ -15261,7 +15261,7 @@ nvar nvar::operator==(const nvar& x) const{
   }
 }
 
-nvar nvar::operator!=(int64_t x) const{
+nvar nvar::operator!=(nlonglong x) const{
   switch(t_){
     case Integer:
       return h_.i != x;
