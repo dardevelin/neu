@@ -3,7 +3,7 @@ include $(NEU_HOME)/Makefile.defs
 TARGET = test
 OBJECTS = main.o
 
-LINK += -L$(NEU_HOME)/lib -lneu_core -lneu
+LIBS = -L$(NEU_HOME)/lib -lneu_core -lneu
 
 all: .depend $(TARGET)
 
@@ -16,7 +16,7 @@ all: .depend $(TARGET)
 	$(COMPILE) -c $< -o $@
 
 $(TARGET): $(OBJECTS)
-	$(LINK) -o $(TARGET) $(OBJECTS)
+	$(LINK) -o $(TARGET) $(OBJECTS) $(LIBS)
 
 clean:
 	rm -f $(OBJECTS)

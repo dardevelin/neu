@@ -5,7 +5,7 @@ MODULES = main.o
 META_MODULES = Foo.o
 ALL_MODULES = $(MODULES) $(META_MODULES)
 
-LINK += -L$(NEU_LIB) -lneu_core -lneu
+LIBS = -L$(NEU_LIB) -lneu_core -lneu
 
 all: .depend $(TARGET)
 	./test &> test.out
@@ -26,7 +26,7 @@ Foo.o: $(@.o=.cpp)
 	$(COMPILE) -c $< -o $@
 
 $(TARGET): $(ALL_MODULES)
-	$(LINK) -o $(TARGET) $(ALL_MODULES)
+	$(LINK) -o $(TARGET) $(ALL_MODULES) $(LIBS)
 
 clean:
 	rm -f Foo_meta.h
