@@ -1043,6 +1043,11 @@ double nvar::toDouble() const{
   }
 }
 
+nvar& nvar::operator<<(const nput& p){
+  (*this)(p.key) = p.val;
+  return *this;
+}
+
 void nvar::pushBack(const nvar& x){
   switch(t_){
     case None:
