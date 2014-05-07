@@ -4775,7 +4775,11 @@ namespace{
                    "_ZNK3neu4nvar8toDoubleEv");
     
     createFunction("nvar* nvar::operator=(nvar*, long)",
+#ifdef __APPLE__
                    "_ZN3neu4nvaraSEx");
+#else
+                   "_ZN3neu4nvaraSEl");
+#endif
     
     createFunction("nvar* nvar::operator=(nvar*, double)",
                    "_ZN3neu4nvaraSEd");
