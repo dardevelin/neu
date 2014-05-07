@@ -4108,8 +4108,6 @@ namespace neu{
     return s += v.toStr();
   }
   
-#if defined (__i386__) || defined (__APPLE__)
-  
   inline nvar operator<(unsigned long v1, const nvar& v2){
     return v2 > v1;
   }
@@ -4153,9 +4151,7 @@ namespace neu{
   inline nvar operator%(unsigned long v1, const nvar& v2){
     return nvar(v1) % v2;
   }
-  
-#endif
-  
+
 } // end namespace neu
 
 #endif // NEU_N_VAR_H
