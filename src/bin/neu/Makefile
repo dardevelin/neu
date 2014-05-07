@@ -1,7 +1,7 @@
 TARGET = $(NEU_HOME)/bin/neu
 MODULES = main.o
 
-LINK += -L$(NEU_LIB) -lneu -lneu_core -ledit
+LIBS = -L$(NEU_LIB) -lneu -lneu_core -ledit
 
 all: .depend $(TARGET)
 
@@ -14,7 +14,7 @@ $(MODULES): $(@.o=.cpp)
 	$(COMPILE) -c $< -o $@
 
 $(TARGET): $(MODULES)
-	$(LINK) -o $(TARGET) $(MODULES)
+	$(LINK) -o $(TARGET) $(MODULES) $(LIBS)
 
 clean:
 	rm -f $(MODULES)

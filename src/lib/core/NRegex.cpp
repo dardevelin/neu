@@ -51,8 +51,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <neu/NRegex.h>
 
 #include <cstring>
-#include <regex>
 #include <neu/NError.h>
+
+#ifdef __APPLE__
+#include <regex>
+#else
+#include <boost/regex.hpp>
+using namespace boost;
+#endif
 
 using namespace std;
 using namespace neu;
