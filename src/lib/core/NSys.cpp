@@ -60,6 +60,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <dirent.h>
 #include <sys/termios.h>
 #include <signal.h>
+#include <sys/time.h>
 
 #ifdef __APPLE__
 

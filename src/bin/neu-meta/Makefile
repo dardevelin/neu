@@ -1,9 +1,9 @@
 TARGET = $(NEU_HOME)/bin/neu-meta
 MODULES = main.o
 
-COMPILE += -I$(LLVM_DIR)/include -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS
+COMPILE += -I$(LLVM_DIR)/include
 
-LINK += -L$(NEU_LIB) -lneu_core -L$(LLVM_DIR)/lib -lLLVMAsmParser -lLLVMBitReader -lLLVMSupport -lLLVMMC -lLLVMOption -lLLVMAnalysis -lLLVMAsmPrinter -lLLVMBitWriter -lLLVMCodeGen -lLLVMCore -lLLVMExecutionEngine -lLLVMIRReader -lLLVMInstCombine -lLLVMInstrumentation -lLLVMInterpreter -lLLVMJIT -lLLVMLTO -lLLVMLinker -lLLVMMC -lLLVMMCDisassembler -lLLVMMCJIT -lLLVMMCParser -lLLVMObject -lLLVMScalarOpts -lLLVMSelectionDAG -lLLVMTableGen -lLLVMTarget -lLLVMTransformUtils -lLLVMVectorize -lclangFrontend -lclangSerialization -lclangDriver -lclangTooling -lclangParse -lclangSema -lclangAnalysis -lclangEdit -lclangAST -lclangLex -lclangBasic -lcurses
+LINK += -L$(LLVM_DIR)/lib -lclangFrontendTool -lclangFrontend -lclangDriver -lclangSerialization -lclangCodeGen -lclangParse -lclangSema -lclangStaticAnalyzerFrontend -lclangStaticAnalyzerCheckers -lclangStaticAnalyzerCore -lclangARCMigrate -lclangRewriteFrontend -lclangRewriteCore -lclangAnalysis -lclangEdit -lclangAST -lclangBasic -lclangLex -lclangTooling -lLLVMOption -lLLVMLinker -lLLVMIRReader -lLLVMipo -lLLVMVectorize -lLLVMInstrumentation -lLLVMBitWriter -lLLVMBitReader -lLLVMAsmParser -lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMMCParser -lLLVMCodeGen -lLLVMObjCARCOpts -lLLVMScalarOpts -lLLVMInstCombine -lLLVMTransformUtils -lLLVMipa -lLLVMAnalysis -lLLVMX86Desc -lLLVMX86Info -lLLVMTarget -lLLVMX86AsmPrinter -lLLVMMC -lLLVMObject -lLLVMX86Utils -lLLVMCore -lLLVMSupport -lz -lpthread -ltinfo -ldl -lm -L$(NEU_LIB) -lneu_core
 
 all: .depend $(TARGET)
 

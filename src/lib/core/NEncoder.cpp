@@ -59,6 +59,7 @@ using namespace neu;
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
+#include <cstring>
 
 #define ROTLEFT(a, b) (((a) << (b)) | ((a) >> (32 - (b))))
 #define ROTRIGHT(a, b) (((a) >> (b)) | ((a) << (32 - (b))))

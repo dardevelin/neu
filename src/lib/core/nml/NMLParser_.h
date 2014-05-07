@@ -51,6 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NEU_NML_PARSER__H
 #define NEU_NML_PARSER__H
 
+#include <cstring>
 #include <unistd.h>
 
 #include <neu/NMLParser.h>
