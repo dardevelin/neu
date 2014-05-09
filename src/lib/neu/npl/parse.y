@@ -21,6 +21,10 @@ All rights reserved.
 neu@andrometa.net
 http://neu.andrometa.net
 
+Neu can be used freely for commercial purposes. We hope you will find
+Neu powerful, useful to make money or otherwise, and fun! If so,
+please consider making a donation via PayPal to: neu@andrometa.net
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
