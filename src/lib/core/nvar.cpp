@@ -692,8 +692,8 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
     }
     case HeadSequenceMap:{
       bool first = false;
-      bool vec = h_.sm->s->t_ == Vector;
-      bool mm =  h_.sm->m->t_ == Multimap;
+      bool vec = h_.hsm->s->t_ == Vector;
+      bool mm =  h_.hsm->m->t_ == Multimap;
       
       if(vec){
         if(mm){
@@ -703,7 +703,7 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
           ostr << "[:";
         }
         h_.hsm->h->streamOutput_(ostr, concise);
-        streamOutputVector_(ostr, *h_.sm->s->h_.v, first, concise);
+        streamOutputVector_(ostr, *h_.hsm->s->h_.v, first, concise);
       }
       else{
         if(mm){
@@ -714,14 +714,14 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
         }
         
         h_.hsm->h->streamOutput_(ostr, concise);
-        streamOutputList_(ostr, *h_.sm->s->h_.l, first, concise);
+        streamOutputList_(ostr, *h_.hsm->s->h_.l, first, concise);
       }
       
       if(mm){
-        streamOutputMultimap_(ostr, *h_.sm->m->h_.mm, first, concise);
+        streamOutputMultimap_(ostr, *h_.hsm->m->h_.mm, first, concise);
       }
       else{
-        streamOutputMap_(ostr, *h_.sm->m->h_.m, first, concise);
+        streamOutputMap_(ostr, *h_.hsm->m->h_.m, first, concise);
       }
       
       if(vec){
