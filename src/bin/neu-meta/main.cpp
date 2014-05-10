@@ -395,6 +395,38 @@ public:
       
     return 0;
   }
+
+  CXXRecordDecl* getNextSubClass(CXXRecordDecl* rd,
+                                 const string& className){
+    if(!rd->hasDefinition()){
+      return 0;
+    }
+    
+    for(CXXRecordDecl::base_class_iterator bitr = rd->bases_begin(),
+          bitrEnd = rd->bases_end(); bitr != bitrEnd; ++bitr){
+        
+      CXXBaseSpecifier b = *bitr;
+      QualType qt = b.getType();
+        
+      QualType ct = sema_->Context.getCanonicalType(qt);
+      
+      if(ct.getAsString() == "class " + className){
+        return rd;
+      }
+      
+      const Type* t = ct.getTypePtr();
+        
+      if(const RecordType* rt = dyn_cast<RecordType>(t)){
+        if(CXXRecordDecl* srd = dyn_cast<CXXRecordDecl>(rt->getDecl())){
+          if(getFirstSubClass(srd, className)){
+            return srd;
+          }
+        }
+      }
+    }
+    
+    return 0;
+  }
     
   bool isInMainFile(Decl* d){
     return sema_->SourceMgr.isInMainFile(d->getLocStart());
@@ -648,8 +680,8 @@ public:
     }
     else{
       ostr << "  return _" << className << "_FuncMap.map(n) ? : ";
-      ostr << getQualifiedName(getFirstSubClass(rd, "neu::NObject"));
-      ostr << "::handle(n, flags);";
+      ostr << getQualifiedName(getNextSubClass(rd, "neu::NObject"));
+      ostr << "::handle(n, flags);" << endl;
     }
       
     ostr << "}" << endl;

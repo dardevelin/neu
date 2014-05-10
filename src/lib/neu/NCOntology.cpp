@@ -689,6 +689,8 @@ public:
             }
           }
           catch(NError& e){
+            cout << "e is: " << e << endl;
+            
             NERROR("On concept '" + concept_->name() +
                    "' on method '" + name_ +
                    "' invalid attribute '" + k2 +

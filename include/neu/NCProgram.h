@@ -122,7 +122,7 @@ namespace neu{
       opt("trials", "t", 1,
           "Number of trials to perform");
       
-      init(argc, argv);
+      NProgram::init(argc, argv);
     }
     
     ~NCProgram(){
