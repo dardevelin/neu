@@ -689,8 +689,6 @@ public:
             }
           }
           catch(NError& e){
-            cout << "e is: " << e << endl;
-            
             NERROR("On concept '" + concept_->name() +
                    "' on method '" + name_ +
                    "' invalid attribute '" + k2 +
@@ -2267,12 +2265,6 @@ public:
         nvar attrs = output->attributes();
         attrs("in") = true;
 
-        //cout << "evaluating from: " << m->name() << endl;
-        //cout << "evaluating to: " << proc->method()->name() << endl << endl;
-
-        //cout << "input name: " << input->paramName() << endl;
-        //cout << "output name: " << output->paramName() << endl << endl;
-
         if(input->match(attrs, false) < 0){
           ++itr2;
           continue;
@@ -2337,7 +2329,7 @@ public:
     if(!input->hasAttribute_("static")){
       input->setStatic(false);
     }
-     
+    
     inputMap_.insert(make_pair(name, input));      
 
     if(!input->getConst()){

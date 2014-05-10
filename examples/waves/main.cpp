@@ -184,7 +184,7 @@ void drawCells(){
       Cell* c1 = getCell(i, j);
       Cell* c2 = getCell(i + 1, j);
       
-      hsv[0] = c1->h*360;
+      hsv[0] = 200.0 + c1->h*160.0;
       toRGB(hsv, rgb);
 
       glColor4f(rgb[0], rgb[1], rgb[2], 1);

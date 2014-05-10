@@ -1017,7 +1017,7 @@ public:
   void generateMetadata(ostream& ostr, CXXRecordDecl* rd){
     nstr className = rd->getNameAsString();
       
-    CXXRecordDecl* srd = getFirstSubClass(rd, "neu::NObject");
+    CXXRecordDecl* srd = getNextSubClass(rd, "neu::NObject");
       
     ostr << "  neu::nvar metadata_(){" << endl;
       
