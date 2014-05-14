@@ -83,7 +83,7 @@ namespace neu{
   const nvar::SequenceMapFlag* nvar::SequenceMapType = 0;
   const nvar::HeadSequenceMapFlag* nvar::HeadSequenceMapType = 0;
   
-} // end namespace Meta
+} // end namespace neu
 
 namespace{
   

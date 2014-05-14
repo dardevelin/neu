@@ -410,7 +410,7 @@ private:
   nvar attrs_;
 };
 
-} // end namespace Meta
+} // end namespace neu
 
 NConcept::NConcept(const NConcept& c){
   x_ = new NConcept_(this, *c.x_);

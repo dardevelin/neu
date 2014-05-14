@@ -374,7 +374,7 @@ private:
   ThreadVec_ threadVec_;
 };
 
-} // end namespace Meta
+} // end namespace neu
 
 NPQueue::NPQueue(size_t threads){
   x_ = new NPQueue_(this, threads);

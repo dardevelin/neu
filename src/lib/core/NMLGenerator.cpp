@@ -604,7 +604,7 @@ namespace neu{
 
       ostr << n.str() << "(";
       size_t size = n.size();
-      for(size_t i = 1; i < size; ++i){
+      for(size_t i = 0; i < size; ++i){
         if(i > 0){
           ostr << ", ";
         }
@@ -630,6 +630,7 @@ namespace neu{
       switch(key){
         case FKEY_NO_KEY:
           emitFunc(ostr, n);
+          break;
         case FKEY_PushBack_2:
         case FKEY_TouchMultimap_1:
         case FKEY_TouchList_1:
