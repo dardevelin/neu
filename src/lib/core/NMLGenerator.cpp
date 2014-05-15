@@ -353,7 +353,7 @@ namespace neu{
                        const nvar& n,
                        const nstr& indent){
       if(!n.isFunction()){
-        emitExpression(ostr, n, indent);
+        emitExpression(ostr, n);
         return;
       }
       
@@ -369,9 +369,9 @@ namespace neu{
         }
         case FKEY_Var_3:
         case FKEY_Var_2:{
-          emitExpression(ostr, n[0], indent);
+          emitExpression(ostr, n[0]);
           ostr << " = ";
-          emitExpression(ostr, n[1], indent);
+          emitExpression(ostr, n[1]);
           ostr << ";" << endl;
           break;
         }
@@ -402,18 +402,18 @@ namespace neu{
           break;
         case FKEY_While_2:
           ostr << indent << "while(";
-          emitExpression(ostr, n[0], indent);
+          emitExpression(ostr, n[0]);
           ostr << "){" << endl;
           emitStatement(ostr, n[1], indent + "  ");
           ostr << indent << "}" << endl;
           break;
         case FKEY_For_4:
           ostr << indent << "for(";
-          emitExpression(ostr, n[0], indent);
+          emitExpression(ostr, n[0]);
           ostr << "; ";
-          emitExpression(ostr, n[1], indent);
+          emitExpression(ostr, n[1]);
           ostr << "; ";
-          emitExpression(ostr, n[2], indent);
+          emitExpression(ostr, n[2]);
           ostr << "){" << endl;
           emitStatement(ostr, n[3], indent + "  ");
           ostr << indent << "}" << endl;
@@ -484,7 +484,7 @@ namespace neu{
         }
         default:{
           ostr << indent;
-          emitExpression(ostr, n, indent);
+          emitExpression(ostr, n);
           ostr << ";" << endl;
           break;
         }
@@ -521,7 +521,7 @@ namespace neu{
           ostr << indent;
         }
         ostr << "if(";
-        emitExpression(ostr, n[0], indent);
+        emitExpression(ostr, n[0]);
         ostr << "){" << endl;
         emitStatement(ostr, n[1], indent + "  ");
         ostr << indent << "}" << endl;
@@ -538,9 +538,9 @@ namespace neu{
         ostr << "(";
       }
       
-      emitExpression(ostr, n[0], "", p);
+      emitExpression(ostr, n[0], p);
       ostr << op;
-      emitExpression(ostr, n[1], "", p);
+      emitExpression(ostr, n[1], p);
       
       if(p > prec){
         ostr << ")";
@@ -559,7 +559,7 @@ namespace neu{
         ostr << "(";
       }
 
-      emitExpression(ostr, n[0], "", p);
+      emitExpression(ostr, n[0], p);
       
       if(p > prec){
         ostr << ")";
@@ -576,7 +576,7 @@ namespace neu{
         ostr << "(";
       }
       
-      emitExpression(ostr, n[0], "", p);
+      emitExpression(ostr, n[0], p);
       
       if(p > prec){
         ostr << ")";
@@ -587,9 +587,8 @@ namespace neu{
     
     void emitVarBuiltin(ostream& ostr,
                         const nvar& n,
-                        const nstr& name="",
-                        const nstr& indent=""){
-      emitExpression(ostr, n[0], indent);
+                        const nstr& name=""){
+      emitExpression(ostr, n[0]);
       ostr << ".";
       if(name.empty()){
         ostr << n.str().lowercase();
@@ -625,7 +624,6 @@ namespace neu{
     
     void emitExpression(ostream& ostr,
                         const nvar& n,
-                        const nstr& indent="",
                         int prec=100){
       switch(n.type()){
         case nvar::Function:
@@ -818,7 +816,7 @@ namespace neu{
           emitPostUnaryOp(ostr, n, "--", prec);
           break;
         case FKEY_Call_2:{
-          emitExpression(ostr, n[0], indent);
+          emitExpression(ostr, n[0]);
           ostr << ".";
 
           const nvar& v1 = n[1];
@@ -828,7 +826,7 @@ namespace neu{
             if(i > 0){
               ostr << ", ";
             }
-            emitExpression(ostr, v1[i], indent);
+            emitExpression(ostr, v1[i]);
           }
           ostr << ")";
           break;

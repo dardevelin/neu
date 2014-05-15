@@ -380,11 +380,6 @@ namespace neu{
           continue;
         }
         
-        if(!k.isInteger()){
-          error(k, "case is not integral");
-          continue;
-        }
-        
         m(k) = v;
       }
     }

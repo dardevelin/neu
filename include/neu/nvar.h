@@ -3586,7 +3586,7 @@ namespace neu{
     void sqrt(NObject* o=0);
     
     static nvar sqrt(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.sqrt(o);
       return ret;
     }
@@ -3594,7 +3594,7 @@ namespace neu{
     void exp(NObject* o=0);
     
     static nvar exp(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.exp(o);
       return ret;
     }
@@ -3608,7 +3608,7 @@ namespace neu{
     void abs();
     
     static nvar abs(const nvar& x){
-      nvar ret = x;
+      nvar ret = *x;
       ret.abs();
       return ret;
     }
@@ -3616,7 +3616,7 @@ namespace neu{
     void log10(NObject* o=0);
     
     static nvar log10(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.log10(o);
       return ret;
     }
@@ -3624,7 +3624,7 @@ namespace neu{
     void log(NObject* o=0);
     
     static nvar log(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.log(o);
       return ret;
     }
@@ -3632,7 +3632,7 @@ namespace neu{
     void cos(NObject* o=0);
     
     static nvar cos(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.cos(o);
       return ret;
     }
@@ -3640,7 +3640,7 @@ namespace neu{
     void acos(NObject* o=0);
     
     static nvar acos(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.acos(o);
       return ret;
     }
@@ -3648,7 +3648,7 @@ namespace neu{
     void cosh(NObject* o=0);
     
     static nvar cosh(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.cosh(o);
       return ret;
     }
@@ -3656,7 +3656,7 @@ namespace neu{
     void sin(NObject* o=0);
     
     static nvar sin(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.sin(o);
       return ret;
     }
@@ -3664,7 +3664,7 @@ namespace neu{
     void asin(NObject* o=0);
     
     static nvar asin(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.asin(o);
       return ret;
     }
@@ -3672,7 +3672,7 @@ namespace neu{
     void sinh(NObject* o=0);
     
     static nvar sinh(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.sinh(o);
       return ret;
     }
@@ -3680,7 +3680,7 @@ namespace neu{
     void tan(NObject* o=0);
     
     static nvar tan(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.tan(o);
       return ret;
     }
@@ -3688,7 +3688,7 @@ namespace neu{
     void atan(NObject* o=0);
     
     static nvar atan(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.atan(o);
       return ret;
     }
@@ -3696,7 +3696,7 @@ namespace neu{
     void tanh(NObject* o=0);
     
     static nvar tanh(const nvar& x, NObject* o=0){
-      nvar ret = x;
+      nvar ret = *x;
       ret.tanh(o);
       return ret;
     }
@@ -3704,7 +3704,7 @@ namespace neu{
     void floor();
     
     static nvar floor(const nvar& x){
-      nvar ret = x;
+      nvar ret = *x;
       ret.floor();
       return ret;
     }
@@ -3712,7 +3712,7 @@ namespace neu{
     void ceil();
     
     static nvar ceil(const nvar& x){
-      nvar ret = x;
+      nvar ret = *x;
       ret.ceil();
       return ret;
     }

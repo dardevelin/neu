@@ -1395,13 +1395,10 @@ namespace neu{
       
       auto itr = m.find(p1);
       if(itr == m.end()){
-        process(v2);
-        return none;
+        return process(v2);
       }
       
-      process(itr->second);
-      
-      return none;
+      return process(itr->second);
     }
     
     nvar IsFalse(const nvar& v){

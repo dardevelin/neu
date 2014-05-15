@@ -433,7 +433,7 @@ stmt: expr end {
   $$ = PS->func("Continue");
 }
 | KW_WHILE '(' expr ')' block {
-  $3.str() = "ScopedBlock";
+  $5.str() = "ScopedBlock";
   $$ = PS->func("While") << move($3) << move($5);
 }
 | KW_FOR '(' stmt stmt expr ')' block {

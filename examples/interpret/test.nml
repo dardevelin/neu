@@ -1,7 +1,7 @@
 /*
   Both styles of C++ comments are supported.  This is a multiline
-  comment. This is an NML file to be parsed with NMLParser. Call
-  process() on an NObject subclass to execute the code.
+  comment. This is an NML file to be parsed with NMLParser and
+  interpreted by calling the process() on an NObject subclass.
  */
 
 // import NLib functions into the main scope, so that they are
@@ -30,7 +30,7 @@ class NMLObject{
     attr = 10;
   }
 
-  // we can also consruct an object as a base class of any other
+  // we can also construct an object as a base class of any other
   // NObject here, NRandom
   NMLObject(a, b) : NRandom(){
     attr = a + b;
@@ -52,6 +52,54 @@ class NMLObject{
     Print("attr is %v", attr);
   }
 
+  // the switch/case stmt resembles the syntax of C++, however the
+  // cases do not have to be integral, they can be any nvar. also, it
+  // is not necesary to end each case with a break/return stmt -
+  // simply start the next case - so the only type of fall-through
+  // supported is as, e.g: the case 9:case 10: as seen below
+  testSwitch(c){
+    switch(c){
+    case 9:
+    case 10:
+      return "nine or ten";
+    case 2:
+      return "two";
+    case [1,0]:
+      return "vec";
+    case "str":
+      return "string";
+    default:
+      return "the default";
+    }
+  }
+
+  testWhile(){
+    i = 0;
+    while(i < 10){
+      ++i;
+    }
+
+    while(i < 100){
+      if(i > 20){
+        break;
+      }
+      ++i;
+    }
+
+    j = 0;
+    while(j < 10){
+      ++j;
+
+      if(j > 5){
+        continue;
+      }
+
+      i += j;
+    }
+
+    return i;
+  }
+
   // any type of statement can be given at the top-level of the class
   // they are executed when an instance of the class is created
   // in this case we effectively set an "attribute" variable
@@ -63,3 +111,35 @@ o2 = new NMLObject;
 s = o2.sum([1,2,3,4]);
 Print("s is %v", s);
 o2.printAttr();
+
+s1 = o2.testSwitch(10);
+Print("s1 is %v", s1);
+
+s2 = o2.testSwitch([1,0]);
+Print("s2 is %v", s2);
+
+s3 = o2.testSwitch(2);
+Print("s3 is %v", s3);
+
+s4 = o2.testSwitch("str");
+Print("s4 is %v", s4);
+
+s5 = o2.testSwitch(99);
+Print("s5 is %v", s5);
+
+s6 = o2.testSwitch(9);
+Print("s6 is %v", s6);
+
+i1 = o2.testWhile();
+Print("i1 is %v", i1);
+
+// ---------- some miscellaneous expressions
+
+// vector arithmetic is supported
+x = [1,2,3] + [4,5,6];
+Print("x is: %v", x);
+
+// standard math functions also work on vectors
+x = Cos(x);
+Print("x is now: %v", x);
+
