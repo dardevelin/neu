@@ -470,7 +470,7 @@ namespace neu{
           
           const nvar& d = n[1];
           
-          if(d != none){
+          if(d.some()){
             ostr << idt << "default:" << endl;
             emitStatement(ostr, d, idt + "  ");
           }
@@ -756,6 +756,9 @@ namespace neu{
           emitBinOp(ostr, n, "^", prec);
           break;
         case FKEY_VarSet_2:
+          emitBinOp(ostr, n, " = ", prec);
+          break;
+        case FKEY_Set_2:
           emitBinOp(ostr, n, " = ", prec);
           break;
         case FKEY_LT_2:

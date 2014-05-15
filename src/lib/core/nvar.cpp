@@ -11338,10 +11338,10 @@ bool nvar::less(const nvar& x) const{
           size_t s1 = h_.v->size();
           size_t s2 = x.h_.v->size();
           
-          if(s1 > s2){
+          if(s1 < s2){
             return true;
           }
-          else if(s2 > s1){
+          else if(s2 < s1){
             return false;
           }
           
@@ -11387,10 +11387,10 @@ bool nvar::less(const nvar& x) const{
           size_t s1 = h_.l->size();
           size_t s2 = x.h_.l->size();
           
-          if(s1 > s2){
+          if(s1 < s2){
             return true;
           }
-          else if(s2 > s1){
+          else if(s2 < s1){
             return false;
           }
           
@@ -17034,6 +17034,7 @@ void nvar::erase(const nvar& key){
 nvar nvar::keys() const{
   nvec ks;
   keys(ks);
+  
   return nvar(move(ks));
 }
 

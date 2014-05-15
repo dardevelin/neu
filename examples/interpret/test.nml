@@ -133,7 +133,7 @@ Print("s6 is %v", s6);
 i1 = o2.testWhile();
 Print("i1 is %v", i1);
 
-// ---------- some miscellaneous expressions
+// ---------- miscellaneous
 
 // vector arithmetic is supported
 x = [1,2,3] + [4,5,6];
@@ -143,3 +143,55 @@ Print("x is: %v", x);
 x = Cos(x);
 Print("x is now: %v", x);
 
+// there are a number of built-in methods that can be called on an
+// nvar
+
+Print("size is: %v", x.size());
+x.pushBack(29);
+Print("x is now: %v", x);
+
+// complex nvar's can be defined
+v = [:99, 1,2,3,"test", a:5, b:6, [1,0]:"baz"];
+Print("v is: %v", v);
+Print("v[3] is: %v", v[3]);
+
+// modify the sequence portion of the nvar
+v[3] = "new test";
+
+// modify the map portion of the nvar
+v.a = 9;
+
+// add a new keyed item to the map
+v.d = 59;
+
+Print("v is now: %v", v);
+
+// we can get the key of the map as follows:
+keys = v.keys();
+for(i = 0; i < keys.size(); ++i){
+  k = keys[i];
+  Print("v[%v] = %v", k, v[k]); 
+}
+
+// The usual C++ arithmetic operators can be used, e.g:
+z = 10 + 2 * 4 / 2 - 5;
+z += 2;
+z *= 3;
+z /= 2;
+z %= 10;
+++z;
+--z;
+z++;
+z--;
+
+Print("z is %v", z);
+
+// and comarison operations, i.e: <, >, <=, >=, !=, ==, e.g:
+if(z > 5){
+  Print("yes!");
+}
+
+// the typical C++ logical operators can be used, e.g: &&, ||, !
+if(z > 5 && z < 10){
+  Print("yes again!");  
+}

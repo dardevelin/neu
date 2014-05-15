@@ -3372,6 +3372,12 @@ namespace neu{
         case HeadSequenceMap:
           h_.hsm->m->keys(v);
           break;
+        case Reference:
+          h_.ref->v->keys(v);
+          break;
+        case Pointer:
+          h_.vp->keys(v);
+          break;
       }
     }
     
