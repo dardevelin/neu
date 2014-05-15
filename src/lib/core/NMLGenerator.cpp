@@ -394,7 +394,7 @@ namespace neu{
           emitFunc(ostr, n[0]);
           ostr << "{" << endl;
           emitStatement(ostr, n[1], indent + "  ");
-          ostr << indent << "}" << endl;
+          ostr << indent << "}" << endl << endl;
           break;
         case FKEY_If_2:
         case FKEY_If_3:
@@ -446,7 +446,7 @@ namespace neu{
           }
             
           emitStatement(ostr, c["stmts"], idt);
-          ostr << indent << "}" << endl;
+          ostr << indent << "}" << endl << endl;
           break;
         }
         case FKEY_Switch_3:{
