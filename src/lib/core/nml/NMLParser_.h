@@ -395,7 +395,7 @@ namespace neu{
       nvar& info = c[0];
       
       info("name") = sym(name);
-      nvar& ctors = info("ctors") = nvec();
+      nvar& ctors = info("ctors") = nmap();
       nvar& stmts = info("stmts") = func("Block");
 
       for(nvar& bi : block){

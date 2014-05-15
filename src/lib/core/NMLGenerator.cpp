@@ -175,7 +175,8 @@ namespace{
     FKEY_Unite_3,
     FKEY_Intersect_2,
     FKEY_Intersect_3,
-    FKEY_Complement_2
+    FKEY_Complement_2,
+    FKEY_Import_1,
   };
   
   typedef NMap<nstr, SymbolKey> SymbolMap;
@@ -301,6 +302,7 @@ namespace{
     _functionMap[{"Intersect", 2}] = FKEY_Intersect_2;
     _functionMap[{"Intersect", 3}] = FKEY_Intersect_3;
     _functionMap[{"Complement", 1}] = FKEY_Complement_2;
+    _functionMap[{"Import", 1}] = FKEY_Import_1;
   };
   
   class _FunctionMapLoader{
@@ -379,6 +381,7 @@ namespace neu{
         case FKEY_Ret_1:
           ostr << indent << "return ";
           emitExpression(ostr, n[0]);
+          ostr << ";" << endl;
           break;
         case FKEY_Break_0:
           ostr << indent << "break;" << endl;
@@ -390,7 +393,7 @@ namespace neu{
           ostr << indent;
           emitFunc(ostr, n[0]);
           ostr << "{" << endl;
-          emitStatement(ostr, n[1], indent);
+          emitStatement(ostr, n[1], indent + "  ");
           ostr << indent << "}" << endl;
           break;
         case FKEY_If_2:
@@ -423,23 +426,25 @@ namespace neu{
           nstr idt = indent;
           idt += "  ";
           
-          const nmap& m = c["ctors"];
-          for(auto& itr : m){
-            const nvar& ctor = itr.second;
-            ostr << idt;
+          if(c.hasKey("ctors")){
+            const nmap& m = c["ctors"];
+            for(auto& itr : m){
+              const nvar& ctor = itr.second;
+              ostr << idt;
+              
+              emitFunc(ostr, ctor[1]);
+              
+              ostr << " : ";
+              emitFunc(ostr, ctor[0]);
+              ostr << "{" << endl;
+              
+              emitStatement(ostr, ctor[2], idt + "  ");
+              ostr << idt << "}" << endl;
+            }
           
-            emitFunc(ostr, ctor[1]);
-            
-            ostr << " : ";
-            emitFunc(ostr, ctor[0]);
-            ostr << " {" << endl;
-            
-            emitStatement(ostr, ctor[2], idt);
-            ostr << idt << "}" << endl;
+            ostr << endl;
           }
-          
-          ostr << endl;
-          
+            
           emitStatement(ostr, c["stmts"], idt);
           ostr << indent << "}" << endl;
           break;
@@ -471,6 +476,10 @@ namespace neu{
           }
           
           ostr << indent << "}" << endl;
+          break;
+        }
+        case FKEY_Import_1:{
+          ostr << "import " << n[0].str() << ";" << endl;
           break;
         }
         default:{
@@ -581,6 +590,7 @@ namespace neu{
                         const nstr& name="",
                         const nstr& indent=""){
       emitExpression(ostr, n[0], indent);
+      ostr << ".";
       if(name.empty()){
         ostr << n.str().lowercase();
       }

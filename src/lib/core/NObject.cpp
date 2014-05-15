@@ -411,7 +411,7 @@ namespace neu{
     nvar process(const nvar& v, uint32_t flags=0){
       //cout << "processing: " << v << endl;
       
-      const nvar& vd = *v;
+      nvar& vd = *v;
       
       switch(vd.type()){
         case nvar::Function:{
@@ -437,9 +437,7 @@ namespace neu{
             
             size_t size = vd.size();
             for(size_t i = 0; i < size; ++i){
-              const nvar& si = s[i];
-              const nvar& pi = vd[i];
-              scope.setSymbolFast(si, pi);
+              scope.setSymbolFast(s[i], vd[i].toPtr());
             }
             
             try{
