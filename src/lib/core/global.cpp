@@ -67,7 +67,7 @@ namespace neu{
   uint32_t _packBlockSize = 8192;
   nstr _tempPath;
   NProgram* _program = 0;
-  double _timeout = 1.0;
+  double _timeout = 0.1;
   nstr _name;
   nstr _home;
   bool _abort = false;
