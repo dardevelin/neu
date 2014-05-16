@@ -1,0 +1,6 @@
+[
+ Earth:[mass:5.97218e24, volume:1.08321e12, radius:6371.0],
+ Jupiter:[mass:1.8986e27, volume:1.4313e15, radius:69911.0],
+ Saturn:[mass:5.6846e26, volume:8.2713e14, radius:58232],
+ "Unknown Planet":[mass:1.4336e23, volume:2.3522e9, radius:4211.0]
+ ];

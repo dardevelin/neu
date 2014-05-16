@@ -1048,7 +1048,14 @@ double nvar::toDouble() const{
 }
 
 nvar& nvar::operator<<(const nput& p){
-  (*this)(p.key) = p.val;
+  const nvar& k = p.key;
+  
+  if(k.isString()){
+    (*this)(k.str()) = p.val;
+  }
+  else{
+    (*this)(k) = p.val;
+  }
   return *this;
 }
 

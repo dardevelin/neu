@@ -2288,7 +2288,7 @@ namespace neu{
         case Pointer:
           return h_.vp->head();
         default:
-          return nvar(t_, h_);
+          return *this;
       }
     }
     
@@ -3296,10 +3296,6 @@ namespace neu{
     }
     
     nvar& operator()(std::initializer_list<nvar> il){
-      return (*this)(nvar(il));
-    }
-    
-    nvar& map(std::initializer_list<nvar> il){
       if(il.size() % 2 != 0){
         NERROR("invalid input");
       }
@@ -3310,7 +3306,7 @@ namespace neu{
         ++itr;
         const nvar& v = *itr;
         ++itr;
-
+        
         if(k.isString()){
           (*this)(k.str()) = v;
         }
