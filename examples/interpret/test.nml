@@ -166,7 +166,7 @@ v.d = 59;
 
 Print("v is now: %v", v);
 
-// we can get the key of the map as follows:
+// we can get the keys of the map as follows:
 keys = v.keys();
 for(i = 0; i < keys.size(); ++i){
   k = keys[i];

@@ -11356,6 +11356,8 @@ bool nvar::less(const nvar& x) const{
           
           return false;
         }
+        case HeadMap:
+          return x.h_.hm->m->hasKeys();
         case Reference:
           return less(*x.h_.ref->v);
         case Pointer:
@@ -11405,6 +11407,8 @@ bool nvar::less(const nvar& x) const{
           
           return false;
         }
+        case HeadMap:
+          return x.h_.hm->m->hasKeys();
         case Reference:
           return less(*x.h_.ref->v);
         case Pointer:
@@ -11923,6 +11927,8 @@ bool nvar::greater(const nvar& x) const{
           
           return false;
         }
+        case HeadMap:
+          return !x.h_.hm->m->hasKeys();
         case Reference:
           return greater(*x.h_.ref->v);
         case Pointer:
@@ -11972,6 +11978,8 @@ bool nvar::greater(const nvar& x) const{
           
           return false;
         }
+        case HeadMap:
+          return !x.h_.hm->m->hasKeys();
         case Reference:
           return greater(*x.h_.ref->v);
         case Pointer:

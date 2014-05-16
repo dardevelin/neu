@@ -105,8 +105,6 @@ namespace neu{
   
   extern const nvec _emptyVec;
   
-
-  
   class nvar{
   public:
     typedef uint8_t Type;
@@ -3378,6 +3376,53 @@ namespace neu{
         case Pointer:
           h_.vp->keys(v);
           break;
+      }
+    }
+    
+    bool hasKeys() const{
+      switch(t_){
+        case Function:
+          if(h_.f->m){
+            for(const auto& itr : *h_.f->m){
+              const nvar& k = itr.first;
+              
+              if(!k.isHidden()){
+                return true;
+              }
+            }
+          }
+          return false;
+        case Map:
+          for(const auto& itr : *h_.m){
+            const nvar& k = itr.first;
+            
+            if(!k.isHidden()){
+              return true;
+            }
+          }
+          return false;
+        case Multimap:
+          for(const auto& itr : *h_.mm){
+            const nvar& k = itr.first;
+            
+            if(!k.isHidden()){
+              return true;
+            }
+          }
+          return false;
+        case HeadMap:
+          return h_.hm->m->hasKeys();
+        case SequenceMap:
+          return h_.sm->m->hasKeys();
+        case HeadSequenceMap:
+          return h_.hsm->m->hasKeys();
+          break;
+        case Reference:
+          return h_.ref->v->hasKeys();
+        case Pointer:
+          return h_.vp->hasKeys();
+        default:
+          return false;
       }
     }
     
