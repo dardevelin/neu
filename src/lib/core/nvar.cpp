@@ -8967,10 +8967,6 @@ nvar& nvar::operator/=(double x){
 }
 
 nvar& nvar::operator/=(const nvar& x){
-  if(x == 0){
-    NERROR("division by 0");
-  }
-  
   switch(t_){
     case None:
     case Undefined:
@@ -8981,9 +8977,15 @@ nvar& nvar::operator/=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
           h_.i /= x.h_.i;
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
           t_ = Rational;
           h_.r = new nrat(h_.i);
           *h_.r /= *x.h_.r;
@@ -8996,11 +8998,19 @@ nvar& nvar::operator/=(const nvar& x){
           }
           return *this;
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           t_ = Float;
           h_.d = h_.i;
           h_.d /= x.h_.d;
           return *this;
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("division by 0");
+          }
+          
           t_ = Real;
           h_.x = new nreal(h_.i);
           *h_.x /= *x.h_.x;
@@ -9057,9 +9067,17 @@ nvar& nvar::operator/=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
+          
           *h_.r /= x.h_.i;
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
+          
           *h_.r /= *x.h_.r;
           if(h_.r->denominator() == 1){
             nrat* r = h_.r;
@@ -9069,6 +9087,10 @@ nvar& nvar::operator/=(const nvar& x){
           }
           return *this;
         case Float:{
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           double d = h_.r->toDouble();
           delete h_.r;
           t_ = Float;
@@ -9135,15 +9157,31 @@ nvar& nvar::operator/=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
+
           h_.d /= x.h_.i;
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
+          
           h_.d /= x.h_.r->toDouble();
           return *this;
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           h_.d /= x.h_.d;
           return *this;
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("division by 0");
+          }
+          
           h_.d /= x.h_.x->toDouble();
           return *this;
         case Symbol:
@@ -9198,12 +9236,24 @@ nvar& nvar::operator/=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
+          
           *h_.x /= x.h_.i;
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
+          
           *h_.x /= *x.h_.r;
           return *this;
         case Float:{
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           double d = h_.x->toDouble();
           d /= x.h_.d;
           delete h_.x;
@@ -9211,6 +9261,10 @@ nvar& nvar::operator/=(const nvar& x){
           t_ = Float;
         }
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("division by 0");
+          }
+          
           *h_.x /= *x.h_.x;
           return *this;
         case Symbol:
@@ -9516,10 +9570,6 @@ nvar nvar::operator/(double x) const{
 }
 
 nvar nvar::operator/(const nvar& x) const{
-  if(x == 0){
-    NERROR("division by 0");
-  }
-  
   switch(t_){
     case None:
     case Undefined:
@@ -9530,8 +9580,15 @@ nvar nvar::operator/(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
           return h_.i / x.h_.i;
         case Rational:{
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
+          
           Head h;
           h.r = new nrat(h_.i);
           *h.r /= *x.h_.r;
@@ -9544,8 +9601,16 @@ nvar nvar::operator/(const nvar& x) const{
           return nvar(Rational, h);
         }
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           return h_.i / x.h_.d;
         case Real:{
+          if(*x.h_.x == 0){
+            NERROR("division by 0");
+          }
+          
           Head h;
           h.x = new nreal(h_.i);
           *h.x /= *x.h_.x;
@@ -9602,11 +9667,19 @@ nvar nvar::operator/(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
+
           Head h;
           h.r = new nrat(*h_.r);
           *h.r /= x.h_.i;
           return nvar(Rational, h);
         case Rational:{
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
+          
           Head h;
           h.r = new nrat(*h_.r);
           *h.r /= *x.h_.r;
@@ -9619,8 +9692,16 @@ nvar nvar::operator/(const nvar& x) const{
           return nvar(Rational, h);
         }
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           return h_.r->toDouble() / x.h_.d;
         case Real:{
+          if(*x.h_.x == 0){
+            NERROR("division by 0");
+          }
+          
           Head h;
           h.x = new nreal(*h_.r);
           *h.x /= *x.h_.x;
@@ -9673,12 +9754,27 @@ nvar nvar::operator/(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
           return h_.d / x.h_.i;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
+          
           return h_.d / x.h_.r->toDouble();
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           return h_.d / x.h_.d;
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("division by 0");
+          }
+          
           return h_.d / x.h_.x->toDouble();
         case Function:
         case Symbol:{
@@ -9727,19 +9823,35 @@ nvar nvar::operator/(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("division by 0");
+          }
+          
           Head h;
           h.x = new nreal(*h_.x);
           *h.x /= x.h_.i;
           return nvar(Real, h);
         case Rational:{
+          if(*x.h_.r == 0){
+            NERROR("division by 0");
+          }
+
           Head h;
           h.x = new nreal(*h_.x);
           *h.x /= *x.h_.r;
           return nvar(Real, h);
         }
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("division by 0");
+          }
+          
           return h_.x->toDouble() / x.h_.d;
         case Real:{
+          if(*x.h_.x == 0){
+            NERROR("division by 0");
+          }
+          
           Head h;
           h.x = new nreal(*h_.x);
           *h.x /= *x.h_.x;
@@ -10075,10 +10187,6 @@ nvar& nvar::operator%=(double x){
 }
 
 nvar& nvar::operator%=(const nvar& x){
-  if(x == 0){
-    NERROR("mod by 0");
-  }
-  
   switch(t_){
     case None:
     case Undefined:
@@ -10089,9 +10197,16 @@ nvar& nvar::operator%=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
           h_.i %= x.h_.i;
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           t_ = Rational;
           h_.r = new nrat(h_.i);
           *h_.r = *h_.r - *h_.r / *x.h_.r;
@@ -10103,10 +10218,18 @@ nvar& nvar::operator%=(const nvar& x){
             return *this;
           }
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           t_ = Float;
           h_.d = fmod(h_.i, x.h_.d);
           return *this;
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           t_ = Real;
           h_.x = new nreal(h_.i);
           *h_.x %= *x.h_.x;
@@ -10163,9 +10286,17 @@ nvar& nvar::operator%=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
+          
           *h_.r = *h_.r - *h_.r / x.h_.i;
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           *h_.r = *h_.r - *h_.r / *x.h_.r;
           if(h_.r->denominator() == 1){
             nrat* r = h_.r;
@@ -10175,6 +10306,10 @@ nvar& nvar::operator%=(const nvar& x){
           }
           return *this;
         case Float:{
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           double d = h_.r->toDouble();
           delete h_.r;
           t_ = Float;
@@ -10182,6 +10317,10 @@ nvar& nvar::operator%=(const nvar& x){
           return *this;
         }
         case Real:{
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           nreal* y = new nreal(*h_.r);
           delete h_.r;
           t_ = Real;
@@ -10241,15 +10380,31 @@ nvar& nvar::operator%=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
+          
           h_.d = fmod(h_.d, static_cast<double>(x.h_.i));
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           h_.d = fmod(h_.d, x.h_.r->toDouble());
           return *this;
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           h_.d = fmod(h_.d, x.h_.d);
           return *this;
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           h_.d = fmod(h_.d, x.h_.x->toDouble());
           return *this;
         case Symbol:
@@ -10304,12 +10459,24 @@ nvar& nvar::operator%=(const nvar& x){
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
+          
           *h_.x %= x.h_.i;
           return *this;
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           *h_.x %= *x.h_.r;
           return *this;
         case Float:{
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           double d = h_.x->toDouble();
           delete h_.x;
           h_.d = fmod(d, x.h_.d);
@@ -10317,6 +10484,10 @@ nvar& nvar::operator%=(const nvar& x){
           break;
         }
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           *h_.x %= *x.h_.x;
           return *this;
         case Symbol:
@@ -10649,10 +10820,6 @@ nvar nvar::operator%(double x) const{
 }
 
 nvar nvar::operator%(const nvar& x) const{
-  if(x == 0){
-    NERROR("mod by 0");
-  }
-  
   switch(t_){
     case None:
     case Undefined:
@@ -10663,8 +10830,15 @@ nvar nvar::operator%(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
           return h_.i % x.h_.i;
         case Rational:{
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.r = new nrat(h_.i);
           *h.r = *h.r - *h.r / *x.h_.r;
@@ -10677,8 +10851,16 @@ nvar nvar::operator%(const nvar& x) const{
           return nvar(Rational, h);
         }
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           return fmod(h_.i, x.h_.d);
         case Real:{
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.x = new nreal(h_.i);
           *h.x %= *x.h_.x;
@@ -10735,12 +10917,20 @@ nvar nvar::operator%(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:{
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.r = new nrat(*h_.r);
           *h.r = *h.r - *h.r / x.h_.i;
           return nvar(Rational, h);
         }
         case Rational:{
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.r = new nrat(*h_.r);
           *h.r = *h.r - *h.r / *x.h_.r;
@@ -10753,8 +10943,16 @@ nvar nvar::operator%(const nvar& x) const{
           return nvar(Rational, h);
         }
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           return fmod(h_.r->toDouble(), x.h_.d);
         case Real:{
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.x = new nreal(*h_.r);
           *h.x %= *x.h_.x;
@@ -10807,12 +11005,27 @@ nvar nvar::operator%(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
           return fmod(h_.d, static_cast<double>(x.h_.i));
         case Rational:
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           return fmod(h_.d, x.h_.r->toDouble());
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           return fmod(h_.d, x.h_.d);
         case Real:
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           return fmod(h_.d, x.h_.x->toDouble());
         case Function:
         case Symbol:{
@@ -10861,19 +11074,35 @@ nvar nvar::operator%(const nvar& x) const{
         case Undefined:
           NERROR("right operand is undefined");
         case Integer:
+          if(x.h_.i == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.x = new nreal(*h_.x);
           *h.x %= x.h_.i;
           return nvar(Real, h);
         case Rational:{
+          if(*x.h_.r == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.x = new nreal(*h_.x);
           *h.x %= *x.h_.r;
           return nvar(Real, h);
         }
         case Float:
+          if(x.h_.d == 0.0){
+            NERROR("mod by 0");
+          }
+          
           return fmod(h_.x->toDouble(), x.h_.d);
         case Real:{
+          if(*x.h_.x == 0){
+            NERROR("mod by 0");
+          }
+          
           Head h;
           h.x = new nreal(*h_.x);
           *h.x %= *x.h_.x;
@@ -16733,7 +16962,7 @@ nvar nvar::operator!() const{
     case Rational:
       return *h_.r == 0;
     case Float:
-      return h_.d == 0;
+      return h_.d == 0.0;
     case Real:
       return *h_.x == 0;
     case String:

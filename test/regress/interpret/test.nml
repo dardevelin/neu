@@ -1,0 +1,197 @@
+/*
+  Both styles of C++ comments are supported.  This is a multiline
+  comment. This is an NML file to be parsed with NMLParser and
+  interpreted by calling the process() on an NObject subclass.
+ */
+
+// import NLib functions into the main scope, so that they are
+// callable as functions rather than methods on an object
+import NLib;
+
+// call one of the imported functions
+a = sin(2.0);
+Print("a is %v", a);
+
+// construct the C++-side object and call some methods on it
+o = new CPPObject;
+
+x = o.add(1, 3);
+Print("x is %v", x);
+
+y = o.product([1,2,3,4,5]);
+Print("y is %v", y);
+
+// an NML-side object
+class NMLObject{
+  // all methods are "public" 
+
+  // unlike C++, there are no default constructors
+  NMLObject(){
+    attr = 10;
+  }
+
+  // we can also construct an object as a base class of any other
+  // NObject here, NRandom
+  NMLObject(a, b) : NRandom(){
+    attr = a + b;
+  }
+  
+  // the return type and parameter types are not specified, they
+  // are implicitly of type nvar
+  sum(items){
+    ret = 0;
+
+    for(i = 0; i < items.size(); ++i){
+      ret += items[i];
+    }
+
+    return ret;
+  }
+  
+  printAttr(){
+    Print("attr is %v", attr);
+  }
+
+  // the switch/case stmt resembles the syntax of C++, however the
+  // cases do not have to be integral, they can be any nvar. also, it
+  // is not necesary to end each case with a break/return stmt -
+  // simply start the next case - so the only type of fall-through
+  // supported is as, e.g: the case 9:case 10: as seen below
+  testSwitch(c){
+    switch(c){
+    case 9:
+    case 10:
+      return "nine or ten";
+    case 2:
+      return "two";
+    case [1,0]:
+      return "vec";
+    case "str":
+      return "string";
+    default:
+      return "the default";
+    }
+  }
+
+  testWhile(){
+    i = 0;
+    while(i < 10){
+      ++i;
+    }
+
+    while(i < 100){
+      if(i > 20){
+        break;
+      }
+      ++i;
+    }
+
+    j = 0;
+    while(j < 10){
+      ++j;
+
+      if(j > 5){
+        continue;
+      }
+
+      i += j;
+    }
+
+    return i;
+  }
+
+  // any type of statement can be given at the top-level of the class
+  // they are executed when an instance of the class is created
+  // in this case we effectively set an "attribute" variable
+  attr = 9;
+}
+
+// call some of the NML object methods
+o2 = new NMLObject;
+s = o2.sum([1,2,3,4]);
+Print("s is %v", s);
+o2.printAttr();
+
+s1 = o2.testSwitch(10);
+Print("s1 is %v", s1);
+
+s2 = o2.testSwitch([1,0]);
+Print("s2 is %v", s2);
+
+s3 = o2.testSwitch(2);
+Print("s3 is %v", s3);
+
+s4 = o2.testSwitch("str");
+Print("s4 is %v", s4);
+
+s5 = o2.testSwitch(99);
+Print("s5 is %v", s5);
+
+s6 = o2.testSwitch(9);
+Print("s6 is %v", s6);
+
+i1 = o2.testWhile();
+Print("i1 is %v", i1);
+
+// ---------- miscellaneous
+
+// vector arithmetic is supported
+x = [1,2,3] + [4,5,6];
+Print("x is: %v", x);
+
+// standard math functions also work on vectors
+x = Cos(x);
+Print("x is now: %v", x);
+
+// there are a number of built-in methods that can be called on an
+// nvar
+
+Print("size is: %v", x.size());
+x.pushBack(29);
+Print("x is now: %v", x);
+
+// complex nvar's can be defined
+v = [:99, 1,2,3,"test", a:5, b:6, [1,0]:"baz"];
+Print("v is: %v", v);
+Print("v[3] is: %v", v[3]);
+
+// modify the sequence portion of the nvar
+v[3] = "new test";
+
+// modify the map portion of the nvar
+v.a = 9;
+
+// add a new keyed item to the map
+v.d = 59;
+
+Print("v is now: %v", v);
+
+// we can get the keys of the map as follows:
+keys = v.keys();
+for(i = 0; i < keys.size(); ++i){
+  k = keys[i];
+  Print("v[%v] = %v", k, v[k]); 
+}
+
+// The usual C++ arithmetic operators can be used, e.g:
+z = 10 + 2 * 4 / 2 - 5;
+z += 2;
+z *= 3;
+z /= 2;
+z %= 10;
+++z;
+--z;
+z++;
+z--;
+
+Print("z is %v", z);
+
+// and comarison operations, i.e: <, >, <=, >=, !=, ==, e.g:
+if(z > 5){
+  Print("yes!");
+}
+
+// the typical C++ logical operators can be used, e.g: &&, ||, !
+if(z > 5 && z < 10){
+  Print("yes again!");  
+}

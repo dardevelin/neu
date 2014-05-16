@@ -3294,8 +3294,12 @@ namespace neu{
       
       return (*this)(nvar(k));
     }
-    
+
     nvar& operator()(std::initializer_list<nvar> il){
+      return (*this)(nvar(il));
+    }    
+
+    nvar& map(std::initializer_list<nvar> il){
       if(il.size() % 2 != 0){
         NERROR("invalid input");
       }

@@ -409,6 +409,7 @@ namespace neu{
     }
     
     nvar process(const nvar& v, uint32_t flags=0){
+      // ******* it can be helpful to uncomment this line for debugging
       //cout << "processing: " << v << endl;
       
       nvar& vd = *v;

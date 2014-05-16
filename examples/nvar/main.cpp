@@ -44,7 +44,7 @@ int main(int argc, char** argv){
 
   // here's yet another way
   nvar& jupiter = planets2("Jupiter");
-  jupiter({"mass", 1.8986e+27, "radius", 69911, "volume", 1.4313e+15});
+  jupiter.map({"mass", 1.8986e+27, "radius", 69911, "volume", 1.4313e+15});
 
   // for the remaining planet, let's use the convenience function nml()
   // to parse a string of NML
