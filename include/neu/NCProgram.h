@@ -267,7 +267,7 @@ namespace neu{
       stats("hitRate") = 1 - s[9].toDouble()/s[8];
       stats("accepted") = s[10];
       stats("denied") = s[11];
-      stats("acceptanceRate") = s[10].toDouble()/s[11];
+      stats("acceptanceRate") = s[11] != 0 ? s[10].toDouble()/s[11] : nvar(0.0);
       stats("errors") = s[12];
       stats("errorRate") = double(s[12])/s[8];
       stats("duplicates") = s[13];

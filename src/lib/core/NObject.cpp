@@ -702,6 +702,13 @@ namespace neu{
       
       return !p;
     }
+
+    nvar Pow(const nvar& v1, const nvar& v2){
+      nvar p1 = process(v1);
+      nvar p2 = process(v2);
+      
+      return nvar::pow(p1, p2, exact_ ? o_ : 0);
+    }
     
     nvar Sqrt(const nvar& v){
       nvar p = process(v);
@@ -1964,6 +1971,11 @@ FuncMap::FuncMap(){
       [](void* o, const nvar& v) -> nvar{
         return NObject_::obj(o)->Not(v[0]);
       });
+
+  add("Pow", 2,
+      [](void* o, const nvar& v) -> nvar{
+        return NObject_::obj(o)->Pow(v[0], v[1]);
+      });
   
   add("Sqrt", 1,
       [](void* o, const nvar& v) -> nvar{
@@ -2757,6 +2769,10 @@ nvar NObject::Or(const nvar& v1, const nvar& v2){
 
 nvar NObject::Not(const nvar& v){
   return x_->Not(v);
+}
+
+nvar NObject::Pow(const nvar& v1, const nvar& v2){
+  return x_->Pow(v1, v2);
 }
 
 nvar NObject::Sqrt(const nvar& v){

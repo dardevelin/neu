@@ -8842,6 +8842,10 @@ nvar nvar::operator*(double x) const{
 }
 
 nvar& nvar::operator/=(nlonglong x){
+  if(x == 0){
+    NERROR("division by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -8894,6 +8898,10 @@ nvar& nvar::operator/=(nlonglong x){
 }
 
 nvar& nvar::operator/=(double x){
+  if(x == 0.0){
+    NERROR("division by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -8959,6 +8967,10 @@ nvar& nvar::operator/=(double x){
 }
 
 nvar& nvar::operator/=(const nvar& x){
+  if(x == 0){
+    NERROR("division by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -9400,6 +9412,10 @@ nvar& nvar::operator/=(const nvar& x){
 
 
 nvar nvar::operator/(nlonglong x) const{
+  if(x == 0){
+    NERROR("division by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -9452,6 +9468,10 @@ nvar nvar::operator/(nlonglong x) const{
 }
 
 nvar nvar::operator/(double x) const{
+  if(x == 0){
+    NERROR("division by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -9496,6 +9516,10 @@ nvar nvar::operator/(double x) const{
 }
 
 nvar nvar::operator/(const nvar& x) const{
+  if(x == 0){
+    NERROR("division by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -9928,6 +9952,10 @@ nvar nvar::operator/(const nvar& x) const{
 }
 
 nvar& nvar::operator%=(nlonglong x){
+  if(x == 0){
+    NERROR("mod by 0");
+  }
+
   switch(t_){
     case None:
     case Undefined:
@@ -9980,6 +10008,10 @@ nvar& nvar::operator%=(nlonglong x){
 }
 
 nvar& nvar::operator%=(double x){
+  if(x == 0.0){
+    NERROR("mod by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -10043,6 +10075,10 @@ nvar& nvar::operator%=(double x){
 }
 
 nvar& nvar::operator%=(const nvar& x){
+  if(x == 0){
+    NERROR("mod by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -10517,6 +10553,10 @@ nvar& nvar::operator%=(const nvar& x){
 }
 
 nvar nvar::operator%(nlonglong x) const{
+  if(x == 0){
+    NERROR("mod by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -10565,6 +10605,10 @@ nvar nvar::operator%(nlonglong x) const{
 }
 
 nvar nvar::operator%(double x) const{
+  if(x == 0.0){
+    NERROR("mod by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:
@@ -10605,6 +10649,10 @@ nvar nvar::operator%(double x) const{
 }
 
 nvar nvar::operator%(const nvar& x) const{
+  if(x == 0){
+    NERROR("mod by 0");
+  }
+  
   switch(t_){
     case None:
     case Undefined:

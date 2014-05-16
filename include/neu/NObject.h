@@ -156,6 +156,8 @@ namespace neu{
     nvar Or(const nvar& v1, const nvar& v2);
     
     nvar Not(const nvar& v);
+
+    nvar Pow(const nvar& v1, const nvar& v2);
     
     nvar Sqrt(const nvar& v);
     
