@@ -1,0 +1,4 @@
+[
+ depth: 3.9,
+ include: "$(HOME)/include"
+];
