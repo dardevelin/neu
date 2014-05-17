@@ -6010,7 +6010,6 @@ nvar& nvar::operator+=(const nvar& x){
       *h_.vp += x;
       return *this;
     default:
-      cout << "type is: " << int(t_) << endl;
       NERROR("left operand is invalid");
   }
 }
@@ -6055,7 +6054,7 @@ nvar nvar::operator+(nlonglong x) const{
     case HeadMap:
       return *h_.hm->h + x;
     case SequenceMap:
-      return *h_.sm->s += x;
+      return *h_.sm->s + x;
     case HeadSequenceMap:
       return *h_.hsm->s + x;
     case Reference:
@@ -7235,7 +7234,7 @@ nvar nvar::operator-(double x) const{
     case HeadMap:
       return *h_.hm->h - x;
     case SequenceMap:
-      return *h_.sm->s -= x;
+      return *h_.sm->s - x;
     case HeadSequenceMap:
       return *h_.hsm->s - x;
     case Reference:
@@ -8740,7 +8739,7 @@ nvar nvar::operator*(nlonglong x) const{
     case HeadMap:
       return *h_.hm->h * x;
     case SequenceMap:
-      return *h_.sm->s *= x;
+      return *h_.sm->s * x;
     case HeadSequenceMap:
       return *h_.hsm->s * x;
     case Reference:
