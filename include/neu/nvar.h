@@ -1587,26 +1587,6 @@ namespace neu{
           t_ = Vector;
           h_.v = new nvec(1, x);
           break;
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case String:
-        case StringPointer:
-        case Binary:
-        case RawPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:{
-          Head h;
-          h.v = new nvec(1, x);
-          h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Vector, h));
-          t_ = HeadSequence;
-          break;
-        }
         case Vector:
           h_.v->push_back(x);
           break;
@@ -1663,6 +1643,13 @@ namespace neu{
         case Pointer:
           *h_.vp << x;
           break;
+        default:{
+          Head h;
+          h.v = new nvec(1, x);
+          h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Vector, h));
+          t_ = HeadSequence;
+          break;
+        }
       }
       
       return *this;
