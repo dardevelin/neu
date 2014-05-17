@@ -2752,7 +2752,7 @@ namespace neu{
         case Map:
           return true;
         case HeadMap:
-          return h_.hm->h->hasMap();
+          return h_.hm->m->hasMap();
         case SequenceMap:
           return h_.sm->m->hasMap();
         case HeadSequenceMap:
@@ -3183,10 +3183,7 @@ namespace neu{
     
     nvar operator==(double x) const;
     
-    // ndm - make this a real method
-    nvar operator==(const char* s) const{
-      return *this == nvar(s);
-    }
+    nvar operator==(const char* s) const;
     
     nvar operator!=(const nvar& x) const;
 

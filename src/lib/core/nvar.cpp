@@ -15271,6 +15271,28 @@ nvar nvar::operator==(double x) const{
   }
 }
 
+nvar nvar::operator==(const char* s) const{
+  switch(t_){
+    case String:
+    case StringPointer:
+      return *h_.s == s;
+    case Symbol:
+    case Function:{
+      Head h;
+      h.f = new CFunction("EQ");
+      h.f->v.push_back(new nvar(*this, Copy));
+      h.f->v.push_back(s);
+      return new nvar(Function, h);
+    }
+    case Reference:
+      return *h_.ref->v == s;
+    case Pointer:
+      return *h_.vp == s;
+    default:
+      return false;
+  }
+}
+
 nvar nvar::operator==(const nvar& x) const{
   switch(t_){
     case None:
