@@ -893,7 +893,7 @@ namespace{
 
       Value* ret = createAlloca(t, name);
       if(v){
-        v = convert(v, ret);
+        v = convert(v, elementType(ret));
         if(!v){
           return 0;
         }
@@ -931,9 +931,8 @@ namespace{
 
           return convertNum(from, toVecType, trunc);
         }
-        else{
-          return 0;
-        }
+
+        return 0;
       }
       else if(VectorType* toVecType = dyn_cast<VectorType>(toType)){
         Value* e = convertNum(from, elementType(toVecType), trunc);
@@ -1008,6 +1007,15 @@ namespace{
       
       if(!tn){
         return ValueVec();
+      }
+      
+      if(!tn->isVectorTy()){
+        if(t1->isVectorTy()){
+          tn = VectorType::get(tn, vectorLength(t1));
+        }
+        else if(t2->isVectorTy()){
+          tn = VectorType::get(tn, vectorLength(t2));
+        }
       }
       
       return {convert(v1, tn), convert(v2, tn)};
@@ -1294,7 +1302,7 @@ namespace{
       if(isIntegral(v1)){
         return builder_.CreateMul(v1, v2, "mul.out");
       }
-      
+
       return builder_.CreateFMul(v1, v2, "fmul.out");
     }
     
@@ -2318,7 +2326,7 @@ namespace{
     }
 
     Value* compile(const nvar& n){
-      //cout << "compiling: " << n << endl;
+      //cerr << "compiling: " << n << endl;
       
       if(n.isNumeric()){
         Value* v = getNumeric(n);
@@ -3050,8 +3058,6 @@ namespace{
             return error("invalid operand[2]", n);
           }
           
-          ev = convert(ev, tv);
-          
           if(!builder_.GetInsertBlock()->getTerminator()){
             builder_.CreateBr(mb);
           }
@@ -3556,7 +3562,7 @@ namespace{
                                      args.vector(), "sqrt");
           }
           else{
-            sr = builder_.CreateCall(globalFunc("double sqrt(double)"),
+            sr = builder_.CreateCall(globalFunc("float sqrt(float)"),
                                      args.vector(), "sqrt");
           }
           
@@ -3642,8 +3648,8 @@ namespace{
           Value* r = getNumeric(0, elementType(v[0]));
 
           for(size_t i = 0; i < length; ++i){
-            Value* e1 = builder_.CreateExtractElement(v[i], getInt32(i));
-            Value* e2 = builder_.CreateExtractElement(v[i], getInt32(i));
+            Value* e1 = builder_.CreateExtractElement(lv, getInt32(i));
+            Value* e2 = builder_.CreateExtractElement(rv, getInt32(i));
             r = createAdd(r, createMul(e1, e2));
           }
           
