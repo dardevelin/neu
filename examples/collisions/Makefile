@@ -1,6 +1,6 @@
 include $(NEU_HOME)/Makefile.defs
 
-TARGET = cubes
+TARGET = collisions
 OBJECTS = main.o
 
 ifeq ($(PLATFORM), Darwin)
@@ -28,4 +28,3 @@ clean:
 
 spotless: clean
 	rm -f $(TARGET)
-

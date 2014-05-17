@@ -1,0 +1,61 @@
+#define DIM 100.0
+#define BOUNCE 0.3
+#define GRAVITY 0.01
+#define E 0.1
+#define D 0.01
+#define S 0.01
+
+class Body{
+  void run(){
+    v[1] -= GRAVITY;
+    u += v;
+    
+    if(u[1] < 0.0){
+      u[1] = 0.0;
+      v[0] *= BOUNCE;
+      v[1] *= -BOUNCE;
+    }
+
+    if(u[0] > DIM){
+      u[0] = DIM;
+      v[0] = -v[0] * BOUNCE;
+    }
+    else if(u[0] < -DIM){
+      u[0] = -DIM;
+      v[0] = -v[0] * BOUNCE;
+    }
+
+    if(u[1] > DIM){
+      u[1] = DIM;
+      v[1] = -v[1] * BOUNCE;
+    }
+    else if(u[1] < -DIM){
+      u[1] = -DIM;
+      v[1] = -v[1] * BOUNCE;
+    }
+  }
+
+  void interact(Body* b){
+    float3 u2 = b->u;
+
+    float dx = u[0] - u2[0];
+    float dy = u[1] - u2[1];
+    float dz = u[2] - u2[2];
+
+    float d = sqrt(dx * dx + dy * dy + dz * dz);
+
+    float r2 = r + b->r + 0.5;
+    
+    if(d > 0.0001 && d < r2){
+      float3 un = normalize(b->u - u);
+      float3 vd = b->v - v;
+      v += -E * (r2 - d) * un + D * vd + S * (vd - dot(vd, un) * un);  
+    }
+  }
+
+  float3 color;
+  float3 u;
+  float3 v;
+  float r;
+  float m;
+}

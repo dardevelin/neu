@@ -3,7 +3,11 @@ include $(NEU_HOME)/Makefile.defs
 TARGET = waves
 OBJECTS = main.o
 
-LINK += -L$(NEU_LIB) -lneu_core -lneu -framework Foundation -framework Cocoa -framework OpenGL -framework GLUT
+ifeq ($(PLATFORM), Darwin)
+  LIBS = -L$(NEU_LIB) -lneu_core -lneu -framework Foundation -framework Cocoa -framework OpenGL -framework GLUT
+else
+  LIBS = -L$(NEU_LIB) -lneu_core -lneu -lglut -lGL -lGLU
+endif
 
 all: .depend $(TARGET)
 
@@ -16,7 +20,7 @@ all: .depend $(TARGET)
 	$(COMPILE) -c $< -o $@
 
 $(TARGET): $(OBJECTS)
-	$(LINK) -o $(TARGET) $(OBJECTS)
+	$(LINK) -o $(TARGET) $(OBJECTS) $(LIBS)
 
 clean:
 	rm -f $(OBJECTS)
