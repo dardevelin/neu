@@ -2370,7 +2370,7 @@ namespace neu{
     }
     
     static double min(){
-      return -std::numeric_limits<double>::max();
+      return -std::numeric_limits<double>::min();
     }
     
     static double max(){
@@ -2602,7 +2602,7 @@ namespace neu{
         case Multimap:
           return h_.mm->empty();
         case Function:
-          return h_.f->v.empty() && h_.f->m ? h_.f->m->empty() : true;
+          return h_.f->v.empty() && (h_.f->m ? h_.f->m->empty() : true);
         case HeadSequence:
           return h_.hs->s->empty();
         case HeadMap:
@@ -2623,10 +2623,22 @@ namespace neu{
     const nvar& back() const{
       switch(t_){
         case Vector:
+          if(h_.v->empty()){
+            NERROR("vector is empty");
+          }
+          
           return h_.v->back();
         case List:
+          if(h_.l->empty()){
+            NERROR("list is empty");
+          }
+          
           return h_.l->back();
         case Function:
+          if(h_.f->v.empty()){
+            NERROR("function is empty");
+          }
+          
           return h_.f->v.back();
         case HeadSequence:
           return h_.hs->s->back();
@@ -2646,10 +2658,22 @@ namespace neu{
     nvar& back(){
       switch(t_){
         case Vector:
+          if(h_.v->empty()){
+            NERROR("vector is empty");
+          }
+          
           return h_.v->back();
         case List:
+          if(h_.l->empty()){
+            NERROR("list is empty");
+          }
+          
           return h_.l->back();
         case Function:
+          if(h_.f->v.empty()){
+            NERROR("function is empty");
+          }
+          
           return h_.f->v.back();
         case HeadSequence:
           return h_.hs->s->back();
