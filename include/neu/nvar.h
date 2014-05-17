@@ -3427,6 +3427,8 @@ namespace neu{
       switch(t_){
         case Function:
           return h_.f->v.begin();
+        case List:
+          NERROR("expected a vector not a list");
         case Vector:
           return h_.v->begin();
         case HeadSequence:
@@ -3451,6 +3453,8 @@ namespace neu{
           return h_.f->v.begin();
         case Vector:
           return h_.v->begin();
+        case List:
+          NERROR("expected a vector not a list");
         case HeadSequence:
           return h_.hs->s->begin();
         case SequenceMap:
@@ -3472,6 +3476,8 @@ namespace neu{
           return h_.f->v.end();
         case Vector:
           return h_.v->end();
+        case List:
+          NERROR("expected a vector not a list");
         case HeadSequence:
           return h_.hs->s->end();
         case SequenceMap:
@@ -3494,6 +3500,8 @@ namespace neu{
           return h_.f->v.end();
         case Vector:
           return h_.v->end();
+        case List:
+          NERROR("expected a vector not a list");
         case HeadSequence:
           return h_.hs->s->end();
         case SequenceMap:
