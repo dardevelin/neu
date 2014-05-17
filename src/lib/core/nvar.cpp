@@ -1024,7 +1024,7 @@ int64_t nvar::toLong() const{
     case Pointer:
       return h_.vp->toLong();
     default:
-      NERROR("undefined operand");
+      NERROR("invalid operand");
   }
 }
 
@@ -1058,7 +1058,7 @@ double nvar::toDouble() const{
     case Pointer:
       return h_.vp->toDouble();
     default:
-      NERROR("undefined operand");
+      NERROR("invalid operand");
   }
 }
 
@@ -1071,6 +1071,7 @@ nvar& nvar::operator<<(const nput& p){
   else{
     (*this)(k) = p.val;
   }
+  
   return *this;
 }
 
@@ -1081,26 +1082,6 @@ void nvar::pushBack(const nvar& x){
       t_ = Vector;
       h_.v = new nvec(1, x);
       break;
-    case False:
-    case True:
-    case Integer:
-    case Rational:
-    case Float:
-    case Real:
-    case Symbol:
-    case String:
-    case StringPointer:
-    case Binary:
-    case RawPointer:
-    case ObjectPointer:
-    case LocalObject:
-    case SharedObject:{
-      Head h;
-      h.v = new nvec(1, x);
-      h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Vector, h));
-      t_ = HeadSequence;
-      break;
-    }
     case Vector:
       h_.v->push_back(x);
       break;
@@ -1157,6 +1138,13 @@ void nvar::pushBack(const nvar& x){
     case Pointer:
       h_.vp->pushBack(x);
       break;
+    default:{
+      Head h;
+      h.v = new nvec(1, x);
+      h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Vector, h));
+      t_ = HeadSequence;
+      break;
+    }
   }
 }
 
