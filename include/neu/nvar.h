@@ -1763,16 +1763,6 @@ namespace neu{
     
     nvar popFront();
     
-    nvar& add(const nvar& x){
-      pushBack(x);
-      return *this;
-    }
-    
-    nvar& add(const nvar& k, const nvar& v){
-      (*this)(k) = v;
-      return *this;
-    }
-    
     Type fullType() const{
       return t_;
     }

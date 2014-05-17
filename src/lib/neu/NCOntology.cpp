@@ -1198,7 +1198,7 @@ public:
       si("code") = n;
       remapInOuts(rm, si);
       seq.push_back(si);
-      solution_.add(n);
+      solution_ << n;
       state_["sequence"].pushBack(si.toLong());
     }
 
