@@ -1540,19 +1540,6 @@ nvar& nvar::operator=(nlonglong x){
 
 nvar& nvar::operator=(const char* x){
   switch(t_){
-    case None:
-    case Undefined:
-    case False:
-    case True:
-    case Integer:
-    case Float:
-    case StringPointer:
-    case RawPointer:
-    case ObjectPointer:
-    case Pointer:
-      t_ = String;
-      h_.s = new nstr(x);
-      return *this;
     case Rational:
       delete h_.r;
       t_ = String;
@@ -1625,6 +1612,10 @@ nvar& nvar::operator=(const char* x){
       h_.hsm->dealloc();
       delete h_.hsm;
       break;
+    default:
+      t_ = String;
+      h_.s = new nstr(x);
+      return *this;
   }
   
   t_ = String;
@@ -1634,19 +1625,6 @@ nvar& nvar::operator=(const char* x){
 
 nvar& nvar::operator=(void* p){
   switch(t_){
-    case None:
-    case Undefined:
-    case False:
-    case True:
-    case Integer:
-    case Float:
-    case StringPointer:
-    case RawPointer:
-    case ObjectPointer:
-    case Pointer:
-      t_ = Pointer;
-      h_.p = p;
-      return *this;
     case Rational:
       delete h_.r;
       t_ = Pointer;
@@ -1720,6 +1698,10 @@ nvar& nvar::operator=(void* p){
       h_.hsm->dealloc();
       delete h_.hsm;
       break;
+    default:
+      t_ = Pointer;
+      h_.p = p;
+      return *this;
   }
 
   t_ = Pointer;
@@ -1818,18 +1800,6 @@ nvar& nvar::operator=(double x){
 
 nvar& nvar::operator=(bool x){
   switch(t_){
-    case None:
-    case Undefined:
-    case False:
-    case True:
-    case Integer:
-    case Float:
-    case StringPointer:
-    case RawPointer:
-    case ObjectPointer:
-    case Pointer:
-      t_ = x ? True : False;
-      return *this;
     case Rational:
       delete h_.r;
       t_ = x ? True : False;
@@ -1894,6 +1864,9 @@ nvar& nvar::operator=(bool x){
       h_.hsm->dealloc();
       delete h_.hsm;
       break;
+    default:
+      t_ = x ? True : False;
+      return *this;
   }
   
   t_ = x ? True : False;
