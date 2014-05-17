@@ -2033,8 +2033,6 @@ namespace neu{
       switch(t_){
         case Function:
           return h_.f->f == f;
-        case HeadMap:
-          return h_.hm->h->isFunction(f);
         case Reference:
           return h_.ref->v->isFunction(f);
         case Pointer:
@@ -2048,8 +2046,6 @@ namespace neu{
       switch(t_){
         case Function:
           return h_.f->f == f && h_.f->v.size() == arity;
-        case HeadMap:
-          return h_.hm->h->isFunction(f, arity);
         case Reference:
           return h_.ref->v->isFunction(f, arity);
         case Pointer:
@@ -2065,8 +2061,6 @@ namespace neu{
           size_t s = h_.f->v.size();
           return s >= minArity && s <= maxArity;
         }
-        case HeadMap:
-          return h_.hm->h->isFunction(minArity, maxArity);
         case Reference:
           return h_.ref->v->isFunction(minArity, maxArity);
         case Pointer:
@@ -2084,8 +2078,6 @@ namespace neu{
             return s >= minArity && s <= maxArity;
           }
           return false;
-        case HeadMap:
-          return h_.hm->h->isFunction(f, minArity, maxArity);
         case Reference:
           return h_.ref->v->isFunction(f, minArity, maxArity);
         case Pointer:
