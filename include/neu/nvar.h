@@ -1924,7 +1924,6 @@ namespace neu{
     bool isBool() const{
       switch(t_){
         case False:
-          return true;
         case True:
           return true;
         case Reference:
@@ -1954,29 +1953,31 @@ namespace neu{
           return false;
       }
     }
-    
-    bool isSymbol() const{
+
+    bool hasString() const{
       switch(t_){
+        case String:
         case Symbol:
+        case StringPointer:
+        case Binary:
           return true;
         case HeadSequence:
-          return h_.hs->h->isSymbol();
+          return h_.hs->h->hasString();
         case HeadMap:
-          return h_.hm->h->isSymbol();
+          return h_.hm->h->hasString();
         case HeadSequenceMap:
-          return h_.hsm->h->isSymbol();
+          return h_.hsm->h->hasString();
         case Reference:
-          return h_.ref->v->isSymbol();
+          return h_.ref->v->hasString();
         case Pointer:
-          return h_.vp->isSymbol();
+          return h_.vp->hasString();
         default:
           return false;
       }
     }
     
-    bool hasString() const{
+    bool isSymbol() const{
       switch(t_){
-        case String:
         case Symbol:
           return true;
         case HeadSequence:
