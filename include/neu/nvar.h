@@ -752,7 +752,6 @@ namespace neu{
       switch(t_){
         case None:
         case Undefined:
-          return false;
         case Vector:
         case List:
         case Map:
@@ -1296,7 +1295,6 @@ namespace neu{
             return *h_.f->m;
           }
           NERROR("var does not hold a map");
-          break;
         case Map:
           return *h_.m;
         case HeadMap:
@@ -1321,7 +1319,6 @@ namespace neu{
             return *h_.f->m;
           }
           NERROR("var does not hold a map");
-          break;
         case Map:
           return *h_.m;
         case HeadMap:
@@ -1511,27 +1508,6 @@ namespace neu{
           h_.v = new nvec;
           h_.v->emplace_back(std::move(x));
           break;
-        case False:
-        case True:
-        case Integer:
-        case Rational:
-        case Float:
-        case Real:
-        case Symbol:
-        case String:
-        case StringPointer:
-        case Binary:
-        case RawPointer:
-        case ObjectPointer:
-        case LocalObject:
-        case SharedObject:{
-          Head h;
-          h.v = new nvec;
-          h.v->emplace_back(std::move(x));
-          h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Vector, h));
-          t_ = HeadSequence;
-          break;
-        }
         case Vector:
           h_.v->emplace_back(std::move(x));
           break;
@@ -1591,6 +1567,14 @@ namespace neu{
         case Pointer:
           h_.vp->pushBack(std::move(x));
           break;
+        default:{
+          Head h;
+          h.v = new nvec;
+          h.v->emplace_back(std::move(x));
+          h_.hs = new CHeadSequence(new nvar(t_, h_), new nvar(Vector, h));
+          t_ = HeadSequence;
+          break;
+        }
       }
     }
     
