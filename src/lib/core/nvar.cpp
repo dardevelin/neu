@@ -774,12 +774,6 @@ nvar::nvar(double* v, int32_t n)
 nvar::nvar(const nvar& x, const CopyFlag*)
 : t_(x.t_){
   switch(t_){
-    case Integer:
-      h_.i = x.h_.i;
-      break;
-    case Float:
-      h_.d = x.h_.d;
-      break;
     case Rational:
       h_.r = new nrat(*x.h_.r);
       break;
@@ -791,17 +785,8 @@ nvar::nvar(const nvar& x, const CopyFlag*)
     case Symbol:
       h_.s = new nstr(*x.h_.s);
       break;
-    case StringPointer:
-      h_.s = x.h_.s;
-      break;
-    case RawPointer:
-      h_.p = x.h_.p;
-      break;
     case LocalObject:
       h_.o = x.h_.o->clone();
-      break;
-    case ObjectPointer:
-      h_.o = x.h_.o;
       break;
     case SharedObject:
       h_.o = x.h_.o;
@@ -903,8 +888,8 @@ nvar::nvar(const nvar& x, const CopyFlag*)
     case Reference:
       h_.ref = new CReference(new nvar(*x.h_.ref->v, Copy));
       break;
-    case Pointer:
-      h_.vp = h_.vp;
+    default:
+      h_.i = x.h_.i;
       break;
   }
 }
