@@ -33,7 +33,10 @@ static const float ROWS = 256;
 static const float COLUMNS = 256;
 static const float HEIGHT_MULTIPLIER = 2;
 
+// the run queue will execute Cell::run() 
 static NPQueue runQueue(8);
+
+// the run queue will execute Cell::interact() 
 static NPQueue interactQueue(8);
 
 inline void glVertex(const float3& u){
@@ -98,9 +101,13 @@ public:
       s(0){
     
   }
-  
+
+  // the C++ side object's data layout should match the NPL-side
+  // defined in kernel.npl
   double h;
   double s;
+
+  // however we could add additional C++ only data items here
 };
 
 typedef NVector<Cell*> CellVec;
@@ -137,15 +144,24 @@ NPLModule module;
 
 class InteractFunc : public NPLFunc{
 public:
+  // normally the return type would go here, but in this case it is void
+
+  // the arguments to the method go here in order of appearance
   Cell* c;
 };
 
 void addNeighbor(Cell* c1, Cell* c2){
   if(c1 && c2){
     InteractFunc* f = new InteractFunc;
-    module.getFunc({"Cell", "interact", 1}, f);
+    // get the interact method we required
+    module.getFunc({"Cell", "interact", 1 /* number of args */}, f);
+
+    // we need to set the object (the this pointer)
     f->o = c1;
+
+    // set the first and only argumet to the method
     f->c = c2;
+
     interactQueue.add(f);
   }
 }
