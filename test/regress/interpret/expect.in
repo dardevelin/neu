@@ -147,6 +147,5 @@ v[a] = 9
 v[b] = 6
 v[d] = 59
 v[[1,0]] = "baz"
-z is 6
+z is 14+17/20
 yes!
-yes again!

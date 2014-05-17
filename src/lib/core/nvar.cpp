@@ -8805,10 +8805,25 @@ nvar& nvar::operator/=(nlonglong x){
     case Undefined:
       NERROR("left operand is undefined");
     case Integer:
-      h_.i /= x;
+      h_.r = new nrat(h_.i, x);
+      if(h_.r->denominator() == 1){
+        int64_t i = h_.r->numerator();
+        delete h_.r;
+        h_.i = i;
+        t_ = Integer;
+      }
+      else{
+        t_ = Rational;
+      }
       return *this;
     case Rational:
       *h_.r /= x;
+      if(h_.r->denominator() == 1){
+        int64_t i = h_.r->numerator();
+        delete h_.r;
+        h_.i = i;
+        t_ = Integer;
+      }
       return *this;
     case Float:
       h_.d /= x;
@@ -8934,7 +8949,17 @@ nvar& nvar::operator/=(const nvar& x){
           if(x.h_.i == 0){
             NERROR("division by 0");
           }
-          h_.i /= x.h_.i;
+          
+          h_.r = new nrat(h_.i, x.h_.i);
+          if(h_.r->denominator() == 1){
+            int64_t i = h_.r->numerator();
+            delete h_.r;
+            h_.i = i;
+            t_ = Integer;
+          }
+          else{
+            t_ = Rational;
+          }
           return *this;
         case Rational:
           if(*x.h_.r == 0){
@@ -8943,6 +8968,7 @@ nvar& nvar::operator/=(const nvar& x){
           t_ = Rational;
           h_.r = new nrat(h_.i);
           *h_.r /= *x.h_.r;
+          
           if(h_.r->denominator() == 1){
             t_ = Integer;
             nrat* r = h_.r;
@@ -9429,11 +9455,26 @@ nvar nvar::operator/(nlonglong x) const{
     case Undefined:
       NERROR("left operand is undefined");
     case Integer:
-      return h_.i / x;
+      Head h;
+      h.r = new nrat(h_.i, x);
+      if(h.r->denominator() == 1){
+        int64_t i = h.r->numerator();
+        delete h.r;
+        return i;
+      }
+
+      return nvar(Rational, h);
     case Rational:{
       Head h;
       h.r = new nrat(*h_.r);
       *h.r /= x;
+      
+      if(h.r->denominator() == 1){
+        int64_t i = h.r->numerator();
+        delete h.r;
+        return i;
+      }
+      
       return nvar(Rational, h);
     }
     case Float:
@@ -9537,7 +9578,16 @@ nvar nvar::operator/(const nvar& x) const{
           if(x.h_.i == 0){
             NERROR("division by 0");
           }
-          return h_.i / x.h_.i;
+          
+          Head h;
+          h.r = new nrat(h_.i, x.h_.i);
+          if(h.r->denominator() == 1){
+            int64_t i = h.r->numerator();
+            delete h.r;
+            return i;
+          }
+          
+          return nvar(Rational, h);
         case Rational:{
           if(*x.h_.r == 0){
             NERROR("division by 0");
@@ -9628,6 +9678,13 @@ nvar nvar::operator/(const nvar& x) const{
           Head h;
           h.r = new nrat(*h_.r);
           *h.r /= x.h_.i;
+          
+          if(h.r->denominator() == 1){
+            int64_t i = h.r->numerator();
+            delete h.r;
+            return i;
+          }
+          
           return nvar(Rational, h);
         case Rational:{
           if(*x.h_.r == 0){
