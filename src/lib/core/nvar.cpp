@@ -17287,6 +17287,9 @@ void nvar::erase(const nvar& key){
     case HeadMap:
       h_.hm->m->erase(key);
       break;
+    case SequenceMap:
+      h_.sm->m->erase(key);
+      break;
     case HeadSequenceMap:
       h_.hsm->m->erase(key);
       break;
