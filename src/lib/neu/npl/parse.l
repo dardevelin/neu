@@ -144,7 +144,7 @@ KW_CLASS class
 KW_SWITCH switch
 KW_CASE case
 KW_DEFAULT default
-TYPE (void)|(bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(nvar)\*?
+TYPE ((void)|(bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double)|(nvar))\*?
 VEC_TYPE ((bool)|(char)|(uchar)|(short)|(ushort)|(int)|(uint)|(long)|(ulong)|(float)|(double))[0-9]+\*?
 PTR_TYPE ([a-zA-Z])|(_+[a-zA-Z][a-zA-Z0-9_]*)|([a-zA-Z][a-zA-Z0-9_]*)\*\**
 DEFINE "#define"

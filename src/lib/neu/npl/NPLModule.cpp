@@ -787,9 +787,16 @@ namespace{
         createStore(getInt8(nvar::Undefined), t);
         return ret;
       }
-      
-      Type* t = v->getType();
     
+      Type* t = v->getType();
+      
+      if(t->isVectorTy()){
+        Value* nv = createAlloca(t, "vec.conv");
+        createStore(v, nv);
+        v = nv;
+        t = v->getType();
+      }
+      
       if(t->isIntegerTy()){
         Value* ret = createAlloca("nvar", name);
         Value* h = createStructGEP(ret, 0, "h_");

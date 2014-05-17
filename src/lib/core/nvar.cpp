@@ -741,6 +741,36 @@ void nvar::streamOutput_(ostream& ostr, bool concise) const{
   }
 }
 
+nvar::nvar(int8_t* v, int32_t n)
+: t_(Vector){
+  h_.v = new nvec(v, v + n);
+}
+
+nvar::nvar(int16_t* v, int32_t n)
+: t_(Vector){
+  h_.v = new nvec(v, v + n);
+}
+
+nvar::nvar(int32_t* v, int32_t n)
+: t_(Vector){
+  h_.v = new nvec(v, v + n);
+}
+
+nvar::nvar(int64_t* v, int32_t n)
+: t_(Vector){
+  h_.v = new nvec(v, v + n);
+}
+
+nvar::nvar(float* v, int32_t n)
+: t_(Vector){
+  h_.v = new nvec(v, v + n);
+}
+
+nvar::nvar(double* v, int32_t n)
+: t_(Vector){
+  h_.v = new nvec(v, v + n);
+}
+
 nvar::nvar(const nvar& x, const CopyFlag*)
 : t_(x.t_){
   switch(t_){

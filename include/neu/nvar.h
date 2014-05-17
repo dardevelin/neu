@@ -610,35 +610,17 @@ namespace neu{
       h_.v = new nvec(std::move(v));
     }
 
-    nvar(int8_t* v, int32_t n)
-    : t_(Vector){
-      h_.v = new nvec(v, v + n);
-    }
+    nvar(int8_t* v, int32_t n);
 
-    nvar(int16_t* v, int32_t n)
-    : t_(Vector){
-      h_.v = new nvec(v, v + n);
-    }
+    nvar(int16_t* v, int32_t n);
     
-    nvar(int32_t* v, int32_t n)
-    : t_(Vector){
-      h_.v = new nvec(v, v + n);
-    }
+    nvar(int32_t* v, int32_t n);
     
-    nvar(int64_t* v, int32_t n)
-    : t_(Vector){
-      h_.v = new nvec(v, v + n);
-    }
+    nvar(int64_t* v, int32_t n);
     
-    nvar(float* v, int32_t n)
-    : t_(Vector){
-      h_.v = new nvec(v, v + n);
-    }
-    
-    nvar(double* v, int32_t n)
-    : t_(Vector){
-      h_.v = new nvec(v, v + n);
-    }
+    nvar(float* v, int32_t n);
+
+    nvar(double* v, int32_t n);
     
     nvar(std::initializer_list<nvar> il)
     : t_(Vector){
