@@ -71,10 +71,14 @@ namespace neu{
         return 0;
       }
       
+      // if an encrypted buffer is provided, user is responsible for
+      // freeing buf
       virtual char* encrypt(char* buf, uint32_t& size){
         return buf;
       }
       
+      // if a decrypted buffer is provided, user is responsible for
+      // freeing buf
       virtual char* decrypt(char* buf, uint32_t& size){
         return buf;
       }
