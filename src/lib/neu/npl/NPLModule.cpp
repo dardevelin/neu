@@ -2657,7 +2657,10 @@ namespace{
             return error("invalid operand[1]", n);
           }
           
-          r = convert(r, l);
+          r = convert(r, elementType(l));
+          if(!r){
+            return error("invalid operand[1]", n);
+          }
           
           store(r, l);
           
@@ -3543,9 +3546,6 @@ namespace{
             return error("not a float/double vector", n[0]);
           }
           
-          Value* vd = createAlloca(vt, "vec");
-          vd = builder_.CreateLoad(vd);
-          
           for(size_t i = 0; i < length; ++i){
             Value* e = builder_.CreateExtractElement(v, getInt32(i));
             e = builder_.CreateFMul(e, e);
@@ -3565,6 +3565,9 @@ namespace{
             sr = builder_.CreateCall(globalFunc("float sqrt(float)"),
                                      args.vector(), "sqrt");
           }
+          
+          Value* vd = createAlloca(vt, "vec");
+          vd = builder_.CreateLoad(vd);
           
           for(size_t i = 0; i < length; ++i){
             vd = builder_.CreateInsertElement(vd, sr, getInt32(i));
@@ -4416,6 +4419,7 @@ namespace{
         }
       }
       
+      // **** for debugging, uncomment to dump the module
       //module_.dump();
       
       return !foundError_;
