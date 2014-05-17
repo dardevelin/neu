@@ -610,6 +610,11 @@ namespace neu{
       h_.v = new nvec(std::move(v));
     }
 
+    nvar(std::initializer_list<nvar> il)
+    : t_(Vector){
+      h_.v = new nvec(il);
+    }
+    
     nvar(int8_t* v, int32_t n);
 
     nvar(int16_t* v, int32_t n);
@@ -621,11 +626,6 @@ namespace neu{
     nvar(float* v, int32_t n);
 
     nvar(double* v, int32_t n);
-    
-    nvar(std::initializer_list<nvar> il)
-    : t_(Vector){
-      h_.v = new nvec(il);
-    }
     
     nvar(const nlist& l)
     : t_(List){
@@ -723,11 +723,29 @@ namespace neu{
     ~nvar();
     
     bool isFalse() const{
-      return t_ == False;
+      switch(t_){
+        case False:
+          return true;
+        case Reference:
+          return h_.ref->v->isFalse();
+        case Pointer:
+          return h_.vp->isFalse();
+        default:
+          return false;
+      }
     }
     
     bool isTrue() const{
-      return t_ == True;
+      switch(t_){
+        case True:
+          return true;
+        case Reference:
+          return h_.ref->v->isTrue();
+        case Pointer:
+          return h_.vp->isTrue();
+        default:
+          return false;
+      }
     }
     
     bool isDefined() const{
