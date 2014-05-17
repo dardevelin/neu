@@ -1451,18 +1451,6 @@ size_t nvar::numKeys() const{
 
 nvar& nvar::operator=(nlonglong x){
   switch(t_){
-    case None:
-    case Undefined:
-    case False:
-    case True:
-    case Float:
-    case StringPointer:
-    case RawPointer:
-    case ObjectPointer:
-    case Pointer:
-      t_ = Integer;
-      h_.i = x;
-      return *this;
     case Integer:
       h_.i = x;
       return *this;
@@ -1539,6 +1527,10 @@ nvar& nvar::operator=(nlonglong x){
       h_.hsm->dealloc();
       delete h_.hsm;
       break;
+    default:
+      t_ = Integer;
+      h_.i = x;
+      return *this;
   }
   
   t_ = Integer;
